@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TVC High School CBT</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f9; }
+    h2 { color: #2c3e50; }
+    .hidden { display: none; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; }
+    button:hover { background: #2980b9; }
+    input, select { padding: 8px; width: 100%; margin: 5px 0; }
+    .question { margin-bottom: 15px; }
+    .timer { font-weight: bold; color: red; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <div class="container" id="loginPage">
+    <h2>🔐 TVC High School CBT Login</h2>
+    <input type="text" id="username" placeholder="Username / Student ID">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color:red;"></p>
+  </div>
+
+  <!-- Student Page -->
+  <div class="container hidden" id="studentPage">
+    <h2>Welcome, <span id="studentName"></span></h2>
+    <div>
+      <label>Select Subject:</label>
+      <select id="subjectSelect"></select>
+      <button onclick="startExam()">Start Exam</button>
+    </div>
+    <div id="examSection" class="hidden">
+      <p class="timer">⏳ Time left: <span id="timer"></span></p>
+      <div id="questions"></div>
+      <button onclick="submitExam()">Submit Exam</button>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Admin Page -->
+  <div class="container hidden" id="adminPage">
+    <h2>👨‍💼 Admin Panel - TVC High School</h2>
+    <h3>Add Student</h3>
+    <input type="text" id="studentFullName" placeholder="Full Name">
+    <input type="text" id="studentId" placeholder="Student ID">
+    <input type="password" id="studentPass" placeholder="Password">
+    <button onclick="addStudent()">Add Student</button>
+
+    <h3>Add Subject</h3>
+    <input type="text" id="subjectName" placeholder="Subject Name">
+    <button onclick="addSubject()">Add Subject</button>
+
+    <h3>Add Question</h3>
+    <select id="questionSubject"></select>
+    <input type="text" id="questionText" placeholder="Question text">
+    <input type="text" id="optA" placeholder="Option A">
+    <input type="text" id="optB" placeholder="Option B">
+    <input type="text" id="optC" placeholder="Option C">
+    <input type="text" id="optD" placeholder="Option D">
+    <select id="correctAns">
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+    </select>
+    <button onclick="addQuestion()">Add Question</button>
+
+    <h3>Scores</h3>
+    <table>
+      <thead>
+        <tr><th>Student</th><th>Subject</th><th>Score</th></tr>
+      </thead>
+      <tbody id="scoreTable"></tbody>
+    </table>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    let data = {
+      adminPassword: "1234",
+      students: [{ id: "john01", name: "John Doe", password: "pass123" }],
+      subjects: ["Mathematics"],
+      questions: [
+        { subject: "Mathematics", text: "2 + 2 = ?", options: ["2", "3", "4", "5"], correct: "C" },
+        { subject: "Mathematics", text: "5 × 3 = ?", options: ["8", "15", "10", "20"], correct: "B" }
+      ],
+      scores: []
+    };
+
+    let currentUser = null;
+    let timerInterval;
+
+    function login() {
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+      if (user === "admin" && pass === data.adminPassword) {
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("adminPage").classList.remove("hidden");
+        loadSubjects();
+        loadScores();
+      } else {
+        const student = data.students.find(s => s.id === user && s.password === pass);
+        if (student) {
+          currentUser = student;
+          document.getElementById("loginPage").classList.add("hidden");
+          document.getElementById("studentPage").classList.remove("hidden");
+          document.getElementById("studentName").innerText = student.name;
+          loadStudentSubjects();
+        } else {
+          document.getElementById("loginError").innerText = "Invalid login!";
+        }
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      document.querySelectorAll(".container").forEach(c => c.classList.add("hidden"));
+      document.getElementById("loginPage").classList.remove("hidden");
+    }
+
+    function addStudent() {
+      const name = document.getElementById("studentFullName").value.trim();
+      const id = document.getElementById("studentId").value.trim();
+      const pass = document.getElementById("studentPass").value.trim();
+      if (name && id && pass) {
+        data.students.push({ id, name, password: pass });
+        alert("Student added!");
+      }
+    }
+
+    function addSubject() {
+      const subj = document.getElementById("subjectName").value.trim();
+      if (subj && !data.subjects.includes(subj)) {
+        data.subjects.push(subj);
+        loadSubjects();
+        alert("Subject added!");
+      }
+    }
+
+    function addQuestion() {
+      const subj = document.getElementById("questionSubject").value;
+      const text = document.getElementById("questionText").value.trim();
+      const options = [
+        document.getElementById("optA").value,
+        document.getElementById("optB").value,
+        document.getElementById("optC").value,
+        document.getElementById("optD").value
+      ];
+      const correct = document.getElementById("correctAns").value;
+      if (text && options.every(o => o)) {
+        data.questions.push({ subject: subj, text, options, correct });
+        alert("Question added!");
+      }
+    }
+
+    function loadSubjects() {
+      const qSubj = document.getElementById("questionSubject");
+      qSubj.innerHTML = "";
+      data.subjects.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        qSubj.appendChild(opt);
+      });
+    }
+
+    function loadStudentSubjects() {
+      const subjSelect = document.getElementById("subjectSelect");
+      subjSelect.innerHTML = "";
+      data.subjects.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        subjSelect.appendChild(opt);
+      });
+    }
+
+    function startExam() {
+      const subj = document.getElementById("subjectSelect").value;
+      const qs = data.questions.filter(q => q.subject === subj);
+      if (!qs.length) { alert("No questions for this subject."); return; }
+      document.getElementById("examSection").classList.remove("hidden");
+      const qDiv = document.getElementById("questions");
+      qDiv.innerHTML = "";
+      qs.forEach((q, i) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `<p>${i+1}. ${q.text}</p>
+          ${["A","B","C","D"].map((l,j)=>`
+            <label><input type="radio" name="q${i}" value="${l}"> ${l}. ${q.options[j]}</label><br>
+          `).join("")}`;
+        qDiv.appendChild(div);
+      });
+      startTimer(30*60, document.getElementById("timer"), subj, qs);
+    }
+
+    function startTimer(duration, display, subj, qs) {
+      let time = duration;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        display.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        if (--time < 0) {
+          clearInterval(timerInterval);
+          submitExam(subj, qs);
+        }
+      }, 1000);
+    }
+
+    function submitExam(subj, qs) {
+      clearInterval(timerInterval);
+      subj = subj || document.getElementById("subjectSelect").value;
+      qs = qs || data.questions.filter(q => q.subject === subj);
+      let score = 0;
+      qs.forEach((q,i) => {
+        const ans = document.querySelector(`input[name="q${i}"]:checked`);
+        if (ans && ans.value === q.correct) score++;
+      });
+      data.scores.push({ student: currentUser.name, subject: subj, score: score+"/"+qs.length });
+      alert("Exam submitted! Your score has been recorded.");
+      document.getElementById("examSection").classList.add("hidden");
+    }
+
+    function loadScores() {
+      const tbody = document.getElementById("scoreTable");
+      tbody.innerHTML = "";
+      data.scores.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${s.student}</td><td>${s.subject}</td><td>${s.score}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
