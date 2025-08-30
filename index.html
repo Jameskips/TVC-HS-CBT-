@@ -4,230 +4,193 @@
   <meta charset="UTF-8">
   <title>TVC High School CBT</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f2f2f2; text-align:center; padding:30px; }
-    #loginBox, #adminDashboard, #studentDashboard { 
-      background:#fff; padding:20px; border-radius:10px; width:400px; margin:auto; display:none; 
-    }
-    input, select { width:90%; padding:10px; margin:5px; }
-    button { padding:10px; width:95%; background:#007bff; color:#fff; border:none; border-radius:5px; margin-top:10px; cursor:pointer; }
-    button:hover { background:#0056b3; }
-    h1 { margin-bottom:20px; }
-    .list-item { border:1px solid #ddd; margin:5px; padding:8px; border-radius:5px; background:#fafafa; }
+    body { font-family: Arial, sans-serif; background:#f8f9fa; margin:0; padding:0; }
+    header { background:#007bff; color:#fff; padding:15px; text-align:center; }
+    #loginBox, #dashboard, #examArea, #adminPanel { max-width:700px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    input, select { width:95%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px; }
+    button { padding:10px 15px; margin:5px; border:none; border-radius:5px; cursor:pointer; }
+    button.primary { background:#007bff; color:#fff; }
+    button.danger { background:#dc3545; color:#fff; }
+    button.success { background:#28a745; color:#fff; }
+    .hidden { display:none; }
+    .question { margin-bottom:15px; padding:10px; border:1px solid #ddd; border-radius:8px; }
+    .timer { font-weight:bold; color:#dc3545; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:center; }
   </style>
 </head>
 <body>
+  <header>
+    <h1>The Valued Child (TVC) High School - CBT</h1>
+  </header>
 
-  <h1>The Valued Child (TVC) High School - CBT</h1>
-  
-  <!-- Login Section -->
-  <div id="loginBox" style="display:block;">
+  <!-- Login -->
+  <div id="loginBox">
     <h3>Login</h3>
     <input type="text" id="username" placeholder="Enter username"><br>
     <input type="password" id="password" placeholder="Enter password"><br>
-    <button onclick="login()">Login</button>
+    <button class="primary" onclick="login()">Login</button>
     <p id="errorMsg" style="color:red;"></p>
   </div>
 
-  <!-- Admin Dashboard -->
-  <div id="adminDashboard">
-    <h2>Admin Dashboard</h2>
-    <button onclick="showSubjects()">📘 Manage Subjects</button>
-    <button onclick="showQuestions()">📝 Manage Questions</button>
-    <button onclick="showScores()">📊 View Scores</button>
-    <br><br>
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <h2>Welcome, <span id="userRole"></span></h2>
+    <div id="studentDashboard" class="hidden">
+      <h3>Select Subject</h3>
+      <select id="subjectSelect"></select>
+      <button class="success" onclick="startExam()">Start Exam</button>
+    </div>
+    <div id="adminDashboard" class="hidden">
+      <button class="primary" onclick="showAdminPanel()">Manage Questions</button>
+      <button class="success" onclick="showScores()">View Scores</button>
+    </div>
     <button onclick="logout()">Logout</button>
-    <div id="adminContent"></div>
   </div>
 
-  <!-- Student Dashboard -->
-  <div id="studentDashboard">
-    <h2>Student Dashboard</h2>
-    <p>Select a subject to start exam:</p>
-    <div id="subjectList"></div>
-    <br>
-    <button onclick="logout()">Logout</button>
-    <div id="examArea"></div>
+  <!-- Exam Area -->
+  <div id="examArea" class="hidden">
+    <h3 id="examSubject"></h3>
+    <p>Time Remaining: <span class="timer" id="timer"></span></p>
+    <form id="examForm"></form>
+    <button class="primary" onclick="submitExam()">Submit</button>
   </div>
 
-  <script>
-    // === CONFIG (Replace with your JSONBin details) ===
-    const BIN_ID = "YOUR_BIN_ID";
-    const API_KEY = "YOUR_API_KEY";
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-    
-    // Local store (used before saving to JSONBin)
-    let subjects = ["Mathematics", "English"];
-    let questions = {
-      "Mathematics": [
-        { q: "2 + 2 = ?", options: ["3", "4", "5"], answer: "4" }
-      ],
-      "English": [
-        { q: "Opposite of 'Hot'?", options: ["Warm", "Cold", "Cool"], answer: "Cold" }
-      ]
-    };
-    let scores = [];
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="hidden">
+    <h3>Manage Subjects & Questions</h3>
+    <select id="adminSubjectSelect"></select><br>
+    <button class="success" onclick="addSubject()">Add Subject</button>
+    <button class="danger" onclick="deleteSubject()">Delete Subject</button>
+    <hr>
+    <h4>Add/Edit Question</h4>
+    <input type="text" id="questionText" placeholder="Enter question"><br>
+    <input type="text" id="optA" placeholder="Option A"><br>
+    <input type="text" id="optB" placeholder="Option B"><br>
+    <input type="text" id="optC" placeholder="Option C"><br>
+    <input type="text" id="optD" placeholder="Option D"><br>
+    <input type="text" id="correct" placeholder="Correct Option (A/B/C/D)"><br>
+    <button class="primary" onclick="addQuestion()">Save Question</button>
+    <hr>
+    <h4>Questions</h4>
+    <div id="questionList"></div>
+  </div>
 
-    // Default accounts
-    const users = {
-      "admin": "admin123",   // admin login
-      "student": "student123" // student login
-    };
+  <!-- Scores -->
+  <div id="scoreBoard" class="hidden">
+    <h3>Student Scores</h3>
+    <table>
+      <thead><tr><th>Student</th><th>Subject</th><th>Score</th></tr></thead>
+      <tbody id="scoreTable"></tbody>
+    </table>
+  </div>
 
-    function login() {
-      const uname = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value.trim();
-      const errorMsg = document.getElementById("errorMsg");
+<script>
+  // Sample users
+  const users = { "admin":"admin123", "student":"student123" };
+  let subjects = JSON.parse(localStorage.getItem("subjects")) || { "Mathematics":[], "English":[] };
+  let scores = JSON.parse(localStorage.getItem("scores")) || [];
+  let currentUser = null, currentSubject = "", timer, timeLeft=0;
 
-      if (users[uname] && users[uname] === pass) {
-        document.getElementById("loginBox").style.display = "none";
-
-        if (uname === "admin") {
-          document.getElementById("adminDashboard").style.display = "block";
-        } else {
-          document.getElementById("studentDashboard").style.display = "block";
-          loadSubjects();
-        }
-      } else {
-        errorMsg.innerText = "Invalid username or password!";
-      }
+  function login(){
+    let uname=document.getElementById("username").value.trim();
+    let pass=document.getElementById("password").value.trim();
+    if(users[uname] && users[uname]===pass){
+      currentUser=uname;
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      document.getElementById("userRole").innerText=uname;
+      if(uname==="admin"){document.getElementById("adminDashboard").classList.remove("hidden");}
+      else{document.getElementById("studentDashboard").classList.remove("hidden"); loadSubjects();}
+    }else{
+      document.getElementById("errorMsg").innerText="Invalid username or password!";
     }
+  }
 
-    function logout() {
-      document.getElementById("adminDashboard").style.display = "none";
-      document.getElementById("studentDashboard").style.display = "none";
-      document.getElementById("loginBox").style.display = "block";
-      document.getElementById("username").value = "";
-      document.getElementById("password").value = "";
-    }
+  function logout(){ location.reload(); }
 
-    // === Admin Features ===
-    function showSubjects() {
-      let html = "<h3>📘 Subjects</h3>";
-      html += `<input type="text" id="newSubject" placeholder="New subject"><button onclick="addSubject()">Add</button><br>`;
-      subjects.forEach((s,i) => {
-        html += `<div class='list-item'>${s} 
-          <button onclick="deleteSubject(${i})">Delete</button></div>`;
-      });
-      document.getElementById("adminContent").innerHTML = html;
-    }
+  function loadSubjects(){
+    let sel=document.getElementById("subjectSelect"); sel.innerHTML="";
+    for(let sub in subjects){ let opt=document.createElement("option"); opt.value=sub; opt.text=sub; sel.add(opt);}
+  }
 
-    function addSubject() {
-      const sub = document.getElementById("newSubject").value.trim();
-      if(sub && !subjects.includes(sub)) {
-        subjects.push(sub);
-        questions[sub] = [];
-        showSubjects();
-      }
-    }
+  function startExam(){
+    currentSubject=document.getElementById("subjectSelect").value;
+    let qs=subjects[currentSubject]; if(qs.length===0){alert("No questions yet!"); return;}
+    document.getElementById("dashboard").classList.add("hidden");
+    document.getElementById("examArea").classList.remove("hidden");
+    document.getElementById("examSubject").innerText=currentSubject;
+    let form=document.getElementById("examForm"); form.innerHTML="";
+    qs.forEach((q,i)=>{ 
+      form.innerHTML+=`<div class='question'><p>${i+1}. ${q.q}</p>
+      <label><input type="radio" name="q${i}" value="A"> ${q.a}</label><br>
+      <label><input type="radio" name="q${i}" value="B"> ${q.b}</label><br>
+      <label><input type="radio" name="q${i}" value="C"> ${q.c}</label><br>
+      <label><input type="radio" name="q${i}" value="D"> ${q.d}</label></div>`;
+    });
+    timeLeft=60; updateTimer(); timer=setInterval(updateTimer,1000);
+  }
 
-    function deleteSubject(index) {
-      const sub = subjects[index];
-      subjects.splice(index,1);
-      delete questions[sub];
-      showSubjects();
-    }
+  function updateTimer(){
+    document.getElementById("timer").innerText=timeLeft+"s";
+    if(timeLeft<=0){ clearInterval(timer); submitExam(); }
+    timeLeft--;
+  }
 
-    function showQuestions() {
-      let html = "<h3>📝 Manage Questions</h3>";
-      html += `<select id="subjectSelect">${subjects.map(s=>`<option>${s}</option>`)}</select><br>`;
-      html += `<input type="text" id="newQ" placeholder="Enter question"><br>
-               <input type="text" id="opt1" placeholder="Option 1"><br>
-               <input type="text" id="opt2" placeholder="Option 2"><br>
-               <input type="text" id="opt3" placeholder="Option 3"><br>
-               <input type="text" id="ans" placeholder="Correct Answer"><br>
-               <button onclick="addQuestion()">Add Question</button><br><br>`;
-      for (let s of subjects) {
-        html += `<h4>${s}</h4>`;
-        (questions[s] || []).forEach((q, i) => {
-          html += `<div class='list-item'>Q: ${q.q}<br>Options: ${q.options.join(", ")}<br>Answer: ${q.answer} 
-          <button onclick="deleteQuestion('${s}', ${i})">Delete</button></div>`;
-        });
-      }
-      document.getElementById("adminContent").innerHTML = html;
-    }
+  function submitExam(){
+    clearInterval(timer);
+    let qs=subjects[currentSubject]; let form=document.getElementById("examForm");
+    let score=0; qs.forEach((q,i)=>{ let ans=form[`q${i}`].value; if(ans===q.correct) score++; });
+    scores.push({student:currentUser,subject:currentSubject,score:score});
+    localStorage.setItem("scores",JSON.stringify(scores));
+    alert("Exam submitted!"); logout();
+  }
 
-    function addQuestion() {
-      const sub = document.getElementById("subjectSelect").value;
-      const q = document.getElementById("newQ").value.trim();
-      const o1 = document.getElementById("opt1").value.trim();
-      const o2 = document.getElementById("opt2").value.trim();
-      const o3 = document.getElementById("opt3").value.trim();
-      const ans = document.getElementById("ans").value.trim();
-      if(q && ans) {
-        questions[sub].push({ q:q, options:[o1,o2,o3], answer:ans });
-        showQuestions();
-      }
-    }
+  // Admin panel
+  function showAdminPanel(){
+    document.getElementById("adminPanel").classList.remove("hidden");
+    loadAdminSubjects(); showQuestions();
+  }
 
-    function deleteQuestion(sub,index) {
-      questions[sub].splice(index,1);
-      showQuestions();
-    }
+  function addSubject(){
+    let sub=prompt("Enter subject name:"); if(!sub) return;
+    if(!subjects[sub]){subjects[sub]=[]; localStorage.setItem("subjects",JSON.stringify(subjects)); loadAdminSubjects();}
+  }
+  function deleteSubject(){
+    let sel=document.getElementById("adminSubjectSelect").value;
+    if(confirm("Delete "+sel+"?")){delete subjects[sel]; localStorage.setItem("subjects",JSON.stringify(subjects)); loadAdminSubjects();}
+  }
 
-    function showScores() {
-      let html = "<h3>📊 Scores</h3>";
-      if(scores.length===0) { html += "<p>No scores yet</p>"; }
-      else {
-        scores.forEach(s => {
-          html += `<div class='list-item'>${s.student} - ${s.subject}: ${s.score}%</div>`;
-        });
-      }
-      document.getElementById("adminContent").innerHTML = html;
-    }
+  function loadAdminSubjects(){
+    let sel=document.getElementById("adminSubjectSelect"); sel.innerHTML="";
+    for(let sub in subjects){ let opt=document.createElement("option"); opt.value=sub; opt.text=sub; sel.add(opt);}
+  }
 
-    // === Student Features ===
-    function loadSubjects() {
-      let html = "";
-      subjects.forEach(s => {
-        html += `<button onclick='startExam("${s}")'>${s}</button><br>`;
-      });
-      document.getElementById("subjectList").innerHTML = html;
-    }
+  function addQuestion(){
+    let sub=document.getElementById("adminSubjectSelect").value;
+    let q={q:document.getElementById("questionText").value,a:document.getElementById("optA").value,
+           b:document.getElementById("optB").value,c:document.getElementById("optC").value,
+           d:document.getElementById("optD").value,correct:document.getElementById("correct").value};
+    subjects[sub].push(q); localStorage.setItem("subjects",JSON.stringify(subjects));
+    showQuestions(); alert("Question saved!");
+  }
 
-    function startExam(subject) {
-      let qList = questions[subject] || [];
-      if(qList.length===0) {
-        document.getElementById("examArea").innerHTML = "<p>No questions available.</p>";
-        return;
-      }
-      let html = `<h3>${subject} Exam</h3>`;
-      qList.forEach((q,i) => {
-        html += `<div class='list-item'>
-          <p>${i+1}. ${q.q}</p>`;
-        q.options.forEach(opt => {
-          html += `<label><input type='radio' name='q${i}' value='${opt}'> ${opt}</label><br>`;
-        });
-        html += "</div>";
-      });
-      html += `<p id="timer">Time Left: 60s</p>`;
-      html += `<button onclick='submitExam("${subject}")'>Submit</button>`;
-      document.getElementById("examArea").innerHTML = html;
+  function showQuestions(){
+    let sub=document.getElementById("adminSubjectSelect").value;
+    let list=document.getElementById("questionList"); list.innerHTML="";
+    if(!sub) return;
+    subjects[sub].forEach((q,i)=>{ 
+      list.innerHTML+=`<div class='question'><b>${i+1}. ${q.q}</b>
+      <br>A: ${q.a} | B: ${q.b} | C: ${q.c} | D: ${q.d} 
+      <br>Correct: ${q.correct}</div>`; 
+    });
+  }
 
-      // start timer
-      let timeLeft = 60;
-      let timer = setInterval(()=>{
-        timeLeft--;
-        document.getElementById("timer").innerText = "Time Left: " + timeLeft + "s";
-        if(timeLeft<=0) {
-          clearInterval(timer);
-          submitExam(subject);
-        }
-      },1000);
-    }
-
-    function submitExam(subject) {
-      let qList = questions[subject];
-      let correct=0;
-      qList.forEach((q,i) => {
-        let ans = document.querySelector(`input[name=q${i}]:checked`);
-        if(ans && ans.value===q.answer) correct++;
-      });
-      let score = Math.round((correct/qList.length)*100);
-      scores.push({student:"student", subject, score});
-      document.getElementById("examArea").innerHTML = "<p>Exam submitted successfully!</p>";
-    }
-
-  </script>
-
+  function showScores(){
+    document.getElementById("scoreBoard").classList.remove("hidden");
+    let tb=document.getElementById("scoreTable"); tb.innerHTML="";
+    scores.forEach(s=>{ tb.innerHTML+=`<tr><td>${s.student}</td><td>${s.subject}</td><td>${s.score}</td></tr>`; });
+  }
+</script>
 </body>
 </html>
