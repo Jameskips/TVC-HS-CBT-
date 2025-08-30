@@ -4,193 +4,265 @@
   <meta charset="UTF-8">
   <title>TVC High School CBT</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f8f9fa; margin:0; padding:0; }
-    header { background:#007bff; color:#fff; padding:15px; text-align:center; }
-    #loginBox, #dashboard, #examArea, #adminPanel { max-width:700px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
-    input, select { width:95%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px; }
-    button { padding:10px 15px; margin:5px; border:none; border-radius:5px; cursor:pointer; }
-    button.primary { background:#007bff; color:#fff; }
-    button.danger { background:#dc3545; color:#fff; }
-    button.success { background:#28a745; color:#fff; }
-    .hidden { display:none; }
-    .question { margin-bottom:15px; padding:10px; border:1px solid #ddd; border-radius:8px; }
-    .timer { font-weight:bold; color:#dc3545; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { border:1px solid #ddd; padding:8px; text-align:center; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+    button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+    input, select { padding: 6px; margin: 5px 0; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>The Valued Child (TVC) High School - CBT</h1>
-  </header>
+  <h1>TVC High School CBT</h1>
 
   <!-- Login -->
-  <div id="loginBox">
-    <h3>Login</h3>
-    <input type="text" id="username" placeholder="Enter username"><br>
-    <input type="password" id="password" placeholder="Enter password"><br>
-    <button class="primary" onclick="login()">Login</button>
-    <p id="errorMsg" style="color:red;"></p>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden">
-    <h2>Welcome, <span id="userRole"></span></h2>
-    <div id="studentDashboard" class="hidden">
-      <h3>Select Subject</h3>
-      <select id="subjectSelect"></select>
-      <button class="success" onclick="startExam()">Start Exam</button>
-    </div>
-    <div id="adminDashboard" class="hidden">
-      <button class="primary" onclick="showAdminPanel()">Manage Questions</button>
-      <button class="success" onclick="showScores()">View Scores</button>
-    </div>
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <!-- Exam Area -->
-  <div id="examArea" class="hidden">
-    <h3 id="examSubject"></h3>
-    <p>Time Remaining: <span class="timer" id="timer"></span></p>
-    <form id="examForm"></form>
-    <button class="primary" onclick="submitExam()">Submit</button>
+  <div id="loginScreen" class="card">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p id="loginMsg"></p>
   </div>
 
   <!-- Admin Panel -->
-  <div id="adminPanel" class="hidden">
-    <h3>Manage Subjects & Questions</h3>
-    <select id="adminSubjectSelect"></select><br>
-    <button class="success" onclick="addSubject()">Add Subject</button>
-    <button class="danger" onclick="deleteSubject()">Delete Subject</button>
-    <hr>
-    <h4>Add/Edit Question</h4>
-    <input type="text" id="questionText" placeholder="Enter question"><br>
-    <input type="text" id="optA" placeholder="Option A"><br>
-    <input type="text" id="optB" placeholder="Option B"><br>
-    <input type="text" id="optC" placeholder="Option C"><br>
-    <input type="text" id="optD" placeholder="Option D"><br>
-    <input type="text" id="correct" placeholder="Correct Option (A/B/C/D)"><br>
-    <button class="primary" onclick="addQuestion()">Save Question</button>
-    <hr>
-    <h4>Questions</h4>
-    <div id="questionList"></div>
+  <div id="adminPanel" class="hidden card">
+    <h2>Admin Panel</h2>
+    <button onclick="showSection('subjects')">Manage Subjects</button>
+    <button onclick="showSection('questions')">Manage Questions</button>
+    <button onclick="showSection('scores')">View Scores</button>
+    <button onclick="logout()">Logout</button>
+
+    <div id="subjects" class="hidden">
+      <h3>Subjects</h3>
+      <input type="text" id="newSubject" placeholder="New Subject">
+      <button onclick="addSubject()">Add</button>
+      <ul id="subjectList"></ul>
+    </div>
+
+    <div id="questions" class="hidden">
+      <h3>Questions</h3>
+      <select id="qSubject"></select><br>
+      <textarea id="qText" placeholder="Question"></textarea><br>
+      <input type="text" id="opt1" placeholder="Option 1"><br>
+      <input type="text" id="opt2" placeholder="Option 2"><br>
+      <input type="text" id="opt3" placeholder="Option 3"><br>
+      <input type="text" id="opt4" placeholder="Option 4"><br>
+      <input type="number" id="qAnswer" placeholder="Correct Option (1-4)"><br>
+      <button onclick="addQuestion()">Add Question</button>
+      <ul id="questionList"></ul>
+    </div>
+
+    <div id="scores" class="hidden">
+      <h3>Scores</h3>
+      <ul id="scoreList"></ul>
+    </div>
   </div>
 
-  <!-- Scores -->
-  <div id="scoreBoard" class="hidden">
-    <h3>Student Scores</h3>
-    <table>
-      <thead><tr><th>Student</th><th>Subject</th><th>Score</th></tr></thead>
-      <tbody id="scoreTable"></tbody>
-    </table>
+  <!-- Student Panel -->
+  <div id="studentPanel" class="hidden card">
+    <h2>Take Exam</h2>
+    <select id="examSubject"></select>
+    <button onclick="startExam()">Start Exam</button>
+    <div id="examArea"></div>
+    <div id="timer"></div>
   </div>
 
 <script>
-  // Sample users
-  const users = { "admin":"admin123", "student":"student123" };
-  let subjects = JSON.parse(localStorage.getItem("subjects")) || { "Mathematics":[], "English":[] };
-  let scores = JSON.parse(localStorage.getItem("scores")) || [];
-  let currentUser = null, currentSubject = "", timer, timeLeft=0;
+const BIN_ID = "68b2ba9e43b1c97be9305ef8";  // ⬅️ Replace
+const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; // ⬅️ Replace
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "1234"; // Changeable
 
-  function login(){
-    let uname=document.getElementById("username").value.trim();
-    let pass=document.getElementById("password").value.trim();
-    if(users[uname] && users[uname]===pass){
-      currentUser=uname;
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-      document.getElementById("userRole").innerText=uname;
-      if(uname==="admin"){document.getElementById("adminDashboard").classList.remove("hidden");}
-      else{document.getElementById("studentDashboard").classList.remove("hidden"); loadSubjects();}
-    }else{
-      document.getElementById("errorMsg").innerText="Invalid username or password!";
-    }
-  }
+let currentUser = null;
+let db = { subjects: [], questions: [], scores: [] };
 
-  function logout(){ location.reload(); }
+// ===== JSONBin Helpers =====
+async function fetchData() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { "X-Master-Key": API_KEY }
+  });
+  const data = await res.json();
+  db = data.record;
+}
 
-  function loadSubjects(){
-    let sel=document.getElementById("subjectSelect"); sel.innerHTML="";
-    for(let sub in subjects){ let opt=document.createElement("option"); opt.value=sub; opt.text=sub; sel.add(opt);}
-  }
+async function updateData() {
+  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": API_KEY
+    },
+    body: JSON.stringify(db)
+  });
+}
 
-  function startExam(){
-    currentSubject=document.getElementById("subjectSelect").value;
-    let qs=subjects[currentSubject]; if(qs.length===0){alert("No questions yet!"); return;}
-    document.getElementById("dashboard").classList.add("hidden");
-    document.getElementById("examArea").classList.remove("hidden");
-    document.getElementById("examSubject").innerText=currentSubject;
-    let form=document.getElementById("examForm"); form.innerHTML="";
-    qs.forEach((q,i)=>{ 
-      form.innerHTML+=`<div class='question'><p>${i+1}. ${q.q}</p>
-      <label><input type="radio" name="q${i}" value="A"> ${q.a}</label><br>
-      <label><input type="radio" name="q${i}" value="B"> ${q.b}</label><br>
-      <label><input type="radio" name="q${i}" value="C"> ${q.c}</label><br>
-      <label><input type="radio" name="q${i}" value="D"> ${q.d}</label></div>`;
-    });
-    timeLeft=60; updateTimer(); timer=setInterval(updateTimer,1000);
-  }
+// ===== Login =====
+async function login() {
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
 
-  function updateTimer(){
-    document.getElementById("timer").innerText=timeLeft+"s";
-    if(timeLeft<=0){ clearInterval(timer); submitExam(); }
-    timeLeft--;
-  }
-
-  function submitExam(){
-    clearInterval(timer);
-    let qs=subjects[currentSubject]; let form=document.getElementById("examForm");
-    let score=0; qs.forEach((q,i)=>{ let ans=form[`q${i}`].value; if(ans===q.correct) score++; });
-    scores.push({student:currentUser,subject:currentSubject,score:score});
-    localStorage.setItem("scores",JSON.stringify(scores));
-    alert("Exam submitted!"); logout();
-  }
-
-  // Admin panel
-  function showAdminPanel(){
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    currentUser = "admin";
+    document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("adminPanel").classList.remove("hidden");
-    loadAdminSubjects(); showQuestions();
+    await fetchData();
+    renderSubjects();
+    renderQuestions();
+    renderScores();
+  } else {
+    currentUser = u;
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("studentPanel").classList.remove("hidden");
+    await fetchData();
+    renderExamSubjects();
   }
+}
 
-  function addSubject(){
-    let sub=prompt("Enter subject name:"); if(!sub) return;
-    if(!subjects[sub]){subjects[sub]=[]; localStorage.setItem("subjects",JSON.stringify(subjects)); loadAdminSubjects();}
-  }
-  function deleteSubject(){
-    let sel=document.getElementById("adminSubjectSelect").value;
-    if(confirm("Delete "+sel+"?")){delete subjects[sel]; localStorage.setItem("subjects",JSON.stringify(subjects)); loadAdminSubjects();}
-  }
+function logout() {
+  location.reload();
+}
 
-  function loadAdminSubjects(){
-    let sel=document.getElementById("adminSubjectSelect"); sel.innerHTML="";
-    for(let sub in subjects){ let opt=document.createElement("option"); opt.value=sub; opt.text=sub; sel.add(opt);}
-  }
+// ===== Subjects =====
+async function addSubject() {
+  const s = document.getElementById("newSubject").value.trim();
+  if (!s) return;
+  db.subjects.push({ id: Date.now(), name: s });
+  await updateData();
+  renderSubjects();
+  renderExamSubjects();
+  document.getElementById("newSubject").value = "";
+}
 
-  function addQuestion(){
-    let sub=document.getElementById("adminSubjectSelect").value;
-    let q={q:document.getElementById("questionText").value,a:document.getElementById("optA").value,
-           b:document.getElementById("optB").value,c:document.getElementById("optC").value,
-           d:document.getElementById("optD").value,correct:document.getElementById("correct").value};
-    subjects[sub].push(q); localStorage.setItem("subjects",JSON.stringify(subjects));
-    showQuestions(); alert("Question saved!");
-  }
+function renderSubjects() {
+  const ul = document.getElementById("subjectList");
+  ul.innerHTML = "";
+  db.subjects.forEach(sub => {
+    const li = document.createElement("li");
+    li.textContent = sub.name;
+    ul.appendChild(li);
+  });
+  const sel = document.getElementById("qSubject");
+  sel.innerHTML = "";
+  db.subjects.forEach(sub => {
+    const opt = document.createElement("option");
+    opt.value = sub.id;
+    opt.textContent = sub.name;
+    sel.appendChild(opt);
+  });
+}
 
-  function showQuestions(){
-    let sub=document.getElementById("adminSubjectSelect").value;
-    let list=document.getElementById("questionList"); list.innerHTML="";
-    if(!sub) return;
-    subjects[sub].forEach((q,i)=>{ 
-      list.innerHTML+=`<div class='question'><b>${i+1}. ${q.q}</b>
-      <br>A: ${q.a} | B: ${q.b} | C: ${q.c} | D: ${q.d} 
-      <br>Correct: ${q.correct}</div>`; 
-    });
-  }
+function renderExamSubjects() {
+  const sel = document.getElementById("examSubject");
+  sel.innerHTML = "";
+  db.subjects.forEach(sub => {
+    const opt = document.createElement("option");
+    opt.value = sub.id;
+    opt.textContent = sub.name;
+    sel.appendChild(opt);
+  });
+}
 
-  function showScores(){
-    document.getElementById("scoreBoard").classList.remove("hidden");
-    let tb=document.getElementById("scoreTable"); tb.innerHTML="";
-    scores.forEach(s=>{ tb.innerHTML+=`<tr><td>${s.student}</td><td>${s.subject}</td><td>${s.score}</td></tr>`; });
+// ===== Questions =====
+async function addQuestion() {
+  const q = {
+    id: Date.now(),
+    subjectId: parseInt(document.getElementById("qSubject").value),
+    question: document.getElementById("qText").value,
+    options: [
+      document.getElementById("opt1").value,
+      document.getElementById("opt2").value,
+      document.getElementById("opt3").value,
+      document.getElementById("opt4").value
+    ],
+    answer: parseInt(document.getElementById("qAnswer").value) - 1
+  };
+  db.questions.push(q);
+  await updateData();
+  renderQuestions();
+}
+
+function renderQuestions() {
+  const ul = document.getElementById("questionList");
+  ul.innerHTML = "";
+  db.questions.forEach(q => {
+    const li = document.createElement("li");
+    const subj = db.subjects.find(s => s.id === q.subjectId)?.name || "";
+    li.textContent = subj + ": " + q.question;
+    ul.appendChild(li);
+  });
+}
+
+// ===== Scores =====
+function renderScores() {
+  const ul = document.getElementById("scoreList");
+  ul.innerHTML = "";
+  db.scores.forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = s.student + " - " + s.subject + ": " + s.score;
+    ul.appendChild(li);
+  });
+}
+
+// ===== Exam =====
+let examQ = [], examIndex = 0, score = 0, timer;
+
+function startExam() {
+  const subjId = parseInt(document.getElementById("examSubject").value);
+  examQ = db.questions.filter(q => q.subjectId === subjId);
+  if (examQ.length === 0) { alert("No questions yet."); return; }
+  examIndex = 0; score = 0;
+  showQuestion();
+  startTimer(60); // 60 seconds
+}
+
+function showQuestion() {
+  if (examIndex >= examQ.length) return finishExam();
+  const q = examQ[examIndex];
+  let html = `<h3>${q.question}</h3>`;
+  q.options.forEach((opt, i) => {
+    html += `<label><input type="radio" name="ans" value="${i}"> ${opt}</label><br>`;
+  });
+  html += `<button onclick="nextQ()">Next</button>`;
+  document.getElementById("examArea").innerHTML = html;
+}
+
+function nextQ() {
+  const ans = document.querySelector("input[name=ans]:checked");
+  if (ans && parseInt(ans.value) === examQ[examIndex].answer) score++;
+  examIndex++;
+  if (examIndex < examQ.length) {
+    showQuestion();
+  } else {
+    finishExam();
   }
+}
+
+async function finishExam() {
+  clearInterval(timer);
+  const subjId = parseInt(document.getElementById("examSubject").value);
+  const subj = db.subjects.find(s => s.id === subjId)?.name;
+  db.scores.push({ student: currentUser, subject: subj, score: score });
+  await updateData();
+  document.getElementById("examArea").innerHTML = "<h3>Exam finished. Your score is recorded.</h3>";
+}
+
+function startTimer(seconds) {
+  let timeLeft = seconds;
+  timer = setInterval(() => {
+    document.getElementById("timer").textContent = "Time left: " + timeLeft + "s";
+    if (timeLeft <= 0) {
+      finishExam();
+    }
+    timeLeft--;
+  }, 1000);
+}
+
+// ===== UI Helper =====
+function showSection(id) {
+  ["subjects","questions","scores"].forEach(sec => {
+    document.getElementById(sec).classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+}
 </script>
 </body>
 </html>
