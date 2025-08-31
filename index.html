@@ -234,9 +234,19 @@
             <button id="btnAddSubject">Add</button>
           </div>
           <div>
-            <h4>Default Duration (seconds)</h4>
-            <input id="subjectDurationInput" type="number" value="60" />
-            <button id="btnSetDuration" class="muted">Set</button>
+            <h4>Settings</h4>
+            <div class="row">
+              <div class="row">
+                <div class="muted">Default duration (s):</div>
+                <input id="subjectDurationInput" type="number" value="60" style="width:120px" />
+                <button id="btnSetDuration" class="muted">Set</button>
+              </div>
+              <div class="row">
+                <div class="muted">Default mark:</div>
+                <input id="subjectMarkInput" type="number" value="1" style="width:120px" />
+                <button id="btnSetMark" class="muted">Set</button>
+              </div>
+            </div>
           </div>
           <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
             <tbody id="subjectsTbody"></tbody></table>
@@ -260,7 +270,7 @@
               <input id="qA" placeholder="Option A" />
               <input id="qB" placeholder="Option B" />
               <input id="qC" placeholder="Option C" />
-              <input id="qMark" type="number" placeholder="Mark per question" value="1" style="width:180px"/>
+              <input id="qMark" type="number" placeholder="Mark per question" style="display:none"/>
             </div>
             <div class="row">
               <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
@@ -307,6 +317,9 @@
             </div>
           </div>
           <h3 style="margin-top:12px">Results</h3>
+          <div class="row" style="justify-content:flex-end">
+            <button id="btnResetScores" class="danger">Reset Scores</button>
+          </div>
           <table>
             <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
             <tbody id="resultsTbody"></tbody>
@@ -358,7 +371,7 @@ const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; 
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
-  subjects: [{id:1,name:"Mathematics", duration: 60},{id:2,name:"English", duration: 60}],
+  subjects: [{id:1,name:"Mathematics", duration: 60, defaultMark: 1},{id:2,name:"English", duration: 60, defaultMark: 1}],
   questions: [
     {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1}
   ],
@@ -394,6 +407,8 @@ const subjectsTbody = document.getElementById('subjectsTbody');
 const subjectSelectForQuestions = document.getElementById('subjectSelectForQuestions');
 const subjectDurationInput = document.getElementById('subjectDurationInput');
 const btnSetDuration = document.getElementById('btnSetDuration');
+const subjectMarkInput = document.getElementById('subjectMarkInput');
+const btnSetMark = document.getElementById('btnSetMark');
 
 const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC'), qMark = document.getElementById('qMark');
 const qAnswer = document.getElementById('qAnswer');
@@ -405,6 +420,7 @@ const btnAddStudent = document.getElementById('btnAddStudent'), btnCancelStudent
 const studentsTbody = document.getElementById('studentsTbody');
 
 const resultsTbody = document.getElementById('resultsTbody');
+const btnResetScores = document.getElementById('btnResetScores');
 
 const studentNameDisplay = document.getElementById('studentNameDisplay');
 const studentSubjectSelect = document.getElementById('studentSubjectSelect'), btnStartExam = document.getElementById('btnStartExam'), examDurationInput = document.getElementById('examDurationInput');
@@ -468,11 +484,13 @@ function bindEvents(){
   btnLogin.addEventListener('click', handleLogin);
   btnAddSubject.addEventListener('click', handleAddSubject);
   btnSetDuration.addEventListener('click', handleSetDuration);
+  btnSetMark.addEventListener('click', handleSetMark);
   document.getElementById('btnLoadQuestions').addEventListener('click', ()=>{ renderQuestionsFor(subjectSelectForQuestions.value); });
   btnAddQuestion.addEventListener('click', handleAddQuestion);
   btnCancelEdit.addEventListener('click', cancelQuestionEdit);
   btnAddStudent.addEventListener('click', handleAddStudent);
   btnCancelStudentEdit.addEventListener('click', cancelStudentEdit);
+  btnResetScores.addEventListener('click', resetScores);
   btnStartExam.addEventListener('click', ()=>{
     const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
     const duration = selectedSubject ? selectedSubject.duration : 60;
@@ -512,14 +530,12 @@ function handleLogin(){
   const p = loginPassEl.value;
   if(!u || !p){ loginMsg.textContent = 'Enter username & password'; return; }
 
-  // Admin: fixed credentials
   if(u.toLowerCase() === 'admin' && p === '1234'){
     currentUser = { role:'admin', id:'admin', name:'Administrator' };
     showAdmin();
     return;
   }
 
-  // Student: find registered
   const stu = db.students.find(s => (s.username === u || s.name === u) && s.password === p);
   if(stu){
     currentUser = { role:'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
@@ -549,7 +565,7 @@ function handleAddSubject(){
   const name = newSubjectInput.value.trim();
   if(!name) return alert('Enter subject name');
   const id = Date.now();
-  db.subjects.push({ id, name, duration: 60 });
+  db.subjects.push({ id, name, duration: 60, defaultMark: 1 });
   db.questions = db.questions || [];
   saveToBin();
   newSubjectInput.value = '';
@@ -567,6 +583,21 @@ async function handleSetDuration(){
     s.duration = duration;
     saveToBin();
     statusEl.textContent = `Duration for ${s.name} set to ${duration} seconds.`;
+    renderAllAdminLists();
+  }
+}
+
+async function handleSetMark(){
+  const subjId = parseInt(subjectSelectForQuestions.value);
+  if(!subjId) return alert('Select a subject first');
+  const mark = parseInt(subjectMarkInput.value);
+  if(isNaN(mark) || mark <= 0) return alert('Enter a valid mark value');
+
+  const s = db.subjects.find(s => s.id === subjId);
+  if(s){
+    s.defaultMark = mark;
+    saveToBin();
+    statusEl.textContent = `Default mark for ${s.name} set to ${mark}.`;
     renderAllAdminLists();
   }
 }
@@ -615,18 +646,22 @@ function handleAddQuestion(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select subject first');
   const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim();
-  const mark = parseInt(qMark.value) || 1;
   const ans=qAnswer.value;
   if(!text || !A || !B || !C) return alert('Fill question and all options');
+  
+  const selectedSubject = db.subjects.find(s => s.id === subjId);
+  const mark = selectedSubject ? selectedSubject.defaultMark : 1;
+
   db.questions = db.questions || [];
   if(editQuestionIndex){
     const q = db.questions.find(x => x.id === editQuestionIndex);
     if(!q) return;
     q.question = text; q.options = [A,B,C]; q.answer = ['A','B','C'].indexOf(ans) >= 0 ? ['A','B','C'].indexOf(ans) : 0;
-    q.scoreValue = mark;
+    q.scoreValue = qMark.value ? parseInt(qMark.value) : mark;
     editQuestionIndex = null;
     document.getElementById('qFormTitle').textContent = 'Add New Question';
     btnCancelEdit.style.display = 'none';
+    qMark.style.display = 'none';
   } else {
     const id = Date.now();
     db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0, scoreValue: mark });
@@ -659,7 +694,9 @@ function startEditQuestion(qid){
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
   qMark.value = q.scoreValue || 1;
+  qMark.style.display = 'inline-block';
   btnCancelEdit.style.display = 'inline-block';
+  subjectSelectForQuestions.value = q.subjectId;
 }
 
 async function deleteQuestion(qid){
@@ -673,10 +710,11 @@ function cancelQuestionEdit(){
   editQuestionIndex = null;
   document.getElementById('qFormTitle').textContent = 'Add New Question';
   btnCancelEdit.style.display = 'none';
+  qMark.style.display = 'none';
   clearQuestionForm();
 }
 
-function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qMark.value='1'; qAnswer.value='A'; }
+function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; }
 
 /* ============================
     Admin: Students CRUD (full)
@@ -754,6 +792,15 @@ function renderResults(){
   });
 }
 
+async function resetScores(){
+  if(confirm('Are you sure you want to delete all exam records and scores? This cannot be undone.')){
+    db.scores = [];
+    await saveToBin();
+    renderResults();
+    statusEl.textContent = 'All exam scores have been reset.';
+  }
+}
+
 /* ============================
     Student UI & Exam flow
     ============================ */
@@ -768,12 +815,15 @@ function showStudent(){
 }
 
 function renderAllAdminLists(){
-  renderSubjectsTable(); renderStudents(); renderResults(); populateStudentSubjects();
+  renderSubjectsTable();
+  renderStudents();
+  renderResults();
   const selVal = subjectSelectForQuestions.value || (db.subjects[0] && db.subjects[0].id);
   if(selVal) {
-    renderQuestionsFor(selVal);
-    const selectedSubject = db.subjects.find(s => s.id == selVal);
-    subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+      renderQuestionsFor(selVal);
+      const selectedSubject = db.subjects.find(s => s.id == selVal);
+      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+      subjectMarkInput.value = selectedSubject ? selectedSubject.defaultMark : 1;
   }
   populateStudentSubjects();
 }
@@ -867,6 +917,7 @@ function startEditQuestion(qid){
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
   qMark.value = q.scoreValue || 1;
+  qMark.style.display = 'inline-block';
   btnCancelEdit.style.display = 'inline-block';
   subjectSelectForQuestions.value = q.subjectId;
 }
@@ -880,6 +931,7 @@ function renderAllAdminLists(){
       renderQuestionsFor(selVal);
       const selectedSubject = db.subjects.find(s => s.id == selVal);
       subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+      subjectMarkInput.value = selectedSubject ? selectedSubject.defaultMark : 1;
   }
   populateStudentSubjects();
 }
