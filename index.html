@@ -140,6 +140,9 @@
       gap: 1.5rem;
       margin-top: 1.5rem;
     }
+    .accordion-item {
+      padding: 0;
+    }
     .accordion-header {
       display: flex;
       justify-content: space-between;
@@ -230,6 +233,11 @@
             <input id="newSubjectInput" placeholder="New subject name" />
             <button id="btnAddSubject">Add</button>
           </div>
+          <div>
+            <h4>Default Duration (seconds)</h4>
+            <input id="subjectDurationInput" type="number" value="60" />
+            <button id="btnSetDuration" class="muted">Set</button>
+          </div>
           <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
             <tbody id="subjectsTbody"></tbody></table>
         </div>
@@ -252,6 +260,7 @@
               <input id="qA" placeholder="Option A" />
               <input id="qB" placeholder="Option B" />
               <input id="qC" placeholder="Option C" />
+              <input id="qMark" type="number" placeholder="Mark per question" value="1" style="width:180px"/>
             </div>
             <div class="row">
               <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
@@ -260,7 +269,7 @@
             </div>
           </div>
           <h4 style="margin-top:12px">Existing Questions</h4>
-          <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th style="width:200px">Actions</th></tr></thead>
+          <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Mark</th><th style="width:200px">Actions</th></tr></thead>
             <tbody id="questionsTbody"></tbody></table>
         </div>
       </div>
@@ -349,9 +358,9 @@ const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; 
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
-  subjects: [{id:1,name:"Mathematics"},{id:2,name:"English"}],
+  subjects: [{id:1,name:"Mathematics", duration: 60},{id:2,name:"English", duration: 60}],
   questions: [
-    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2}
+    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1}
   ],
   students: [
     {id:201, username:"student01", name:"John Doe", class:"SS1", password:"pass123"}
@@ -365,6 +374,7 @@ let db = {
 let currentUser = null; // {role:'admin'} or {role:'student', id, username, name}
 let editQuestionIndex = null; // track editing question index/id
 let editStudentId = null; // track editing student id
+let editSubjectId = null; // for editing subject duration
 
 /* ============================
     DOM refs
@@ -382,8 +392,10 @@ const newSubjectInput = document.getElementById('newSubjectInput');
 const btnAddSubject = document.getElementById('btnAddSubject');
 const subjectsTbody = document.getElementById('subjectsTbody');
 const subjectSelectForQuestions = document.getElementById('subjectSelectForQuestions');
+const subjectDurationInput = document.getElementById('subjectDurationInput');
+const btnSetDuration = document.getElementById('btnSetDuration');
 
-const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC');
+const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC'), qMark = document.getElementById('qMark');
 const qAnswer = document.getElementById('qAnswer');
 const btnAddQuestion = document.getElementById('btnAddQuestion'), btnCancelEdit = document.getElementById('btnCancelEdit');
 const questionsTbody = document.getElementById('questionsTbody');
@@ -441,7 +453,6 @@ async function saveToBin(){
     Initialization
     ============================ */
 async function init(){
-  // try load bin, otherwise use embedded db fallback
   await loadFromBin();
   renderAllAdminLists();
   bindEvents();
@@ -456,12 +467,17 @@ init();
 function bindEvents(){
   btnLogin.addEventListener('click', handleLogin);
   btnAddSubject.addEventListener('click', handleAddSubject);
+  btnSetDuration.addEventListener('click', handleSetDuration);
   document.getElementById('btnLoadQuestions').addEventListener('click', ()=>{ renderQuestionsFor(subjectSelectForQuestions.value); });
   btnAddQuestion.addEventListener('click', handleAddQuestion);
   btnCancelEdit.addEventListener('click', cancelQuestionEdit);
   btnAddStudent.addEventListener('click', handleAddStudent);
   btnCancelStudentEdit.addEventListener('click', cancelStudentEdit);
-  btnStartExam.addEventListener('click', ()=>{ startExam(studentSubjectSelect.value, parseInt(examDurationInput.value)||60); });
+  btnStartExam.addEventListener('click', ()=>{
+    const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
+    const duration = selectedSubject ? selectedSubject.duration : 60;
+    startExam(studentSubjectSelect.value, duration);
+  });
   btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
   btnSaveBin.addEventListener('click', saveToBin);
@@ -533,12 +549,26 @@ function handleAddSubject(){
   const name = newSubjectInput.value.trim();
   if(!name) return alert('Enter subject name');
   const id = Date.now();
-  db.subjects.push({ id, name });
+  db.subjects.push({ id, name, duration: 60 });
   db.questions = db.questions || [];
-  // save to bin automatically for admin convenience
   saveToBin();
   newSubjectInput.value = '';
   renderAllAdminLists();
+}
+
+async function handleSetDuration(){
+  const subjId = parseInt(subjectSelectForQuestions.value);
+  if(!subjId) return alert('Select a subject first');
+  const duration = parseInt(subjectDurationInput.value);
+  if(isNaN(duration) || duration <= 0) return alert('Enter a valid duration');
+
+  const s = db.subjects.find(s => s.id === subjId);
+  if(s){
+    s.duration = duration;
+    saveToBin();
+    statusEl.textContent = `Duration for ${s.name} set to ${duration} seconds.`;
+    renderAllAdminLists();
+  }
 }
 
 async function editSubject(id){
@@ -584,20 +614,22 @@ function renderSubjectsTable(){
 function handleAddQuestion(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select subject first');
-  const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim(), ans=qAnswer.value;
+  const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim();
+  const mark = parseInt(qMark.value) || 1;
+  const ans=qAnswer.value;
   if(!text || !A || !B || !C) return alert('Fill question and all options');
   db.questions = db.questions || [];
   if(editQuestionIndex){
-    // update existing
     const q = db.questions.find(x => x.id === editQuestionIndex);
     if(!q) return;
     q.question = text; q.options = [A,B,C]; q.answer = ['A','B','C'].indexOf(ans) >= 0 ? ['A','B','C'].indexOf(ans) : 0;
+    q.scoreValue = mark;
     editQuestionIndex = null;
     document.getElementById('qFormTitle').textContent = 'Add New Question';
     btnCancelEdit.style.display = 'none';
   } else {
     const id = Date.now();
-    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0 });
+    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0, scoreValue: mark });
   }
   saveToBin();
   clearQuestionForm();
@@ -608,7 +640,7 @@ function renderQuestionsFor(subjectId){
   questionsTbody.innerHTML = '';
   (db.questions || []).filter(q => q.subjectId === parseInt(subjectId)).forEach((q, idx) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td></td>`;
+    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> startEditQuestion(q.id);
@@ -626,6 +658,7 @@ function startEditQuestion(qid){
   document.getElementById('qFormTitle').textContent = 'Edit Question';
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
+  qMark.value = q.scoreValue || 1;
   btnCancelEdit.style.display = 'inline-block';
 }
 
@@ -643,7 +676,7 @@ function cancelQuestionEdit(){
   clearQuestionForm();
 }
 
-function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; }
+function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qMark.value='1'; qAnswer.value='A'; }
 
 /* ============================
     Admin: Students CRUD (full)
@@ -654,9 +687,7 @@ function handleAddStudent(){
   const cls = stuClass.value.trim();
   const pass = stuPassword.value;
   if(!username || !name || !pass) return alert('Fill username, full name and password');
-  // new or edit?
   if(editStudentId){
-    // update
     const s = db.students.find(x => x.id === editStudentId);
     if(!s) return;
     s.username = username; s.name = name; s.class = cls; s.password = pass;
@@ -738,9 +769,12 @@ function showStudent(){
 
 function renderAllAdminLists(){
   renderSubjectsTable(); renderStudents(); renderResults(); populateStudentSubjects();
-  // ensure question list shown for selected subject
   const selVal = subjectSelectForQuestions.value || (db.subjects[0] && db.subjects[0].id);
-  if(selVal) renderQuestionsFor(selVal);
+  if(selVal) {
+    renderQuestionsFor(selVal);
+    const selectedSubject = db.subjects.find(s => s.id == selVal);
+    subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+  }
   populateStudentSubjects();
 }
 
@@ -749,15 +783,18 @@ function populateStudentSubjects(){
   (db.subjects||[]).forEach(s => {
     const opt = document.createElement('option'); opt.value=s.id; opt.textContent = s.name; studentSubjectSelect.appendChild(opt);
   });
+  const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
+  if(selectedSubject) {
+      examDurationInput.value = selectedSubject.duration;
+  }
 }
 
 /* Start exam */
 function startExam(subjectId, durationSec){
-  // subjectId might be string from select
   const sid = parseInt(subjectId);
   const qs = (db.questions || []).filter(q => q.subjectId === sid);
   if(!qs.length) return alert('No questions for this subject');
-  // prepare UI
+  
   examTitle.textContent = db.subjects.find(s=>s.id===sid)?.name || 'Exam';
   examForm.innerHTML=''; examCard.classList.remove('hidden');
   qs.forEach((q, i) => {
@@ -768,7 +805,7 @@ function startExam(subjectId, durationSec){
       <label><input type="radio" name="q${i}" value="2"> ${q.options[2]||''}</label><br>`;
     examForm.appendChild(div);
   });
-  // timer
+  
   let timeLeft = durationSec || 60;
   examTimer.textContent = formatTime(timeLeft);
   clearInterval(window._examTimer);
@@ -784,17 +821,17 @@ function formatTime(sec){ const m=Math.floor(sec/60); const s=sec%60; return `${
 /* Finalize exam (auto or manual submit) */
 function finalizeExam(subjectId){
   clearInterval(window._examTimer);
-  // compute score against questions for the subject
   const qs = (db.questions||[]).filter(q => q.subjectId === parseInt(subjectId));
-  let correct = 0;
+  let totalScore = 0;
   qs.forEach((q,i) => {
     const sel = document.querySelector(`input[name="q${i}"]:checked`);
-    if(sel && parseInt(sel.value) === q.answer) correct++;
+    if(sel && parseInt(sel.value) === q.answer) {
+      totalScore += q.scoreValue || 1;
+    }
   });
-  // record
   db.scores = db.scores || [];
   const subjName = db.subjects.find(s=>s.id===parseInt(subjectId))?.name || '';
-  db.scores.push({ student: currentUser.username, studentId: currentUser.id, subject: subjName, score: correct, total: qs.length, date: new Date().toLocaleString() });
+  db.scores.push({ student: currentUser.username, studentId: currentUser.id, subject: subjName, score: totalScore, total: qs.length, date: new Date().toLocaleString() });
   saveToBin();
   examCard.classList.add('hidden');
   alert('Exam submitted. Your score has been recorded (visible to admin only).');
@@ -812,7 +849,7 @@ function renderQuestionsForImpl(subjectId){
   questionsTbody.innerHTML = '';
   (db.questions || []).filter(q => q.subjectId === subjectId).forEach((q, idx) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td></td>`;
+    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> { startEditQuestion(q.id); };
@@ -823,38 +860,31 @@ function renderQuestionsForImpl(subjectId){
   });
 }
 
-/* Start editing a question: populate form */
 function startEditQuestion(qid){
   const q = (db.questions||[]).find(x=>x.id===qid); if(!q) return;
   editQuestionIndex = qid;
   document.getElementById('qFormTitle').textContent = 'Edit Question';
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
+  qMark.value = q.scoreValue || 1;
   btnCancelEdit.style.display = 'inline-block';
-  // ensure the subject select is set to the question's subject
   subjectSelectForQuestions.value = q.subjectId;
 }
 
-/* ============================
-    Render everything (helper)
-    ============================ */
 function renderAllAdminLists(){
   renderSubjectsTable();
   renderStudents();
   renderResults();
-  // ensure question list shown for selected subject
   const selVal = subjectSelectForQuestions.value || (db.subjects[0] && db.subjects[0].id);
-  if(selVal) renderQuestionsFor(selVal);
+  if(selVal) {
+      renderQuestionsFor(selVal);
+      const selectedSubject = db.subjects.find(s => s.id == selVal);
+      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+  }
   populateStudentSubjects();
 }
 
-/* Expose global helper */
 function renderAllAdminListsWrapper(){ renderAllAdminLists(); }
-
-/* ============================
-    Start
-    ============================ */
-/* init already called at top */
 
 </script>
 </body>
