@@ -311,14 +311,14 @@
             <div>
               <h4>Registered students</h4>
               <table>
-                <thead><tr><th>Username</th><th>Full Name</th><th>Class</th><th style="width:180px">Actions</th></tr></thead>
+                <thead><tr><th>Username</th><th>Full Name</th><th>Class</th><th style="width:280px">Actions</th></tr></thead>
                 <tbody id="studentsTbody"></tbody>
               </table>
             </div>
           </div>
           <h3 style="margin-top:12px">Results</h3>
           <div class="row" style="justify-content:flex-end">
-            <button id="btnResetScores" class="danger">Reset Scores</button>
+            <button id="btnResetScores" class="danger">Reset All Scores</button>
           </div>
           <table>
             <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
@@ -490,11 +490,16 @@ function bindEvents(){
   btnCancelEdit.addEventListener('click', cancelQuestionEdit);
   btnAddStudent.addEventListener('click', handleAddStudent);
   btnCancelStudentEdit.addEventListener('click', cancelStudentEdit);
-  btnResetScores.addEventListener('click', resetScores);
+  btnResetScores.addEventListener('click', resetAllScores);
   btnStartExam.addEventListener('click', ()=>{
-    const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
+    const selectedSubjectId = studentSubjectSelect.value;
+    const selectedSubject = db.subjects.find(s => s.id == selectedSubjectId);
+    if (hasTakenExam(currentUser.id, selectedSubjectId)) {
+        alert("You have already taken this exam.");
+        return;
+    }
     const duration = selectedSubject ? selectedSubject.duration : 60;
-    startExam(studentSubjectSelect.value, duration);
+    startExam(selectedSubjectId, duration);
   });
   btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
@@ -787,18 +792,36 @@ function renderResults(){
   resultsTbody.innerHTML = '';
   (db.scores || []).forEach(r => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.student}</td><td>${r.subject}</td><td>${r.score}</td><td>${r.date||''}</td>`;
+    tr.innerHTML = `<td>${r.student}</td><td>${r.subject}</td><td>${r.score}</td><td>${r.date||''}</td><td></td>`;
+    const td = tr.querySelector('td:last-child');
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'danger';
+    resetBtn.textContent = 'Reset';
+    resetBtn.onclick = () => resetStudentAttempts(r.studentId, r.subjectId);
+    td.appendChild(resetBtn);
     resultsTbody.appendChild(tr);
   });
 }
 
-async function resetScores(){
+async function resetAllScores(){
   if(confirm('Are you sure you want to delete all exam records and scores? This cannot be undone.')){
     db.scores = [];
     await saveToBin();
     renderResults();
     statusEl.textContent = 'All exam scores have been reset.';
   }
+}
+
+async function resetStudentAttempts(studentId, subjectId) {
+    const student = db.students.find(s => s.id === studentId);
+    const subject = db.subjects.find(s => s.id === subjectId);
+    if (!confirm(`Are you sure you want to delete ${student.name}'s score for ${subject.name}?`)) {
+        return;
+    }
+    db.scores = (db.scores || []).filter(score => !(score.studentId === studentId && score.subjectId === subjectId));
+    await saveToBin();
+    renderAllAdminLists();
+    statusEl.textContent = `${student.name}'s exam attempt for ${subject.name} has been reset.`;
 }
 
 /* ============================
@@ -837,6 +860,11 @@ function populateStudentSubjects(){
   if(selectedSubject) {
       examDurationInput.value = selectedSubject.duration;
   }
+}
+
+function hasTakenExam(studentId, subjectId) {
+  const subjectRecord = db.scores.find(score => score.studentId === studentId && score.subjectId === parseInt(subjectId));
+  return !!subjectRecord;
 }
 
 /* Start exam */
@@ -881,7 +909,7 @@ function finalizeExam(subjectId){
   });
   db.scores = db.scores || [];
   const subjName = db.subjects.find(s=>s.id===parseInt(subjectId))?.name || '';
-  db.scores.push({ student: currentUser.username, studentId: currentUser.id, subject: subjName, score: totalScore, total: qs.length, date: new Date().toLocaleString() });
+  db.scores.push({ student: currentUser.username, studentId: currentUser.id, subject: subjName, subjectId: parseInt(subjectId), score: totalScore, total: qs.length, date: new Date().toLocaleString() });
   saveToBin();
   examCard.classList.add('hidden');
   alert('Exam submitted. Your score has been recorded (visible to admin only).');
