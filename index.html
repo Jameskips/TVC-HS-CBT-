@@ -21,6 +21,8 @@
     th,td{border:1px solid #eef2f6;padding:8px;text-align:left}
     th{background:#f1f5ff}
     .muted{color:#666;font-size:13px}
+    .password-container{position:relative;width:100%}
+    .password-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#555}
     @media(max-width:800px){.row{flex-direction:column}}
   </style>
 </head>
@@ -28,18 +30,19 @@
   <header><h1>The Valued Child (TVC) High School — CBT</h1></header>
   <div class="wrap">
 
-    <!-- LOGIN -->
     <div id="loginCard" class="card">
       <h2>Login</h2>
       <div class="row" style="gap:8px">
         <input id="loginUser" placeholder="Username (admin or student username)" />
-        <input id="loginPass" placeholder="Password" type="password" />
+        <div class="password-container">
+          <input id="loginPass" placeholder="Password" type="password" />
+          <span class="password-toggle" onclick="togglePassword()">&#128065;</span>
+        </div>
         <button id="btnLogin">Login</button>
       </div>
       <p id="loginMsg" class="muted"></p>
     </div>
 
-    <!-- ADMIN UI -->
     <div id="adminCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2>Admin Dashboard</h2>
@@ -51,7 +54,6 @@
       </div>
 
       <div class="row" style="gap:16px;margin-top:12px">
-        <!-- Subjects -->
         <div style="flex:1">
           <div class="card">
             <h3>Subjects</h3>
@@ -64,7 +66,6 @@
           </div>
         </div>
 
-        <!-- Questions -->
         <div style="flex:2">
           <div class="card">
             <h3>Questions (selected subject)</h3>
@@ -79,13 +80,10 @@
               <div class="row">
                 <input id="qA" placeholder="Option A" />
                 <input id="qB" placeholder="Option B" />
-              </div>
-              <div class="row">
                 <input id="qC" placeholder="Option C" />
-                <input id="qD" placeholder="Option D" />
               </div>
               <div class="row">
-                <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+                <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
                 <button id="btnAddQuestion">Add Question</button>
                 <button id="btnCancelEdit" class="muted" style="display:none">Cancel Edit</button>
               </div>
@@ -98,7 +96,6 @@
         </div>
       </div>
 
-      <!-- Students & Scores -->
       <div class="card" style="margin-top:12px">
         <div class="row" style="justify-content:space-between">
           <h3>Students</h3>
@@ -138,7 +135,6 @@
       </div>
     </div>
 
-    <!-- STUDENT UI -->
     <div id="studentCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2>Student Panel — <span id="studentNameDisplay"></span></h2>
@@ -171,19 +167,19 @@
 
 <script>
 /* ============================
-   CONFIG: JSONBin credentials
-   REPLACE THESE with your bin ID and API key
-   ============================ */
+    CONFIG: JSONBin credentials
+    REPLACE THESE with your bin ID and API key
+    ============================ */
 const BIN_ID = "68b390e2d0ea881f406c6e1b";      // ← paste your JSONBin bin id here
 const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    // ← paste your JSONBin X-Master-Key here
 
 /* ============================
-   Local fallback state (used if bin not available)
-   ============================ */
+    Local fallback state (used if bin not available)
+    ============================ */
 let db = {
   subjects: [{id:1,name:"Mathematics"},{id:2,name:"English"}],
   questions: [
-    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3","4"], answer:3}
+    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2}
   ],
   students: [
     {id:201, username:"student01", name:"John Doe", class:"SS1", password:"pass123"}
@@ -192,15 +188,15 @@ let db = {
 };
 
 /* ============================
-   App state
-   ============================ */
+    App state
+    ============================ */
 let currentUser = null; // {role:'admin'} or {role:'student', id, username, name}
 let editQuestionIndex = null; // track editing question index/id
 let editStudentId = null; // track editing student id
 
 /* ============================
-   DOM refs
-   ============================ */
+    DOM refs
+    ============================ */
 const loginUserEl = document.getElementById('loginUser');
 const loginPassEl = document.getElementById('loginPass');
 const btnLogin = document.getElementById('btnLogin');
@@ -215,7 +211,8 @@ const btnAddSubject = document.getElementById('btnAddSubject');
 const subjectsTbody = document.getElementById('subjectsTbody');
 const subjectSelectForQuestions = document.getElementById('subjectSelectForQuestions');
 
-const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC'), qD = document.getElementById('qD'), qAnswer = document.getElementById('qAnswer');
+const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC');
+const qAnswer = document.getElementById('qAnswer');
 const btnAddQuestion = document.getElementById('btnAddQuestion'), btnCancelEdit = document.getElementById('btnCancelEdit');
 const questionsTbody = document.getElementById('questionsTbody');
 
@@ -234,8 +231,8 @@ const btnSaveBin = document.getElementById('btnSaveBin'), btnReloadBin = documen
 const statusEl = document.getElementById('status');
 
 /* ============================
-   JSONBin helpers
-   ============================ */
+    JSONBin helpers
+    ============================ */
 async function loadFromBin(){
   if(!BIN_ID || !API_KEY){ statusEl.textContent = "No BIN_ID/API_KEY — running local-only."; return; }
   statusEl.textContent = "Loading data from JSONBin...";
@@ -269,8 +266,8 @@ async function saveToBin(){
 }
 
 /* ============================
-   Initialization
-   ============================ */
+    Initialization
+    ============================ */
 async function init(){
   // try load bin, otherwise use embedded db fallback
   await loadFromBin();
@@ -282,8 +279,8 @@ async function init(){
 init();
 
 /* ============================
-   Event bindings
-   ============================ */
+    Event bindings
+    ============================ */
 function bindEvents(){
   btnLogin.addEventListener('click', handleLogin);
   btnAddSubject.addEventListener('click', handleAddSubject);
@@ -293,7 +290,7 @@ function bindEvents(){
   btnAddStudent.addEventListener('click', handleAddStudent);
   btnCancelStudentEdit.addEventListener('click', cancelStudentEdit);
   btnStartExam.addEventListener('click', ()=>{ startExam(studentSubjectSelect.value, parseInt(examDurationInput.value)||60); });
-  btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(); });
+  btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
   btnSaveBin.addEventListener('click', saveToBin);
   btnReloadBin.addEventListener('click', async()=>{ await loadFromBin(); renderAllAdminLists(); });
@@ -303,8 +300,8 @@ function bindEvents(){
 }
 
 /* ============================
-   Login handler
-   ============================ */
+    Login handler
+    ============================ */
 function handleLogin(){
   const u = loginUserEl.value.trim();
   const p = loginPassEl.value;
@@ -328,9 +325,21 @@ function handleLogin(){
   loginMsg.textContent = "Invalid login credentials.";
 }
 
+function togglePassword() {
+  const loginPassInput = document.getElementById('loginPass');
+  const toggleSpan = document.querySelector('.password-toggle');
+  if (loginPassInput.type === 'password') {
+    loginPassInput.type = 'text';
+    toggleSpan.textContent = '🙈';
+  } else {
+    loginPassInput.type = 'password';
+    toggleSpan.textContent = '👁️';
+  }
+}
+
 /* ============================
-   Admin: Subjects CRUD
-   ============================ */
+    Admin: Subjects CRUD
+    ============================ */
 function handleAddSubject(){
   const name = newSubjectInput.value.trim();
   if(!name) return alert('Enter subject name');
@@ -381,25 +390,25 @@ function renderSubjectsTable(){
 }
 
 /* ============================
-   Admin: Questions CRUD
-   ============================ */
+    Admin: Questions CRUD
+    ============================ */
 function handleAddQuestion(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select subject first');
-  const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim(), D=qD.value.trim(), ans=qAnswer.value;
-  if(!text || !A || !B || !C || !D) return alert('Fill question and all options');
+  const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim(), ans=qAnswer.value;
+  if(!text || !A || !B || !C) return alert('Fill question and all options');
   db.questions = db.questions || [];
   if(editQuestionIndex){
     // update existing
     const q = db.questions.find(x => x.id === editQuestionIndex);
     if(!q) return;
-    q.question = text; q.options = [A,B,C,D]; q.answer = ['A','B','C','D'].indexOf(ans) >= 0 ? ans : ans;
+    q.question = text; q.options = [A,B,C]; q.answer = ['A','B','C'].indexOf(ans) >= 0 ? ['A','B','C'].indexOf(ans) : 0;
     editQuestionIndex = null;
     document.getElementById('qFormTitle').textContent = 'Add New Question';
     btnCancelEdit.style.display = 'none';
   } else {
     const id = Date.now();
-    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C,D], answer: ['A','B','C','D'].indexOf(ans) >=0 ? ['A','B','C','D'].indexOf(ans) : 0 });
+    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0 });
   }
   saveToBin();
   clearQuestionForm();
@@ -426,8 +435,8 @@ function startEditQuestion(qid){
   if(!q) return;
   editQuestionIndex = qid;
   document.getElementById('qFormTitle').textContent = 'Edit Question';
-  qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||''; qD.value = q.options[3]||'';
-  qAnswer.value = ['A','B','C','D'][q.answer] || 'A';
+  qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
+  qAnswer.value = ['A','B','C'][q.answer] || 'A';
   btnCancelEdit.style.display = 'inline-block';
 }
 
@@ -445,11 +454,11 @@ function cancelQuestionEdit(){
   clearQuestionForm();
 }
 
-function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qD.value=''; qAnswer.value='A'; }
+function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; }
 
 /* ============================
-   Admin: Students CRUD (full)
-   ============================ */
+    Admin: Students CRUD (full)
+    ============================ */
 function handleAddStudent(){
   const username = stuUsername.value.trim();
   const name = stuFullName.value.trim();
@@ -514,8 +523,8 @@ function exportStudentsCSV(){
 }
 
 /* ============================
-   Admin: Results view (read-only)
-   ============================ */
+    Admin: Results view (read-only)
+    ============================ */
 function renderResults(){
   resultsTbody.innerHTML = '';
   (db.scores || []).forEach(r => {
@@ -526,8 +535,8 @@ function renderResults(){
 }
 
 /* ============================
-   Student UI & Exam flow
-   ============================ */
+    Student UI & Exam flow
+    ============================ */
 function showAdmin(){
   loginCard.classList.add('hidden'); adminCard.classList.remove('hidden');
   renderAllAdminLists();
@@ -566,8 +575,7 @@ function startExam(subjectId, durationSec){
     div.innerHTML = `<p><strong>Q${i+1}.</strong> ${q.question}</p>
       <label><input type="radio" name="q${i}" value="0"> ${q.options[0]||''}</label><br>
       <label><input type="radio" name="q${i}" value="1"> ${q.options[1]||''}</label><br>
-      <label><input type="radio" name="q${i}" value="2"> ${q.options[2]||''}</label><br>
-      <label><input type="radio" name="q${i}" value="3"> ${q.options[3]||''}</label><br>`;
+      <label><input type="radio" name="q${i}" value="2"> ${q.options[2]||''}</label><br>`;
     examForm.appendChild(div);
   });
   // timer
@@ -604,8 +612,8 @@ function finalizeExam(subjectId){
 }
 
 /* ============================
-   Utility
-   ============================ */
+    Utility
+    ============================ */
 function renderQuestionsFor(subjectId){
   if(!subjectId) { questionsTbody.innerHTML=''; return; }
   renderQuestionsForImpl(parseInt(subjectId));
@@ -630,16 +638,16 @@ function startEditQuestion(qid){
   const q = (db.questions||[]).find(x=>x.id===qid); if(!q) return;
   editQuestionIndex = qid;
   document.getElementById('qFormTitle').textContent = 'Edit Question';
-  qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||''; qD.value = q.options[3]||'';
-  qAnswer.value = ['A','B','C','D'][q.answer] || 'A';
+  qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
+  qAnswer.value = ['A','B','C'][q.answer] || 'A';
   btnCancelEdit.style.display = 'inline-block';
   // ensure the subject select is set to the question's subject
   subjectSelectForQuestions.value = q.subjectId;
 }
 
 /* ============================
-   Render everything (helper)
-   ============================ */
+    Render everything (helper)
+    ============================ */
 function renderAllAdminLists(){
   renderSubjectsTable();
   renderStudents();
@@ -654,8 +662,8 @@ function renderAllAdminLists(){
 function renderAllAdminListsWrapper(){ renderAllAdminLists(); }
 
 /* ============================
-   Start
-   ============================ */
+    Start
+    ============================ */
 /* init already called at top */
 
 </script>
