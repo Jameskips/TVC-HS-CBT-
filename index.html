@@ -140,6 +140,34 @@
       gap: 1.5rem;
       margin-top: 1.5rem;
     }
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background-color: #f1f5ff;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: background-color 0.2s ease;
+      font-weight: 600;
+    }
+    .accordion-header:hover {
+      background-color: #e2e8f7;
+    }
+    .accordion-content {
+      padding: 1rem;
+      border: 1px solid #eef2f6;
+      border-top: none;
+      border-radius: 0 0 var(--border-radius) var(--border-radius);
+      margin-top: -1rem;
+    }
+    .accordion-header .icon {
+      transition: transform 0.3s ease;
+    }
+    .accordion-header.expanded .icon {
+      transform: rotate(180deg);
+    }
     @media (max-width: 992px) {
       .admin-grid {
         grid-template-columns: 1fr;
@@ -192,87 +220,92 @@
         </div>
       </div>
 
-      <div class="admin-grid">
-        <div>
-          <div class="card">
-            <h3>Subjects</h3>
-            <div class="row">
-              <input id="newSubjectInput" placeholder="New subject name" />
-              <button id="btnAddSubject">Add</button>
-            </div>
-            <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
-              <tbody id="subjectsTbody"></tbody></table>
-          </div>
+      <div class="card accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion('subjects')">
+          <h3>Subjects</h3>
+          <span class="icon">&#9660;</span>
         </div>
-
-        <div>
-          <div class="card">
-            <h3>Questions (selected subject)</h3>
-            <div class="row">
-              <select id="subjectSelectForQuestions"></select>
-              <button id="btnLoadQuestions" class="muted">Load</button>
-            </div>
-
-            <div style="margin-top:10px">
-              <h4 id="qFormTitle">Add New Question</h4>
-              <textarea id="qText" placeholder="Question text"></textarea>
-              <div class="row">
-                <input id="qA" placeholder="Option A" />
-                <input id="qB" placeholder="Option B" />
-                <input id="qC" placeholder="Option C" />
-              </div>
-              <div class="row">
-                <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-                <button id="btnAddQuestion">Add Question</button>
-                <button id="btnCancelEdit" class="muted" style="display:none">Cancel Edit</button>
-              </div>
-            </div>
-
-            <h4 style="margin-top:12px">Existing Questions</h4>
-            <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th style="width:200px">Actions</th></tr></thead>
-              <tbody id="questionsTbody"></tbody></table>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <div class="row" style="justify-content:space-between">
-          <h3>Students</h3>
+        <div id="subjectsAccordion" class="accordion-content hidden">
           <div class="row">
-            <button id="btnExportStudents" class="muted">Export CSV</button>
+            <input id="newSubjectInput" placeholder="New subject name" />
+            <button id="btnAddSubject">Add</button>
           </div>
+          <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
+            <tbody id="subjectsTbody"></tbody></table>
         </div>
+      </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <h4>Add student (full version)</h4>
-            <input id="stuUsername" placeholder="Username (unique)" />
-            <input id="stuFullName" placeholder="Full name" />
-            <input id="stuClass" placeholder="Class (e.g. JSS1)" />
-            <input id="stuPassword" placeholder="Password" />
+      <div class="card accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion('questions')">
+          <h3>Questions (selected subject)</h3>
+          <span class="icon">&#9660;</span>
+        </div>
+        <div id="questionsAccordion" class="accordion-content hidden">
+          <div class="row">
+            <select id="subjectSelectForQuestions"></select>
+            <button id="btnLoadQuestions" class="muted">Load</button>
+          </div>
+          <div style="margin-top:10px">
+            <h4 id="qFormTitle">Add New Question</h4>
+            <textarea id="qText" placeholder="Question text"></textarea>
             <div class="row">
-              <button id="btnAddStudent">Add Student</button>
-              <button id="btnCancelStudentEdit" class="muted" style="display:none">Cancel Edit</button>
+              <input id="qA" placeholder="Option A" />
+              <input id="qB" placeholder="Option B" />
+              <input id="qC" placeholder="Option C" />
+            </div>
+            <div class="row">
+              <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+              <button id="btnAddQuestion">Add Question</button>
+              <button id="btnCancelEdit" class="muted" style="display:none">Cancel Edit</button>
             </div>
           </div>
-
-          <div>
-            <h4>Registered students</h4>
-            <table>
-              <thead><tr><th>Username</th><th>Full Name</th><th>Class</th><th style="width:180px">Actions</th></tr></thead>
-              <tbody id="studentsTbody"></tbody>
-            </table>
-          </div>
+          <h4 style="margin-top:12px">Existing Questions</h4>
+          <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th style="width:200px">Actions</th></tr></thead>
+            <tbody id="questionsTbody"></tbody></table>
         </div>
+      </div>
 
-        <h3 style="margin-top:12px">Results</h3>
-        <table>
-          <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
-          <tbody id="resultsTbody"></tbody>
-        </table>
+      <div class="card accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion('students')">
+          <h3>Students & Scores</h3>
+          <span class="icon">&#9660;</span>
+        </div>
+        <div id="studentsAccordion" class="accordion-content hidden">
+          <div class="row" style="justify-content:space-between">
+            <h4>Students</h4>
+            <div class="row">
+              <button id="btnExportStudents" class="muted">Export CSV</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <h4>Add student (full version)</h4>
+              <input id="stuUsername" placeholder="Username (unique)" />
+              <input id="stuFullName" placeholder="Full name" />
+              <input id="stuClass" placeholder="Class (e.g. JSS1)" />
+              <input id="stuPassword" placeholder="Password" />
+              <div class="row">
+                <button id="btnAddStudent">Add Student</button>
+                <button id="btnCancelStudentEdit" class="muted" style="display:none">Cancel Edit</button>
+              </div>
+            </div>
+            <div>
+              <h4>Registered students</h4>
+              <table>
+                <thead><tr><th>Username</th><th>Full Name</th><th>Class</th><th style="width:180px">Actions</th></tr></thead>
+                <tbody id="studentsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <h3 style="margin-top:12px">Results</h3>
+          <table>
+            <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
+            <tbody id="resultsTbody"></tbody>
+          </table>
+        </div>
+      </div>
 
       </div>
-    </div>
 
     <div id="studentCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
@@ -437,6 +470,23 @@ function bindEvents(){
   btnLogoutStudent.addEventListener('click', ()=>{ currentUser=null; studentCard.classList.add('hidden'); loginCard.classList.remove('hidden'); });
   document.getElementById('btnExportStudents').addEventListener('click', exportStudentsCSV);
 }
+
+/* ============================
+    Accordion Functionality
+    ============================ */
+function toggleAccordion(sectionId) {
+  const content = document.getElementById(sectionId + 'Accordion');
+  const header = content.previousElementSibling;
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    header.classList.add('expanded');
+  } else {
+    content.classList.add('hidden');
+    header.classList.remove('expanded');
+  }
+}
+
 
 /* ============================
     Login handler
@@ -688,9 +738,10 @@ function showStudent(){
 
 function renderAllAdminLists(){
   renderSubjectsTable(); renderStudents(); renderResults(); populateStudentSubjects();
-  // render questions for first subject if exists
-  subjectSelectForQuestions.value = db.subjects[0]?.id || '';
-  renderQuestionsFor(subjectSelectForQuestions.value);
+  // ensure question list shown for selected subject
+  const selVal = subjectSelectForQuestions.value || (db.subjects[0] && db.subjects[0].id);
+  if(selVal) renderQuestionsFor(selVal);
+  populateStudentSubjects();
 }
 
 function populateStudentSubjects(){
