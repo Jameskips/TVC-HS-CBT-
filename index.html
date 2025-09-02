@@ -171,16 +171,26 @@
     .accordion-header.expanded .icon {
       transform: rotate(180deg);
     }
+    /* New styles for the student exam interface */
     .question-options {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        margin-left: 20px;
+        margin-left: auto; /* Push the options to the right */
     }
     .question-options label {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+    .exam-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .question-text {
+        flex-grow: 1;
+        margin-right: 2rem;
     }
     @media (max-width: 992px) {
       .admin-grid {
@@ -915,37 +925,42 @@ function startExam(subjectId, durationMin){
 }
 
 function renderQuestion() {
-  const q = examQuestions[currentQuestionIndex];
-  examQuestionContainer.innerHTML = '';
-  
-  const questionDiv = document.createElement('div');
-  questionDiv.className = 'question';
-  questionDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
-                           <p><strong>${q.question}</strong></p>`;
-  
-  const optionsDiv = document.createElement('div');
-  optionsDiv.className = 'question-options';
-  const optionLetters = ['A', 'B', 'C'];
-  
-  q.options.forEach((option, j) => {
-    const label = document.createElement('label');
-    const radioBtn = document.createElement('input');
-    radioBtn.type = 'radio';
-    radioBtn.name = `q${currentQuestionIndex}`;
-    radioBtn.value = j;
+    const q = examQuestions[currentQuestionIndex];
+    examQuestionContainer.innerHTML = '';
     
-    // Check if a previous answer exists for this question
-    if (studentAnswers[currentQuestionIndex] !== null && studentAnswers[currentQuestionIndex] == j) {
-        radioBtn.checked = true;
-    }
+    const containerDiv = document.createElement('div');
+    containerDiv.className = 'exam-container';
+
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'question-text';
+    questionDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
+                             <p><strong>${q.question}</strong></p>`;
     
-    label.appendChild(radioBtn);
-    label.innerHTML += `<span>${optionLetters[j]}. ${option || ''}</span>`;
-    optionsDiv.appendChild(label);
-  });
-  
-  examQuestionContainer.appendChild(questionDiv);
-  examQuestionContainer.appendChild(optionsDiv);
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'question-options';
+    const optionLetters = ['A', 'B', 'C'];
+    
+    q.options.forEach((option, j) => {
+      const label = document.createElement('label');
+      const radioBtn = document.createElement('input');
+      radioBtn.type = 'radio';
+      radioBtn.name = `q${currentQuestionIndex}`;
+      radioBtn.value = j;
+      
+      // Check if a previous answer exists for this question
+      if (studentAnswers[currentQuestionIndex] !== null && studentAnswers[currentQuestionIndex] == j) {
+          radioBtn.checked = true;
+      }
+      
+      label.appendChild(radioBtn);
+      label.innerHTML += `<span>${optionLetters[j]}. ${option || ''}</span>`;
+      optionsDiv.appendChild(label);
+    });
+    
+    containerDiv.appendChild(questionDiv);
+    containerDiv.appendChild(optionsDiv);
+    
+    examQuestionContainer.appendChild(containerDiv);
 }
 
 function updateNavigationButtons() {
