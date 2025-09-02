@@ -321,7 +321,7 @@
             <button id="btnResetScores" class="danger">Reset All Scores</button>
           </div>
           <table>
-            <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th></tr></thead>
+            <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th><th style="width:120px">Actions</th></tr></thead>
             <tbody id="resultsTbody"></tbody>
           </table>
         </div>
@@ -792,7 +792,7 @@ function renderResults(){
   resultsTbody.innerHTML = '';
   (db.scores || []).forEach(r => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.student}</td><td>${r.subject}</td><td>${r.score}</td><td>${r.date||''}</td><td></td>`;
+    tr.innerHTML = `<td>${r.studentName}</td><td>${r.subject}</td><td>${r.score}</td><td>${r.date||''}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const resetBtn = document.createElement('button');
     resetBtn.className = 'danger';
@@ -909,7 +909,7 @@ function finalizeExam(subjectId){
   });
   db.scores = db.scores || [];
   const subjName = db.subjects.find(s=>s.id===parseInt(subjectId))?.name || '';
-  db.scores.push({ student: currentUser.username, studentId: currentUser.id, subject: subjName, subjectId: parseInt(subjectId), score: totalScore, total: qs.length, date: new Date().toLocaleString() });
+  db.scores.push({ studentName: currentUser.name, studentId: currentUser.id, subject: subjName, subjectId: parseInt(subjectId), score: totalScore, total: qs.length, date: new Date().toLocaleString() });
   saveToBin();
   examCard.classList.add('hidden');
   alert('Exam submitted. Your score has been recorded (visible to admin only).');
