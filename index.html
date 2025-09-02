@@ -949,6 +949,10 @@ function renderQuestion() {
           radioBtn.checked = true;
       }
       
+      radioBtn.addEventListener('change', (e) => {
+          studentAnswers[currentQuestionIndex] = parseInt(e.target.value);
+      });
+      
       label.appendChild(radioBtn);
       label.innerHTML += `<span>${optionLetters[j]}. ${option || ''}</span>`;
       optionsDiv.appendChild(label);
@@ -964,13 +968,7 @@ function updateNavigationButtons() {
     btnSubmitExam.style.display = currentQuestionIndex === examQuestions.length - 1 ? 'inline-block' : 'none';
 }
 
-function saveAnswer() {
-    const selected = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
-    studentAnswers[currentQuestionIndex] = selected ? parseInt(selected.value) : null;
-}
-
 function handleNextQuestion() {
-    saveAnswer();
     currentQuestionIndex++;
     if (currentQuestionIndex < examQuestions.length) {
         renderQuestion();
@@ -979,7 +977,6 @@ function handleNextQuestion() {
 }
 
 function handlePreviousQuestion() {
-    saveAnswer();
     currentQuestionIndex--;
     if (currentQuestionIndex >= 0) {
         renderQuestion();
@@ -993,7 +990,6 @@ function formatTime(sec){ const m=Math.floor(sec/60); const s=sec%60; return `${
 /* Finalize exam (auto or manual submit) */
 function finalizeExam(subjectId){
   clearInterval(window._examTimer);
-  saveAnswer();
   
   let totalScore = 0;
   examQuestions.forEach((q, i) => {
