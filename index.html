@@ -237,8 +237,8 @@
             <h4>Settings</h4>
             <div class="row">
               <div class="row">
-                <div class="muted">Default duration (s):</div>
-                <input id="subjectDurationInput" type="number" value="60" style="width:120px" />
+                <div class="muted">Default duration (min):</div>
+                <input id="subjectDurationInput" type="number" value="1" style="width:120px" />
                 <button id="btnSetDuration" class="muted">Set</button>
               </div>
               <div class="row">
@@ -339,8 +339,8 @@
         <h3>Available Subjects</h3>
         <select id="studentSubjectSelect"></select>
         <div class="row" style="margin-top:8px">
-          <div class="muted">Exam duration (seconds)</div>
-          <input id="examDurationInput" type="number" value="60" style="width:120px" />
+          <div class="muted">Exam duration (minutes)</div>
+          <input id="examDurationInput" type="number" readonly style="width:120px" />
           <button id="btnStartExam">Start Exam</button>
         </div>
       </div>
@@ -371,7 +371,7 @@ const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; 
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
-  subjects: [{id:1,name:"Mathematics", duration: 60, defaultMark: 1},{id:2,name:"English", duration: 60, defaultMark: 1}],
+  subjects: [{id:1,name:"Mathematics", duration: 1, defaultMark: 1},{id:2,name:"English", duration: 1, defaultMark: 1}],
   questions: [
     {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1}
   ],
@@ -498,8 +498,8 @@ function bindEvents(){
         alert("You have already taken this exam.");
         return;
     }
-    const duration = selectedSubject ? selectedSubject.duration : 60;
-    startExam(selectedSubjectId, duration);
+    const durationMin = selectedSubject ? selectedSubject.duration : 1;
+    startExam(selectedSubjectId, durationMin);
   });
   btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
@@ -570,7 +570,7 @@ function handleAddSubject(){
   const name = newSubjectInput.value.trim();
   if(!name) return alert('Enter subject name');
   const id = Date.now();
-  db.subjects.push({ id, name, duration: 60, defaultMark: 1 });
+  db.subjects.push({ id, name, duration: 1, defaultMark: 1 });
   db.questions = db.questions || [];
   saveToBin();
   newSubjectInput.value = '';
@@ -581,13 +581,13 @@ async function handleSetDuration(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select a subject first');
   const duration = parseInt(subjectDurationInput.value);
-  if(isNaN(duration) || duration <= 0) return alert('Enter a valid duration');
+  if(isNaN(duration) || duration <= 0) return alert('Enter a valid duration (in minutes)');
 
   const s = db.subjects.find(s => s.id === subjId);
   if(s){
     s.duration = duration;
     saveToBin();
-    statusEl.textContent = `Duration for ${s.name} set to ${duration} seconds.`;
+    statusEl.textContent = `Duration for ${s.name} set to ${duration} minutes.`;
     renderAllAdminLists();
   }
 }
@@ -845,7 +845,7 @@ function renderAllAdminLists(){
   if(selVal) {
       renderQuestionsFor(selVal);
       const selectedSubject = db.subjects.find(s => s.id == selVal);
-      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 1;
       subjectMarkInput.value = selectedSubject ? selectedSubject.defaultMark : 1;
   }
   populateStudentSubjects();
@@ -868,7 +868,7 @@ function hasTakenExam(studentId, subjectId) {
 }
 
 /* Start exam */
-function startExam(subjectId, durationSec){
+function startExam(subjectId, durationMin){
   const sid = parseInt(subjectId);
   const qs = (db.questions || []).filter(q => q.subjectId === sid);
   if(!qs.length) return alert('No questions for this subject');
@@ -884,7 +884,7 @@ function startExam(subjectId, durationSec){
     examForm.appendChild(div);
   });
   
-  let timeLeft = durationSec || 60;
+  let timeLeft = durationMin * 60;
   examTimer.textContent = formatTime(timeLeft);
   clearInterval(window._examTimer);
   window._examTimer = setInterval(() => {
@@ -958,7 +958,7 @@ function renderAllAdminLists(){
   if(selVal) {
       renderQuestionsFor(selVal);
       const selectedSubject = db.subjects.find(s => s.id == selVal);
-      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 60;
+      subjectDurationInput.value = selectedSubject ? selectedSubject.duration : 1;
       subjectMarkInput.value = selectedSubject ? selectedSubject.defaultMark : 1;
   }
   populateStudentSubjects();
