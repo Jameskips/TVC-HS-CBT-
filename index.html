@@ -171,12 +171,12 @@
     .accordion-header.expanded .icon {
       transform: rotate(180deg);
     }
-    /* New styles for the student exam interface */
+    /* Updated styles for the student exam interface */
     .question-options {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        margin-left: auto; /* Push the options to the right */
+        margin-top: 1rem;
     }
     .question-options label {
         display: flex;
@@ -185,12 +185,12 @@
     }
     .exam-container {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
+        justify-content: flex-start;
         align-items: flex-start;
     }
     .question-text {
-        flex-grow: 1;
-        margin-right: 2rem;
+        width: 100%;
     }
     @media (max-width: 992px) {
       .admin-grid {
@@ -928,9 +928,6 @@ function renderQuestion() {
     const q = examQuestions[currentQuestionIndex];
     examQuestionContainer.innerHTML = '';
     
-    const containerDiv = document.createElement('div');
-    containerDiv.className = 'exam-container';
-
     const questionDiv = document.createElement('div');
     questionDiv.className = 'question-text';
     questionDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
@@ -947,7 +944,7 @@ function renderQuestion() {
       radioBtn.name = `q${currentQuestionIndex}`;
       radioBtn.value = j;
       
-      // Check if a previous answer exists for this question
+      // Check if a previous answer exists for this question and pre-select it
       if (studentAnswers[currentQuestionIndex] !== null && studentAnswers[currentQuestionIndex] == j) {
           radioBtn.checked = true;
       }
@@ -957,10 +954,8 @@ function renderQuestion() {
       optionsDiv.appendChild(label);
     });
     
-    containerDiv.appendChild(questionDiv);
-    containerDiv.appendChild(optionsDiv);
-    
-    examQuestionContainer.appendChild(containerDiv);
+    examQuestionContainer.appendChild(questionDiv);
+    examQuestionContainer.appendChild(optionsDiv);
 }
 
 function updateNavigationButtons() {
