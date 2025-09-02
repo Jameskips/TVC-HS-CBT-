@@ -171,6 +171,17 @@
     .accordion-header.expanded .icon {
       transform: rotate(180deg);
     }
+    .question-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-left: 20px;
+    }
+    .question-options label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
     @media (max-width: 992px) {
       .admin-grid {
         grid-template-columns: 1fr;
@@ -206,7 +217,7 @@
         <input id="loginUser" placeholder="Username (admin or student username)" />
         <div class="password-container">
           <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()"></span>
+          <span class="password-toggle" onclick="togglePassword()">👁️</span>
         </div>
         <button id="btnLogin">Login</button>
       </div>
@@ -348,9 +359,13 @@
       <div id="examCard" class="card hidden">
         <h3 id="examTitle">Exam</h3>
         <div class="row"><div class="muted">Time left:</div><div id="examTimer" class="muted"></div></div>
-        <form id="examForm"></form>
+        
+        <div id="examQuestionContainer"></div>
+
         <div class="row" style="margin-top:10px">
-          <button id="btnSubmitExam">Submit</button>
+          <button id="btnPrevious" class="muted">Previous</button>
+          <button id="btnNext">Next</button>
+          <button id="btnSubmitExam" class="hidden">Submit</button>
           <button id="btnCancelExam" class="muted">Cancel</button>
         </div>
       </div>
@@ -364,8 +379,8 @@
     CONFIG: JSONBin credentials
     REPLACE THESE with your bin ID and API key
     ============================ */
-const BIN_ID = "68b390e2d0ea881f406c6e1b";      //  paste your JSONBin bin id here
-const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    //  paste your JSONBin X-Master-Key here
+const BIN_ID = "68b390e2d0ea881f406c6e1b";      // ← paste your JSONBin bin id here
+const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    // ← paste your JSONBin X-Master-Key here
 
 /* ============================
     Local fallback state (used if bin not available)
@@ -388,6 +403,11 @@ let currentUser = null; // {role:'admin'} or {role:'student', id, username, name
 let editQuestionIndex = null; // track editing question index/id
 let editStudentId = null; // track editing student id
 let editSubjectId = null; // for editing subject duration
+
+// New exam state variables
+let examQuestions = [];
+let studentAnswers = [];
+let currentQuestionIndex = 0;
 
 /* ============================
     DOM refs
@@ -424,8 +444,9 @@ const btnResetScores = document.getElementById('btnResetScores');
 
 const studentNameDisplay = document.getElementById('studentNameDisplay');
 const studentSubjectSelect = document.getElementById('studentSubjectSelect'), btnStartExam = document.getElementById('btnStartExam'), examDurationInput = document.getElementById('examDurationInput');
-const examCard = document.getElementById('examCard'), examForm = document.getElementById('examForm'), examTitle = document.getElementById('examTitle'), examTimer = document.getElementById('examTimer');
-const btnSubmitExam = document.getElementById('btnSubmitExam'), btnCancelExam = document.getElementById('btnCancelExam');
+const examCard = document.getElementById('examCard'), examTitle = document.getElementById('examTitle'), examTimer = document.getElementById('examTimer');
+const examQuestionContainer = document.getElementById('examQuestionContainer');
+const btnPrevious = document.getElementById('btnPrevious'), btnNext = document.getElementById('btnNext'), btnSubmitExam = document.getElementById('btnSubmitExam'), btnCancelExam = document.getElementById('btnCancelExam');
 
 const btnSaveBin = document.getElementById('btnSaveBin'), btnReloadBin = document.getElementById('btnReloadBin'), btnLogoutAdmin = document.getElementById('btnLogoutAdmin'), btnLogoutStudent = document.getElementById('btnLogoutStudent');
 const statusEl = document.getElementById('status');
@@ -501,6 +522,8 @@ function bindEvents(){
     const durationMin = selectedSubject ? selectedSubject.duration : 1;
     startExam(selectedSubjectId, durationMin);
   });
+  btnNext.addEventListener('click', handleNextQuestion);
+  btnPrevious.addEventListener('click', handlePreviousQuestion);
   btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
   btnSaveBin.addEventListener('click', saveToBin);
@@ -556,10 +579,10 @@ function togglePassword() {
   const toggleSpan = document.querySelector('.password-toggle');
   if (loginPassInput.type === 'password') {
     loginPassInput.type = 'text';
-    toggleSpan.textContent = '';
+    toggleSpan.textContent = '🙈';
   } else {
     loginPassInput.type = 'password';
-    toggleSpan.textContent = '';
+    toggleSpan.textContent = '👁️';
   }
 }
 
@@ -870,19 +893,17 @@ function hasTakenExam(studentId, subjectId) {
 /* Start exam */
 function startExam(subjectId, durationMin){
   const sid = parseInt(subjectId);
-  const qs = (db.questions || []).filter(q => q.subjectId === sid);
-  if(!qs.length) return alert('No questions for this subject');
+  examQuestions = (db.questions || []).filter(q => q.subjectId === sid);
+  if(!examQuestions.length) return alert('No questions for this subject');
   
   examTitle.textContent = db.subjects.find(s=>s.id===sid)?.name || 'Exam';
-  examForm.innerHTML=''; examCard.classList.remove('hidden');
-  qs.forEach((q, i) => {
-    const div = document.createElement('div'); div.className='question';
-    div.innerHTML = `<p><strong>Q${i+1}.</strong> ${q.question}</p>
-      <label><input type="radio" name="q${i}" value="0"> ${q.options[0]||''}</label><br>
-      <label><input type="radio" name="q${i}" value="1"> ${q.options[1]||''}</label><br>
-      <label><input type="radio" name="q${i}" value="2"> ${q.options[2]||''}</label><br>`;
-    examForm.appendChild(div);
-  });
+  examCard.classList.remove('hidden');
+  
+  currentQuestionIndex = 0;
+  studentAnswers = new Array(examQuestions.length).fill(null);
+  
+  renderQuestion();
+  updateNavigationButtons();
   
   let timeLeft = durationMin * 60;
   examTimer.textContent = formatTime(timeLeft);
@@ -893,23 +914,87 @@ function startExam(subjectId, durationMin){
   },1000);
 }
 
+function renderQuestion() {
+  const q = examQuestions[currentQuestionIndex];
+  examQuestionContainer.innerHTML = '';
+  
+  const questionDiv = document.createElement('div');
+  questionDiv.className = 'question';
+  questionDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
+                           <p><strong>${q.question}</strong></p>`;
+  
+  const optionsDiv = document.createElement('div');
+  optionsDiv.className = 'question-options';
+  const optionLetters = ['A', 'B', 'C'];
+  
+  q.options.forEach((option, j) => {
+    const label = document.createElement('label');
+    const radioBtn = document.createElement('input');
+    radioBtn.type = 'radio';
+    radioBtn.name = `q${currentQuestionIndex}`;
+    radioBtn.value = j;
+    
+    // Check if a previous answer exists for this question
+    if (studentAnswers[currentQuestionIndex] !== null && studentAnswers[currentQuestionIndex] == j) {
+        radioBtn.checked = true;
+    }
+    
+    label.appendChild(radioBtn);
+    label.innerHTML += `<span>${optionLetters[j]}. ${option || ''}</span>`;
+    optionsDiv.appendChild(label);
+  });
+  
+  examQuestionContainer.appendChild(questionDiv);
+  examQuestionContainer.appendChild(optionsDiv);
+}
+
+function updateNavigationButtons() {
+    btnPrevious.disabled = currentQuestionIndex === 0;
+    btnNext.style.display = currentQuestionIndex < examQuestions.length - 1 ? 'inline-block' : 'none';
+    btnSubmitExam.style.display = currentQuestionIndex === examQuestions.length - 1 ? 'inline-block' : 'none';
+}
+
+function saveAnswer() {
+    const selected = document.querySelector(`input[name="q${currentQuestionIndex}"]:checked`);
+    studentAnswers[currentQuestionIndex] = selected ? parseInt(selected.value) : null;
+}
+
+function handleNextQuestion() {
+    saveAnswer();
+    currentQuestionIndex++;
+    if (currentQuestionIndex < examQuestions.length) {
+        renderQuestion();
+        updateNavigationButtons();
+    }
+}
+
+function handlePreviousQuestion() {
+    saveAnswer();
+    currentQuestionIndex--;
+    if (currentQuestionIndex >= 0) {
+        renderQuestion();
+        updateNavigationButtons();
+    }
+}
+
 /* Format mm:ss */
 function formatTime(sec){ const m=Math.floor(sec/60); const s=sec%60; return `${m}:${s.toString().padStart(2,'0')}`; }
 
 /* Finalize exam (auto or manual submit) */
 function finalizeExam(subjectId){
   clearInterval(window._examTimer);
-  const qs = (db.questions||[]).filter(q => q.subjectId === parseInt(subjectId));
+  saveAnswer();
+  
   let totalScore = 0;
-  qs.forEach((q,i) => {
-    const sel = document.querySelector(`input[name="q${i}"]:checked`);
-    if(sel && parseInt(sel.value) === q.answer) {
+  examQuestions.forEach((q, i) => {
+    if (studentAnswers[i] !== null && studentAnswers[i] === q.answer) {
       totalScore += q.scoreValue || 1;
     }
   });
+  
   db.scores = db.scores || [];
   const subjName = db.subjects.find(s=>s.id===parseInt(subjectId))?.name || '';
-  db.scores.push({ studentName: currentUser.name, studentId: currentUser.id, subject: subjName, subjectId: parseInt(subjectId), score: totalScore, total: qs.length, date: new Date().toLocaleString() });
+  db.scores.push({ studentName: currentUser.name, studentId: currentUser.id, subject: subjName, subjectId: parseInt(subjectId), score: totalScore, total: examQuestions.length, date: new Date().toLocaleString() });
   saveToBin();
   examCard.classList.add('hidden');
   alert('Exam submitted. Your score has been recorded (visible to admin only).');
