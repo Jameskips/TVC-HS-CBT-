@@ -165,32 +165,34 @@
       border-radius: 0 0 var(--border-radius) var(--border-radius);
       margin-top: -1rem;
     }
-    .accordion-header .icon {
-      transition: transform 0.3s ease;
-    }
     .accordion-header.expanded .icon {
       transform: rotate(180deg);
     }
     /* Updated styles for the student exam interface */
+    .exam-question {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding: 10px;
+    }
     .question-options {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
     .question-options label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .exam-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-    }
-    .question-text {
-        width: 100%;
+    .exam-nav {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
     }
     @media (max-width: 992px) {
       .admin-grid {
@@ -374,7 +376,7 @@
         
         <div id="examQuestionContainer"></div>
 
-        <div class="row" style="margin-top:10px">
+        <div class="exam-nav">
           <button id="btnPrevious" class="muted">Previous</button>
           <button id="btnNext">Next</button>
           <button id="btnSubmitExam" class="hidden">Submit</button>
@@ -930,10 +932,14 @@ function renderQuestion() {
     const q = examQuestions[currentQuestionIndex];
     examQuestionContainer.innerHTML = '';
     
-    const questionDiv = document.createElement('div');
-    questionDiv.className = 'question-text';
-    questionDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
-                             <p><strong>${q.question}</strong></p>`;
+    // Create the main container for the question and options
+    const questionWrapper = document.createElement('div');
+    questionWrapper.className = 'exam-question';
+
+    const questionTextDiv = document.createElement('div');
+    questionTextDiv.className = 'question-text';
+    questionTextDiv.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1} of ${examQuestions.length}.</strong></p>
+                                 <p><strong>${q.question}</strong></p>`;
     
     const optionsDiv = document.createElement('div');
     optionsDiv.className = 'question-options';
@@ -960,8 +966,9 @@ function renderQuestion() {
       optionsDiv.appendChild(label);
     });
     
-    examQuestionContainer.appendChild(questionDiv);
-    examQuestionContainer.appendChild(optionsDiv);
+    questionWrapper.appendChild(questionTextDiv);
+    questionWrapper.appendChild(optionsDiv);
+    examQuestionContainer.appendChild(questionWrapper);
 }
 
 function updateNavigationButtons() {
