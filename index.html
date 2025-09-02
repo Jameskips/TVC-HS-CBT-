@@ -202,6 +202,35 @@
       justify-content: center;
       margin-top: 20px;
     }
+    /* New styles for the numbered navigation grid */
+    .exam-nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1.5rem;
+    }
+    .exam-nav-grid button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      background-color: #e9ecef;
+      color: #333;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    .exam-nav-grid button.active {
+      background-color: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+      font-weight: bold;
+    }
+    .exam-nav-grid button.answered {
+      background-color: var(--color-success);
+      color: #fff;
+      border-color: var(--color-success);
+    }
     @media (max-width: 992px) {
       .admin-grid {
         grid-template-columns: 1fr;
@@ -390,6 +419,8 @@
           <button id="btnSubmitExam" class="hidden">Submit</button>
           <button id="btnCancelExam" class="muted">Cancel</button>
         </div>
+
+        <div id="exam-grid-nav" class="exam-nav-grid"></div>
       </div>
     </div>
 
@@ -469,6 +500,7 @@ const studentSubjectSelect = document.getElementById('studentSubjectSelect'), bt
 const examCard = document.getElementById('examCard'), examTitle = document.getElementById('examTitle'), examTimer = document.getElementById('examTimer');
 const examQuestionContainer = document.getElementById('examQuestionContainer');
 const btnPrevious = document.getElementById('btnPrevious'), btnNext = document.getElementById('btnNext'), btnSubmitExam = document.getElementById('btnSubmitExam'), btnCancelExam = document.getElementById('btnCancelExam');
+const examGridNav = document.getElementById('exam-grid-nav');
 
 const btnSaveBin = document.getElementById('btnSaveBin'), btnReloadBin = document.getElementById('btnReloadBin'), btnLogoutAdmin = document.getElementById('btnLogoutAdmin'), btnLogoutStudent = document.getElementById('btnLogoutStudent');
 const statusEl = document.getElementById('status');
@@ -924,6 +956,7 @@ function startExam(subjectId, durationMin){
   currentQuestionIndex = 0;
   studentAnswers = new Array(examQuestions.length).fill(null);
   
+  renderExamGrid();
   renderQuestion();
   updateNavigationButtons();
   
@@ -934,6 +967,34 @@ function startExam(subjectId, durationMin){
     timeLeft--; examTimer.textContent = formatTime(timeLeft);
     if(timeLeft <= 0){ clearInterval(window._examTimer); finalizeExam(sid); }
   },1000);
+}
+
+function renderExamGrid() {
+  examGridNav.innerHTML = '';
+  for (let i = 0; i < examQuestions.length; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i + 1;
+    btn.onclick = () => {
+      currentQuestionIndex = i;
+      renderQuestion();
+      updateNavigationButtons();
+    };
+    examGridNav.appendChild(btn);
+  }
+  updateExamGrid();
+}
+
+function updateExamGrid() {
+  const buttons = examGridNav.querySelectorAll('button');
+  buttons.forEach((btn, i) => {
+    btn.classList.remove('active', 'answered');
+    if (i === currentQuestionIndex) {
+      btn.classList.add('active');
+    }
+    if (studentAnswers[i] !== null) {
+      btn.classList.add('answered');
+    }
+  });
 }
 
 function renderQuestion() {
@@ -974,6 +1035,7 @@ function renderQuestion() {
       
       radioBtn.addEventListener('change', (e) => {
           studentAnswers[currentQuestionIndex] = parseInt(e.target.value);
+          updateExamGrid(); // Update grid on answer change
       });
       
       optionsDiv.appendChild(label);
@@ -982,6 +1044,7 @@ function renderQuestion() {
     questionWrapper.appendChild(questionTextDiv);
     questionWrapper.appendChild(optionsDiv);
     examQuestionContainer.appendChild(questionWrapper);
+    updateExamGrid();
 }
 
 function updateNavigationButtons() {
