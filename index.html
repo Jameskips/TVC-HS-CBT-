@@ -188,6 +188,10 @@
       gap: 0.5rem;
       width: 100%;
     }
+    .question-options label input[type="radio"] {
+      margin: 0;
+      flex-shrink: 0;
+    }
     .question-options label span {
       flex-grow: 1;
     }
@@ -951,11 +955,17 @@ function renderQuestion() {
     
     q.options.forEach((option, j) => {
       const label = document.createElement('label');
-      label.innerHTML = `<span>${optionLetters[j]}. ${option || ''}</span>`;
+      
       const radioBtn = document.createElement('input');
       radioBtn.type = 'radio';
       radioBtn.name = `q${currentQuestionIndex}`;
       radioBtn.value = j;
+      
+      const textSpan = document.createElement('span');
+      textSpan.textContent = `${optionLetters[j]}. ${option || ''}`;
+
+      label.appendChild(radioBtn);
+      label.appendChild(textSpan);
       
       // Check if a previous answer exists for this question and pre-select it
       if (studentAnswers[currentQuestionIndex] !== null && studentAnswers[currentQuestionIndex] == j) {
@@ -966,7 +976,6 @@ function renderQuestion() {
           studentAnswers[currentQuestionIndex] = parseInt(e.target.value);
       });
       
-      label.appendChild(radioBtn);
       optionsDiv.appendChild(label);
     });
     
