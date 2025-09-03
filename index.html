@@ -169,7 +169,6 @@
       transform: rotate(180deg);
     }
     /* Updated styles for the student exam interface */
-
     .exam-question {
       display: flex;
       flex-direction: column;
@@ -181,18 +180,21 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      flex-wrap: nowrap;
       margin-top: 1rem;
     }
     .question-options label {
       display: flex;
-      align-items: left;
-      gap: 0rem;
+      align-items: flex-start;
+      gap: 0.5rem;
       width: 100%;
     }
     .question-options label input[type="radio"] {
       margin: 0;
+      margin-right: 0.25rem;
       flex-shrink: 0;
+      align-self: flex-start;
+      position: relative;
+      top: 0.2em;
     }
     .question-options label span {
       flex-grow: 1;
@@ -382,8 +384,8 @@
           <div class="row" style="justify-content:flex-end">
             <button id="btnResetScores" class="danger">Reset All Scores</button>
           </div>
-          <table>
-            <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Date</th><th style="width:120px">Actions</th></tr></thead>
+          <table id="resultsTable">
+            <thead id="resultsThead"></thead>
             <tbody id="resultsTbody"></tbody>
           </table>
         </div>
@@ -495,6 +497,7 @@ const btnAddStudent = document.getElementById('btnAddStudent'), btnCancelStudent
 const studentsTbody = document.getElementById('studentsTbody');
 
 const resultsTbody = document.getElementById('resultsTbody');
+const resultsThead = document.getElementById('resultsThead'); // NEW: Added reference to thead
 const btnResetScores = document.getElementById('btnResetScores');
 
 const studentNameDisplay = document.getElementById('studentNameDisplay');
@@ -867,18 +870,53 @@ function exportStudentsCSV(){
 /* ============================
     Admin: Results view (read-only)
     ============================ */
-function renderResults(){
+function renderResults() {
   resultsTbody.innerHTML = '';
-  (db.scores || []).forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.studentName}</td><td>${r.subject}</td><td>${r.score}</td><td>${r.date||''}</td><td></td>`;
-    const td = tr.querySelector('td:last-child');
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'danger';
-    resetBtn.textContent = 'Reset';
-    resetBtn.onclick = () => resetStudentAttempts(r.studentId, r.subjectId);
-    td.appendChild(resetBtn);
-    resultsTbody.appendChild(tr);
+  resultsThead.innerHTML = '';
+
+  if (!db.scores || db.scores.length === 0) {
+    resultsThead.innerHTML = '<tr><th>Student</th><th>No Results</th></tr>';
+    return;
+  }
+
+  // 1. Collect all unique students and subjects
+  const students = {}; // Use an object for quick lookups
+  const subjects = {};
+
+  db.scores.forEach(score => {
+    students[score.studentId] = score.studentName;
+    subjects[score.subjectId] = score.subject;
+  });
+
+  const uniqueStudentIds = Object.keys(students);
+  const uniqueSubjectIds = Object.keys(subjects);
+
+  // 2. Build the table header dynamically
+  let headerRow = '<tr><th>Student</th>';
+  uniqueSubjectIds.forEach(subjectId => {
+    headerRow += `<th>${subjects[subjectId]}</th>`;
+  });
+  headerRow += '<th>Actions</th></tr>';
+  resultsThead.innerHTML = headerRow;
+
+  // 3. Populate the table body
+  uniqueStudentIds.forEach(studentId => {
+    let studentScores = {};
+    db.scores.filter(score => score.studentId.toString() === studentId.toString()).forEach(score => {
+      studentScores[score.subjectId] = score.score;
+    });
+
+    let row = `<tr><td>${students[studentId]}</td>`;
+
+    uniqueSubjectIds.forEach(subjectId => {
+      const score = studentScores[subjectId] !== undefined ? studentScores[subjectId] : 'N/A';
+      row += `<td>${score}</td>`;
+    });
+    
+    // Actions column for the whole student row
+    row += `<td><button class="danger" onclick="resetStudentScores('${studentId}')">Reset All</button></td></tr>`;
+    
+    resultsTbody.innerHTML += row;
   });
 }
 
@@ -891,16 +929,15 @@ async function resetAllScores(){
   }
 }
 
-async function resetStudentAttempts(studentId, subjectId) {
-    const student = db.students.find(s => s.id === studentId);
-    const subject = db.subjects.find(s => s.id === subjectId);
-    if (!confirm(`Are you sure you want to delete ${student.name}'s score for ${subject.name}?`)) {
+async function resetStudentScores(studentId) {
+    const student = db.students.find(s => s.id.toString() === studentId.toString());
+    if (!confirm(`Are you sure you want to delete all scores for ${student.name}?`)) {
         return;
     }
-    db.scores = (db.scores || []).filter(score => !(score.studentId === studentId && score.subjectId === subjectId));
+    db.scores = (db.scores || []).filter(score => score.studentId.toString() !== studentId.toString());
     await saveToBin();
-    renderAllAdminLists();
-    statusEl.textContent = `${student.name}'s exam attempt for ${subject.name} has been reset.`;
+    renderResults();
+    statusEl.textContent = `${student.name}'s exam attempts have been reset.`;
 }
 
 /* ============================
@@ -942,7 +979,7 @@ function populateStudentSubjects(){
 }
 
 function hasTakenExam(studentId, subjectId) {
-  const subjectRecord = db.scores.find(score => score.studentId === studentId && score.subjectId === parseInt(subjectId));
+  const subjectRecord = db.scores.find(score => score.studentId.toString() === studentId.toString() && score.subjectId.toString() === subjectId.toString());
   return !!subjectRecord;
 }
 
