@@ -170,35 +170,39 @@
     }
     /* Updated styles for the student exam interface */
 .exam-question {
+.exam-question {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
   padding: 10px;
 }
-
 .question-options {
   display: flex;
-  flex-direction: column; /* horizontal layout */
-  gap: 0.5rem;         /* space between options */
+  flex-direction: column;
+  gap: 0.5rem; /* This sets the vertical space between options */
+  flex-wrap:nowrap
   margin-top: 1rem;
-  flex-wrap: nowrap;     /* wrap nicely on smaller screens */
 }
-
 .question-options label {
   display: flex;
-  align-items: left;
-  gap: 0rem;
-  white-space: nowrap;
+  /* Removed align-items: center or changed to flex-start */
+  align-items: flex-start; /* Align items to the start (left/top) of the flex container */
+  gap: 0.5rem; /* Reduced gap to bring the radio button and text closer */
+  width: 100%;
 }
-
 .question-options label input[type="radio"] {
   margin: 0;
+  margin-right: 0.25rem; /* New: Added a small right margin for spacing */
   flex-shrink: 0;
+  /* Ensure the radio button itself is not causing extra space */
+  align-self: flex-start; /* Ensure the radio button aligns to the start within its label */
+  position: relative; /* Needed for more precise control if you encounter issues */
+  top: 0.2em; /* Adjust this value if the radio button isn't vertically aligned with the text's top */
+}
+.question-options label span {
+  flex-grow: 1;
 
-    }
-    .question-options label span {
-      flex-grow: 1;
     }
     .exam-nav {
       display: flex;
