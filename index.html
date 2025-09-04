@@ -643,6 +643,9 @@ function handleLogin(){
     const p = loginPassEl.value;
     const cls = loginClassSelect.value;
 
+const loginMsg = document.getElementById('login-message');
+loginMsg.textContent = `Trying to log in with user: '${u}', class: '${cls}', pass: '${p}'`;
+
     // First, check for admin login
     if (u.toLowerCase() === 'admin' && p === '1234') {
       currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
@@ -660,6 +663,9 @@ function handleLogin(){
         showStudent();
         return;
       }
+else {
+  loginMsg.textContent = "Student not found with those credentials.";
+}
     }
 
     // If no conditions were met, display a general error message
