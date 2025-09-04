@@ -634,8 +634,6 @@ function populateLoginClasses() {
 }
 
 function handleLogin(){
-  function handleLogin(){
-  alert("Login button clicked!");
   const u = loginUserEl.value.trim();
   const p = loginPassEl.value;
   const cls = loginClassSelect.value;
@@ -683,7 +681,7 @@ function handleAddSubject(){
   const subjectClass = newSubjectClass.value.trim();
   if(!name || !subjectClass) return alert('Enter subject name and class');
   const id = Date.now();
-  db.subjects.push({ id, name, duration: 1, defaultMark: 1, class: subjectClass });
+  db.subjects.push({ id, name, duration: 1, class: subjectClass, defaultMark: 1 });
   db.questions = db.questions || [];
   saveToBin();
   newSubjectName.value = '';
