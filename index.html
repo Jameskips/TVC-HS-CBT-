@@ -617,7 +617,6 @@ function toggleAccordion(sectionId) {
   }
 }
 
-
 /* ============================
     Login handler
     ============================ */
@@ -632,14 +631,14 @@ function populateLoginClasses() {
     loginClassSelect.appendChild(opt);
   });
 }
+
 function handleLogin(){
   const u = loginUserEl.value.trim();
   const cls = loginClassSelect.value;
   const p = loginPassEl.value;
 
-  // Admin login check
+  // Admin login check (does not require a class)
   if(u.toLowerCase() === 'admin' && p === '1234'){
-    // Do not require a class for admin
     currentUser = { role:'admin', id:'admin', name:'Administrator' };
     loginMsg.textContent = "";
     showAdmin();
@@ -661,7 +660,7 @@ function handleLogin(){
   }
   
   loginMsg.textContent = "Invalid login credentials.";
-  }
+}
 
 function togglePassword() {
   const loginPassInput = document.getElementById('loginPass');
