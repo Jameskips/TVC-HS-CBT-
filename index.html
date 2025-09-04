@@ -632,33 +632,31 @@ function populateLoginClasses() {
   });
 }
 
-function handleLogin(){
+function handleLogin() {
   const u = loginUserEl.value.trim();
-  const cls = loginClassSelect.value;
   const p = loginPassEl.value;
+  const cls = loginClassSelect.value;
 
-  // Admin login check (does not require a class)
-  if(u.toLowerCase() === 'admin' && p === '1234'){
-    currentUser = { role:'admin', id:'admin', name:'Administrator' };
+  // First, check for admin login
+  if (u.toLowerCase() === 'admin' && p === '1234') {
+    currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
     loginMsg.textContent = "";
     showAdmin();
     return;
   }
-  
-  // Student login check
-  if(!u || !cls || !p){ 
-    loginMsg.textContent = 'Enter username, class & password'; 
-    return; 
+
+  // Next, check for student login. This requires a class to be selected.
+  if (u && cls && p) {
+    const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
+    if (stu) {
+      currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
+      loginMsg.textContent = "";
+      showStudent();
+      return;
+    }
   }
 
-  const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
-  if(stu){
-    currentUser = { role:'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
-    loginMsg.textContent = "";
-    showStudent();
-    return;
-  }
-  
+  // If no conditions were met, display a general error message
   loginMsg.textContent = "Invalid login credentials.";
 }
 
