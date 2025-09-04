@@ -268,9 +268,6 @@
       <h2>Login</h2>
       <div class="row" style="gap:8px">
         <input id="loginUser" placeholder="Username (admin or student username)" />
-        <select id="loginClassSelect">
-          <option value="">Select Class</option>
-        </select>
         <div class="password-container">
           <input id="loginPass" placeholder="Password" type="password" />
           <span class="password-toggle" onclick="togglePassword()">👁️</span>
@@ -475,7 +472,6 @@ let currentQuestionIndex = 0;
     DOM refs
     ============================ */
 const loginUserEl = document.getElementById('loginUser');
-const loginClassSelect = document.getElementById('loginClassSelect');
 const loginPassEl = document.getElementById('loginPass');
 const btnLogin = document.getElementById('btnLogin');
 const loginMsg = document.getElementById('loginMsg');
@@ -558,7 +554,6 @@ async function saveToBin(){
     ============================ */
 async function init(){
   await loadFromBin();
-  populateLoginClasses();
   renderAllAdminLists();
   bindEvents();
   loginCard.classList.remove('hidden');
@@ -617,46 +612,28 @@ function toggleAccordion(sectionId) {
   }
 }
 
+
 /* ============================
     Login handler
     ============================ */
-function populateLoginClasses() {
-  const classes = new Set();
-  db.students.forEach(s => classes.add(s.class));
-  loginClassSelect.innerHTML = '<option value="">Select Class</option>';
-  classes.forEach(cls => {
-    const opt = document.createElement('option');
-    opt.value = cls;
-    opt.textContent = cls;
-    loginClassSelect.appendChild(opt);
-  });
-}
-
 function handleLogin(){
   const u = loginUserEl.value.trim();
   const p = loginPassEl.value;
-  const cls = loginClassSelect.value;
+  if(!u || !p){ loginMsg.textContent = 'Enter username & password'; return; }
 
-  // First, check for admin login
-  if (u.toLowerCase() === 'admin' && p === '1234') {
-    currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
-    loginMsg.textContent = "";
+  if(u.toLowerCase() === 'admin' && p === '1234'){
+    currentUser = { role:'admin', id:'admin', name:'Administrator' };
     showAdmin();
     return;
   }
 
-  // Next, check for student login. This requires a class to be selected.
-  if (u && cls && p) {
-    const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
-    if (stu) {
-      currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
-      loginMsg.textContent = "";
-      showStudent();
-      return;
-    }
+  const stu = db.students.find(s => (s.username === u || s.name === u) && s.password === p);
+  if(stu){
+    currentUser = { role:'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
+    showStudent();
+    return;
   }
 
-  // If no conditions were met, display a general error message
   loginMsg.textContent = "Invalid login credentials.";
 }
 
@@ -846,7 +823,7 @@ function handleAddStudent(){
   const name = stuFullName.value.trim();
   const cls = stuClass.value.trim();
   const pass = stuPassword.value;
-  if(!username || !name || !pass || !cls) return alert('Fill all fields');
+  if(!username || !name || !pass) return alert('Fill username, full name and password');
   if(editStudentId){
     const s = db.students.find(x => x.id === editStudentId);
     if(!s) return;
@@ -859,7 +836,6 @@ function handleAddStudent(){
   saveToBin();
   clearStudentForm();
   renderStudents();
-  populateLoginClasses(); // Update login class list
 }
 
 function renderStudents(){
@@ -888,7 +864,6 @@ async function deleteStudent(id){
   db.students = (db.students||[]).filter(s=>s.id!==id);
   await saveToBin();
   renderAllAdminLists();
-  populateLoginClasses(); // Update login class list
 }
 
 function cancelStudentEdit(){
