@@ -273,7 +273,7 @@
         </select>
         <div class="password-container">
           <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()">👁️</span>
+          <span class="password-toggle" onclick="togglePassword()"></span>
         </div>
         <button id="btnLogin">Login</button>
       </div>
@@ -436,13 +436,15 @@
     <div id="status" class="muted" style="margin-top:8px"></div>
   </div>
 
+  <div id="error-message" style="color: red; margin-top: 15px;"></div>
+
 <script>
 /* ============================
     CONFIG: JSONBin credentials
     REPLACE THESE with your bin ID and API key
     ============================ */
-const BIN_ID = "68b390e2d0ea881f406c6e1b";      // ← paste your JSONBin bin id here
-const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    // ← paste your JSONBin X-Master-Key here
+const BIN_ID = "68b390e2d0ea881f406c6e1b";      //  paste your JSONBin bin id here
+const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    //  paste your JSONBin X-Master-Key here
 
 /* ============================
     Local fallback state (used if bin not available)
@@ -633,31 +635,41 @@ function populateLoginClasses() {
 }
 
 function handleLogin(){
-  const u = loginUserEl.value.trim();
-  const p = loginPassEl.value;
-  const cls = loginClassSelect.value;
+  const errorMessageDiv = document.getElementById('error-message');
+  errorMessageDiv.textContent = ''; // Clear any previous error
 
-  // First, check for admin login
-  if (u.toLowerCase() === 'admin' && p === '1234') {
-    currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
-    loginMsg.textContent = "";
-    showAdmin();
-    return;
-  }
+  try {
+    const u = loginUserEl.value.trim();
+    const p = loginPassEl.value;
+    const cls = loginClassSelect.value;
 
-  // Next, check for student login. This requires a class to be selected.
-  if (u && cls && p) {
-    const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
-    if (stu) {
-      currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
+    // First, check for admin login
+    if (u.toLowerCase() === 'admin' && p === '1234') {
+      currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
       loginMsg.textContent = "";
-      showStudent();
+      showAdmin();
       return;
     }
-  }
 
-  // If no conditions were met, display a general error message
-  loginMsg.textContent = "Invalid login credentials.";
+    // Next, check for student login. This requires a class to be selected.
+    if (u && cls && p) {
+      const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
+      if (stu) {
+        currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
+        loginMsg.textContent = "";
+        showStudent();
+        return;
+      }
+    }
+
+    // If no conditions were met, display a general error message
+    loginMsg.textContent = "Invalid login credentials.";
+
+  } catch (e) {
+    // If an error happens, display it on the page
+    errorMessageDiv.textContent = 'Login Error: ' + e.message;
+    console.error('Login Error:', e);
+  }
 }
 
 function togglePassword() {
@@ -665,10 +677,10 @@ function togglePassword() {
   const toggleSpan = document.querySelector('.password-toggle');
   if (loginPassInput.type === 'password') {
     loginPassInput.type = 'text';
-    toggleSpan.textContent = '🙈';
+    toggleSpan.textContent = '';
   } else {
     loginPassInput.type = 'password';
-    toggleSpan.textContent = '👁️';
+    toggleSpan.textContent = '';
   }
 }
 
