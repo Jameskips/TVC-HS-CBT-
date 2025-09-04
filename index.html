@@ -448,6 +448,7 @@ const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; 
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
+  alert("Number of students loaded: " + db.students.length);
   subjects: [{id:1,name:"Mathematics", duration: 1, defaultMark: 1, class: "JSS1"},{id:2,name:"English", duration: 1, defaultMark: 1, class: "JSS1"}, {id:3, name: "Biology", duration: 1, defaultMark: 1, class: "SS1"}],
   questions: [
     {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1, class: "JSS1"}
