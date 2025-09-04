@@ -275,7 +275,7 @@
           <input id="loginPass" placeholder="Password" type="password" />
           <span class="password-toggle" onclick="togglePassword()">👁️</span>
         </div>
-        <button id="btnLogin">Login</button>
+        <button id="btnLogin" onclick="handleLogin()">Login</button>
       </div>
       <p id="loginMsg" class="muted"></p>
     </div>
@@ -478,8 +478,7 @@ let currentQuestionIndex = 0;
 const loginUserEl = document.getElementById('loginUser');
 const loginClassSelect = document.getElementById('loginClassSelect');
 const loginPassEl = document.getElementById('loginPass');
-  const btnLogin = document.getElementById('btnLogin');
-alert("Button found: " + btnLogin);
+const btnLogin = document.getElementById('btnLogin');
 const loginMsg = document.getElementById('loginMsg');
 
 const loginCard = document.getElementById('loginCard');
