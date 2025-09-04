@@ -270,7 +270,7 @@
         <input id="loginUser" placeholder="Username (admin or student username)" />
         <div class="password-container">
           <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()">👁️</span>
+          <span class="password-toggle" onclick="togglePassword()"></span>
         </div>
         <button id="btnLogin">Login</button>
       </div>
@@ -294,8 +294,7 @@
         </div>
         <div id="subjectsAccordion" class="accordion-content hidden">
           <div class="row">
-            <input id="newSubjectName" placeholder="New subject name" />
-            <input id="newSubjectClass" placeholder="Class (e.g. JSS1)" />
+            <input id="newSubjectInput" placeholder="New subject name" />
             <button id="btnAddSubject">Add</button>
           </div>
           <div>
@@ -313,7 +312,7 @@
               </div>
             </div>
           </div>
-          <table><thead><tr><th>Subject</th><th>Class</th><th style="width:160px">Actions</th></tr></thead>
+          <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
             <tbody id="subjectsTbody"></tbody></table>
         </div>
       </div>
@@ -338,14 +337,13 @@
               <input id="qMark" type="number" placeholder="Mark per question" style="display:none"/>
             </div>
             <div class="row">
-              <input id="qClass" placeholder="Class (e.g. JSS1)" />
               <select id="qAnswer"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
               <button id="btnAddQuestion">Add Question</button>
               <button id="btnCancelEdit" class="muted" style="display:none">Cancel Edit</button>
             </div>
           </div>
           <h4 style="margin-top:12px">Existing Questions</h4>
-          <table><thead><tr><th>#</th><th>Question</th><th>Class</th><th>Answer</th><th>Mark</th><th style="width:200px">Actions</th></tr></thead>
+          <table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Mark</th><th style="width:200px">Actions</th></tr></thead>
             <tbody id="questionsTbody"></tbody></table>
         </div>
       </div>
@@ -438,19 +436,19 @@
     CONFIG: JSONBin credentials
     REPLACE THESE with your bin ID and API key
     ============================ */
-const BIN_ID = "68b390e2d0ea881f406c6e1b";      // ← paste your JSONBin bin id here
-const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    // ← paste your JSONBin X-Master-Key here
+const BIN_ID = "68b390e2d0ea881f406c6e1b";      //  paste your JSONBin bin id here
+const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    //  paste your JSONBin X-Master-Key here
 
 /* ============================
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
-  subjects: [{id:1,name:"Mathematics", duration: 1, defaultMark: 1, class: "JSS1"},{id:2,name:"English", duration: 1, defaultMark: 1, class: "JSS1"}, {id:3, name: "Biology", duration: 1, defaultMark: 1, class: "SS1"}],
+  subjects: [{id:1,name:"Mathematics", duration: 1, defaultMark: 1},{id:2,name:"English", duration: 1, defaultMark: 1}],
   questions: [
-    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1, class: "JSS1"}
+    {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1}
   ],
   students: [
-    {id:201, username:"student01", name:"John Doe", class:"JSS1", password:"pass123"}
+    {id:201, username:"student01", name:"John Doe", class:"SS1", password:"pass123"}
   ],
   scores: []
 };
@@ -480,8 +478,7 @@ const loginCard = document.getElementById('loginCard');
 const adminCard = document.getElementById('adminCard');
 const studentCard = document.getElementById('studentCard');
 
-const newSubjectName = document.getElementById('newSubjectName');
-const newSubjectClass = document.getElementById('newSubjectClass');
+const newSubjectInput = document.getElementById('newSubjectInput');
 const btnAddSubject = document.getElementById('btnAddSubject');
 const subjectsTbody = document.getElementById('subjectsTbody');
 const subjectSelectForQuestions = document.getElementById('subjectSelectForQuestions');
@@ -491,7 +488,6 @@ const subjectMarkInput = document.getElementById('subjectMarkInput');
 const btnSetMark = document.getElementById('btnSetMark');
 
 const qText = document.getElementById('qText'), qA = document.getElementById('qA'), qB = document.getElementById('qB'), qC = document.getElementById('qC'), qMark = document.getElementById('qMark');
-const qClass = document.getElementById('qClass');
 const qAnswer = document.getElementById('qAnswer');
 const btnAddQuestion = document.getElementById('btnAddQuestion'), btnCancelEdit = document.getElementById('btnCancelEdit');
 const questionsTbody = document.getElementById('questionsTbody');
@@ -501,7 +497,7 @@ const btnAddStudent = document.getElementById('btnAddStudent'), btnCancelStudent
 const studentsTbody = document.getElementById('studentsTbody');
 
 const resultsTbody = document.getElementById('resultsTbody');
-const resultsThead = document.getElementById('resultsThead');
+const resultsThead = document.getElementById('resultsThead'); // NEW: Added reference to thead
 const btnResetScores = document.getElementById('btnResetScores');
 
 const studentNameDisplay = document.getElementById('studentNameDisplay');
@@ -642,10 +638,10 @@ function togglePassword() {
   const toggleSpan = document.querySelector('.password-toggle');
   if (loginPassInput.type === 'password') {
     loginPassInput.type = 'text';
-    toggleSpan.textContent = '🙈';
+    toggleSpan.textContent = '';
   } else {
     loginPassInput.type = 'password';
-    toggleSpan.textContent = '👁️';
+    toggleSpan.textContent = '';
   }
 }
 
@@ -653,15 +649,13 @@ function togglePassword() {
     Admin: Subjects CRUD
     ============================ */
 function handleAddSubject(){
-  const name = newSubjectName.value.trim();
-  const subjectClass = newSubjectClass.value.trim();
-  if(!name || !subjectClass) return alert('Enter subject name and class');
+  const name = newSubjectInput.value.trim();
+  if(!name) return alert('Enter subject name');
   const id = Date.now();
-  db.subjects.push({ id, name, duration: 1, defaultMark: 1, class: subjectClass });
+  db.subjects.push({ id, name, duration: 1, defaultMark: 1 });
   db.questions = db.questions || [];
   saveToBin();
-  newSubjectName.value = '';
-  newSubjectClass.value = '';
+  newSubjectInput.value = '';
   renderAllAdminLists();
 }
 
@@ -701,9 +695,6 @@ async function editSubject(id){
   const newName = prompt('Edit subject name', s.name);
   if(!newName) return;
   s.name = newName.trim();
-  const newClass = prompt('Edit subject class', s.class);
-  if(!newClass) return;
-  s.class = newClass.trim();
   await saveToBin();
   renderAllAdminLists();
 }
@@ -721,7 +712,7 @@ function renderSubjectsTable(){
   subjectSelectForQuestions.innerHTML = '';
   db.subjects.forEach(s => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${s.name}</td><td>${s.class}</td><td></td>`;
+    tr.innerHTML = `<td>${s.name}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> editSubject(s.id);
@@ -730,7 +721,7 @@ function renderSubjectsTable(){
     td.appendChild(editBtn); td.appendChild(delBtn);
     subjectsTbody.appendChild(tr);
 
-    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = `${s.name} (${s.class})`;
+    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
     subjectSelectForQuestions.appendChild(opt);
   });
 }
@@ -743,8 +734,7 @@ function handleAddQuestion(){
   if(!subjId) return alert('Select subject first');
   const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim();
   const ans=qAnswer.value;
-  const questionClass = qClass.value.trim();
-  if(!text || !A || !B || !C || !questionClass) return alert('Fill question, options, and class');
+  if(!text || !A || !B || !C) return alert('Fill question and all options');
   
   const selectedSubject = db.subjects.find(s => s.id === subjId);
   const mark = selectedSubject ? selectedSubject.defaultMark : 1;
@@ -755,14 +745,13 @@ function handleAddQuestion(){
     if(!q) return;
     q.question = text; q.options = [A,B,C]; q.answer = ['A','B','C'].indexOf(ans) >= 0 ? ['A','B','C'].indexOf(ans) : 0;
     q.scoreValue = qMark.value ? parseInt(qMark.value) : mark;
-    q.class = questionClass;
     editQuestionIndex = null;
     document.getElementById('qFormTitle').textContent = 'Add New Question';
     btnCancelEdit.style.display = 'none';
     qMark.style.display = 'none';
   } else {
     const id = Date.now();
-    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0, scoreValue: mark, class: questionClass });
+    db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans) >=0 ? ['A','B','C'].indexOf(ans) : 0, scoreValue: mark });
   }
   saveToBin();
   clearQuestionForm();
@@ -773,7 +762,7 @@ function renderQuestionsFor(subjectId){
   questionsTbody.innerHTML = '';
   (db.questions || []).filter(q => q.subjectId === parseInt(subjectId)).forEach((q, idx) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.class}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
+    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> startEditQuestion(q.id);
@@ -792,7 +781,6 @@ function startEditQuestion(qid){
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
   qMark.value = q.scoreValue || 1;
-  qClass.value = q.class || '';
   qMark.style.display = 'inline-block';
   btnCancelEdit.style.display = 'inline-block';
   subjectSelectForQuestions.value = q.subjectId;
@@ -813,7 +801,7 @@ function cancelQuestionEdit(){
   clearQuestionForm();
 }
 
-function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; qClass.value=''; }
+function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; }
 
 /* ============================
     Admin: Students CRUD (full)
@@ -981,19 +969,10 @@ function renderAllAdminLists(){
 
 function populateStudentSubjects(){
   studentSubjectSelect.innerHTML = '';
-  const studentClass = currentUser.class;
-  const subjectsForClass = db.subjects.filter(s => s.class === studentClass);
-  if(subjectsForClass.length === 0){
-      studentSubjectSelect.innerHTML = '<option>No subjects available for your class</option>';
-      btnStartExam.disabled = true;
-      examDurationInput.value = '';
-      return;
-  }
-  btnStartExam.disabled = false;
-  subjectsForClass.forEach(s => {
+  (db.subjects||[]).forEach(s => {
     const opt = document.createElement('option'); opt.value=s.id; opt.textContent = s.name; studentSubjectSelect.appendChild(opt);
   });
-  const selectedSubject = subjectsForClass.find(s => s.id == studentSubjectSelect.value);
+  const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
   if(selectedSubject) {
       examDurationInput.value = selectedSubject.duration;
   }
@@ -1007,9 +986,8 @@ function hasTakenExam(studentId, subjectId) {
 /* Start exam */
 function startExam(subjectId, durationMin){
   const sid = parseInt(subjectId);
-  const studentClass = currentUser.class;
-  examQuestions = (db.questions || []).filter(q => q.subjectId === sid && q.class === studentClass);
-  if(!examQuestions.length) return alert('No questions for this subject in your class.');
+  examQuestions = (db.questions || []).filter(q => q.subjectId === sid);
+  if(!examQuestions.length) return alert('No questions for this subject');
   
   examTitle.textContent = db.subjects.find(s=>s.id===sid)?.name || 'Exam';
   examCard.classList.remove('hidden');
@@ -1164,7 +1142,7 @@ function renderQuestionsForImpl(subjectId){
   questionsTbody.innerHTML = '';
   (db.questions || []).filter(q => q.subjectId === subjectId).forEach((q, idx) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.class}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
+    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> { startEditQuestion(q.id); };
@@ -1182,7 +1160,6 @@ function startEditQuestion(qid){
   qText.value = q.question; qA.value = q.options[0]||''; qB.value = q.options[1]||''; qC.value = q.options[2]||'';
   qAnswer.value = ['A','B','C'][q.answer] || 'A';
   qMark.value = q.scoreValue || 1;
-  qClass.value = q.class || '';
   qMark.style.display = 'inline-block';
   btnCancelEdit.style.display = 'inline-block';
   subjectSelectForQuestions.value = q.subjectId;
