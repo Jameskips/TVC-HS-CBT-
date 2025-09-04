@@ -275,7 +275,7 @@
           <input id="loginPass" placeholder="Password" type="password" />
           <span class="password-toggle" onclick="togglePassword()">👁️</span>
         </div>
-        <button id="btnLogin" onclick="handleLogin()">Login</button>
+        <button id="btnLogin">Login</button>
       </div>
       <p id="loginMsg" class="muted"></p>
     </div>
@@ -437,7 +437,6 @@
   </div>
 
 <script>
-  alert("The script is running") ;
 /* ============================
     CONFIG: JSONBin credentials
     REPLACE THESE with your bin ID and API key
@@ -558,10 +557,11 @@ async function saveToBin(){
 /* ============================
     Initialization
     ============================ */
-async function init(){
-  await loadFromBin();
+function init(){
+  // Note: We've removed the async/await for simplicity here.
+  loadFromBin();
   populateLoginClasses();
-  //renderAllAdminLists();
+  renderAllAdminLists();
   bindEvents();
   loginCard.classList.remove('hidden');
   statusEl.textContent = "Ready";
@@ -572,7 +572,6 @@ init();
     Event bindings
     ============================ */
 function bindEvents(){
-  alert("enents are binding!");
   btnLogin.addEventListener('click', handleLogin);
   btnAddSubject.addEventListener('click', handleAddSubject);
   btnSetDuration.addEventListener('click', handleSetDuration);
@@ -598,7 +597,7 @@ function bindEvents(){
   btnSubmitExam.addEventListener('click', ()=>{ if(confirm('Submit exam now?')) finalizeExam(studentSubjectSelect.value); });
   btnCancelExam.addEventListener('click', ()=>{ if(confirm('Cancel exam?')){ clearInterval(window._examTimer); examCard.classList.add('hidden'); } });
   btnSaveBin.addEventListener('click', saveToBin);
-  btnReloadBin.addEventListener('click', async()=>{ await loadFromBin(); renderAllAdminLists(); });
+  btnReloadBin.addEventListener('click', ()=>{ loadFromBin(); renderAllAdminLists(); });
   btnLogoutAdmin.addEventListener('click', ()=>{ currentUser=null; adminCard.classList.add('hidden'); loginCard.classList.remove('hidden'); });
   btnLogoutStudent.addEventListener('click', ()=>{ currentUser=null; studentCard.classList.add('hidden'); loginCard.classList.remove('hidden'); });
   document.getElementById('btnExportStudents').addEventListener('click', exportStudentsCSV);
@@ -691,7 +690,7 @@ function handleAddSubject(){
   renderAllAdminLists();
 }
 
-async function handleSetDuration(){
+function handleSetDuration(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select a subject first');
   const duration = parseInt(subjectDurationInput.value);
@@ -706,7 +705,7 @@ async function handleSetDuration(){
   }
 }
 
-async function handleSetMark(){
+function handleSetMark(){
   const subjId = parseInt(subjectSelectForQuestions.value);
   if(!subjId) return alert('Select a subject first');
   const mark = parseInt(subjectMarkInput.value);
@@ -721,7 +720,7 @@ async function handleSetMark(){
   }
 }
 
-async function editSubject(id){
+function editSubject(id){
   const s = db.subjects.find(x => x.id === id);
   if(!s) return;
   const newName = prompt('Edit subject name', s.name);
@@ -730,15 +729,15 @@ async function editSubject(id){
   const newClass = prompt('Edit subject class', s.class);
   if(!newClass) return;
   s.class = newClass.trim();
-  await saveToBin();
+  saveToBin();
   renderAllAdminLists();
 }
 
-async function deleteSubject(id){
+function deleteSubject(id){
   if(!confirm('Delete subject and its questions?')) return;
   db.subjects = db.subjects.filter(s => s.id !== id);
   db.questions = (db.questions||[]).filter(q => q.subjectId !== id);
-  await saveToBin();
+  saveToBin();
   renderAllAdminLists();
 }
 
@@ -824,10 +823,10 @@ function startEditQuestion(qid){
   subjectSelectForQuestions.value = q.subjectId;
 }
 
-async function deleteQuestion(qid){
+function deleteQuestion(qid){
   if(!confirm('Delete this question?')) return;
   db.questions = (db.questions||[]).filter(x => x.id !== qid);
-  await saveToBin();
+  saveToBin();
   renderAllAdminLists();
 }
 
@@ -886,10 +885,10 @@ function startEditStudent(id){
   btnCancelStudentEdit.style.display='inline-block';
 }
 
-async function deleteStudent(id){
+function deleteStudent(id){
   if(!confirm('Delete this student?')) return;
   db.students = (db.students||[]).filter(s=>s.id!==id);
-  await saveToBin();
+  saveToBin();
   renderAllAdminLists();
   populateLoginClasses(); // Update login class list
 }
@@ -960,22 +959,22 @@ function renderResults() {
   });
 }
 
-async function resetAllScores(){
+function resetAllScores(){
   if(confirm('Are you sure you want to delete all exam records and scores? This cannot be undone.')){
     db.scores = [];
-    await saveToBin();
+    saveToBin();
     renderResults();
     statusEl.textContent = 'All exam scores have been reset.';
   }
 }
 
-async function resetStudentScores(studentId) {
+function resetStudentScores(studentId) {
     const student = db.students.find(s => s.id.toString() === studentId.toString());
     if (!confirm(`Are you sure you want to delete all scores for ${student.name}?`)) {
         return;
     }
     db.scores = (db.scores || []).filter(score => score.studentId.toString() !== studentId.toString());
-    await saveToBin();
+    saveToBin();
     renderResults();
     statusEl.textContent = `${student.name}'s exam attempts have been reset.`;
 }
