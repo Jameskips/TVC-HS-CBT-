@@ -561,7 +561,7 @@ async function saveToBin(){
 async function init(){
   await loadFromBin();
   populateLoginClasses();
-  renderAllAdminLists();
+  //renderAllAdminLists();
   bindEvents();
   loginCard.classList.remove('hidden');
   statusEl.textContent = "Ready";
@@ -572,7 +572,7 @@ init();
     Event bindings
     ============================ */
 function bindEvents(){
-  alert("enent is binding");
+  alert("enents are binding!");
   btnLogin.addEventListener('click', handleLogin);
   btnAddSubject.addEventListener('click', handleAddSubject);
   btnSetDuration.addEventListener('click', handleSetDuration);
