@@ -273,7 +273,7 @@
         </select>
         <div class="password-container">
           <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()"></span>
+          <span class="password-toggle" onclick="togglePassword()">👁️</span>
         </div>
         <button id="btnLogin">Login</button>
       </div>
@@ -436,15 +436,13 @@
     <div id="status" class="muted" style="margin-top:8px"></div>
   </div>
 
-  <div id="error-message" style="color: red; margin-top: 15px;"></div>
-
 <script>
 /* ============================
     CONFIG: JSONBin credentials
     REPLACE THESE with your bin ID and API key
     ============================ */
-const BIN_ID = "68b390e2d0ea881f406c6e1b";      //  paste your JSONBin bin id here
-const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    //  paste your JSONBin X-Master-Key here
+const BIN_ID = "68b390e2d0ea881f406c6e1b";      // ← paste your JSONBin bin id here
+const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";    // ← paste your JSONBin X-Master-Key here
 
 /* ============================
     Local fallback state (used if bin not available)
@@ -455,7 +453,8 @@ let db = {
     {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1, class: "JSS1"}
   ],
   students: [
-    {id:201, username:"student01", name:"John Doe", class:"JSS1", password:"pass123"}
+    {id:201, username:"student01", name:"John Doe", class:"JSS1", password:"pass123"},
+    {id:202, username:"student02", name:"Jane Doe", class:"JSS1", password:"pass456"}
   ],
   scores: []
 };
@@ -635,46 +634,30 @@ function populateLoginClasses() {
 }
 
 function handleLogin(){
-  const errorMessageDiv = document.getElementById('error-message');
-  errorMessageDiv.textContent = ''; // Clear any previous error
+  // TEMP FIX: Bypass the form and try to log in with a known student account.
+  // Replace these with a real student from your db.students array.
+  const u = "student01";
+  const cls = "JSS1";
+  const p = "pass123";
 
-  try {
-    const u = loginUserEl.value.trim();
-    const p = loginPassEl.value;
-    const cls = loginClassSelect.value;
+  // Check for admin login (still works as before)
+  if (loginUserEl.value.toLowerCase() === 'admin' && loginPassEl.value === '1234') {
+    currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
+    loginMsg.textContent = "";
+    showAdmin();
+    return;
+  }
 
-const loginMsg = document.getElementById('login-message');
-loginMsg.textContent = `Trying to log in with user: '${u}', class: '${cls}', pass: '${p}'`;
+  // Check for student login
+  const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
 
-    // First, check for admin login
-    if (u.toLowerCase() === 'admin' && p === '1234') {
-      currentUser = { role: 'admin', id: 'admin', name: 'Administrator' };
-      loginMsg.textContent = "";
-      showAdmin();
-      return;
-    }
-
-    // Next, check for student login. This requires a class to be selected.
-    if (u && cls && p) {
-      const stu = db.students.find(s => s.username === u && s.class === cls && s.password === p);
-      if (stu) {
-        currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
-        loginMsg.textContent = "";
-        showStudent();
-        return;
-      }
-else {
-  loginMsg.textContent = "Student not found with those credentials.";
-}
-    }
-
-    // If no conditions were met, display a general error message
-    loginMsg.textContent = "Invalid login credentials.";
-
-  } catch (e) {
-    // If an error happens, display it on the page
-    errorMessageDiv.textContent = 'Login Error: ' + e.message;
-    console.error('Login Error:', e);
+  if (stu) {
+    currentUser = { role: 'student', id: stu.id, username: stu.username, name: stu.name, class: stu.class };
+    loginMsg.textContent = "";
+    showStudent();
+    alert("Login successful!");
+  } else {
+    loginMsg.textContent = "Hard-coded login failed. Check the credentials in the code.";
   }
 }
 
@@ -683,10 +666,10 @@ function togglePassword() {
   const toggleSpan = document.querySelector('.password-toggle');
   if (loginPassInput.type === 'password') {
     loginPassInput.type = 'text';
-    toggleSpan.textContent = '';
+    toggleSpan.textContent = '🙈';
   } else {
     loginPassInput.type = 'password';
-    toggleSpan.textContent = '';
+    toggleSpan.textContent = '👁️';
   }
 }
 
