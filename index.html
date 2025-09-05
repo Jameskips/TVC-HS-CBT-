@@ -2,22 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — CBT (JSONBin)</title>
+  <title>TVC High School — CBT</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    h1,h2,h3,h4 { margin: 6px 0 10px; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-    th { background: #f0f0f0; }
-    button { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; }
-    button.muted { background: #ddd; }
+    input, select, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; }
+    button.muted { background: #eee; }
     button.danger { background: #e74c3c; color: #fff; }
-    button.small { font-size: 12px; padding: 2px 6px; }
-    input, select { padding: 4px; }
-    .muted { color: #555; }
+    button.primary { background: #2962ff; color: #fff; }
+    button.small { padding: 4px 8px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #e6e6e6; padding: 8px; text-align: left; }
+    th { background: #f8f8f8; }
+    .muted { color: #666; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background:#f0f0f0; font-size: 12px; }
+    .timer { font-weight: bold; }
+    .exam-option { padding: 10px; border:1px solid #ddd; border-radius:8px; cursor: pointer; }
+    .exam-option.selected { outline: 2px solid #2962ff; }
+    .qkeys { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .qkey { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; border-radius:8px; cursor:pointer; }
+    .qkey.active { background:#2962ff; color:#fff; border-color:#2962ff; }
+    .qkey.answered { background:#e8f0ff; border-color:#2962ff; }
   </style>
 </head>
 <body>
@@ -27,11 +38,14 @@
     <!-- LOGIN -->
     <div id="loginCard" class="card">
       <h2>Login</h2>
-      <input id="loginUser" placeholder="Username" />
-      <input id="loginClass" placeholder="Class (e.g. JSS1)" />
-      <input id="loginPass" type="password" placeholder="Password" />
-      <button id="btnLogin">Login</button>
+      <div class="row">
+        <input id="loginUser" placeholder="Username" />
+        <input id="loginClass" placeholder="Class (e.g. JSS1)" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button id="btnLogin" class="primary">Login</button>
+      </div>
       <p id="loginMsg" class="muted"></p>
+      <p class="muted">Admin: <span class="pill">admin / admin</span></p>
     </div>
 
     <!-- ADMIN DASHBOARD -->
@@ -41,33 +55,34 @@
         <button id="btnLogoutAdmin" class="muted">Logout</button>
       </div>
 
-      <!-- SUBJECTS -->
+      <!-- SUBJECTS CRUD -->
       <div class="card">
         <h3>Subjects</h3>
         <div class="row">
-          <input id="newSubjectInput" placeholder="New subject name" />
+          <input id="newSubjectInput" placeholder="Subject name (e.g. Mathematics)" />
           <input id="newSubjectClassInput" placeholder="Class (e.g. JSS1)" />
-          <button id="btnAddSubject">Add</button>
+          <input id="newSubjectDuration" type="number" min="1" placeholder="Duration (mins)" style="width:160px" />
+          <button id="btnAddSubject" class="primary">Add Subject</button>
         </div>
         <table>
-          <thead><tr><th>Subject</th><th>Class</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Actions</th></tr></thead>
           <tbody id="subjectsTbody"></tbody>
         </table>
       </div>
 
-      <!-- QUESTIONS -->
+      <!-- QUESTIONS CRUD -->
       <div class="card">
         <h3>Questions</h3>
         <div class="row">
           <select id="questionSubjectSelect"></select>
         </div>
-        <div class="row">
-          <input id="questionText" placeholder="Question text" style="flex:1" />
+        <div class="row" style="flex-direction:column; align-items:stretch">
+          <textarea id="questionText" placeholder="Question text" rows="2"></textarea>
         </div>
-        <div class="row">
-          <input id="optionA" placeholder="Option A" />
-          <input id="optionB" placeholder="Option B" />
-          <input id="optionC" placeholder="Option C" />
+        <div class="row" style="flex-wrap:nowrap">
+          <input id="optionA" placeholder="Option A" style="flex:1" />
+          <input id="optionB" placeholder="Option B" style="flex:1" />
+          <input id="optionC" placeholder="Option C" style="flex:1" />
         </div>
         <div class="row">
           <label>Correct:</label>
@@ -76,15 +91,15 @@
             <option value="B">B</option>
             <option value="C">C</option>
           </select>
-          <button id="btnAddQuestion">Add Question</button>
+          <button id="btnAddQuestion" class="primary">Add Question</button>
         </div>
         <table>
-          <thead><tr><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
+          <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
           <tbody id="questionsTbody"></tbody>
         </table>
       </div>
 
-      <!-- STUDENTS -->
+      <!-- STUDENTS CRUD -->
       <div class="card">
         <h3>Students</h3>
         <div class="row">
@@ -92,7 +107,8 @@
           <input id="stuFullName" placeholder="Full name" />
           <input id="stuClass" placeholder="Class (e.g. JSS1)" />
           <input id="stuPassword" placeholder="Password" />
-          <button id="btnAddStudent">Add</button>
+          <button id="btnAddStudent" class="primary">Add Student</button>
+          <button id="btnExportStudents" class="muted">Export Students CSV</button>
         </div>
         <table>
           <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
@@ -103,7 +119,15 @@
       <!-- RESULTS -->
       <div class="card">
         <h3>Results</h3>
-        <button id="btnExportResults" class="muted">Export Results CSV</button>
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <label class="muted">Filter by Class:</label>
+            <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+          </div>
+          <div class="row">
+            <button id="btnExportResults" class="muted">Export Results CSV</button>
+          </div>
+        </div>
         <table>
           <thead id="resultsThead"></thead>
           <tbody id="resultsTbody"></tbody>
@@ -113,26 +137,60 @@
 
     <!-- STUDENT DASHBOARD -->
     <div id="studentCard" class="card hidden">
-      <h2 id="studentHeader">Student Panel</h2>
-      <div id="studentSubjects"></div>
-      <button id="btnLogoutStudent" class="muted">Logout</button>
+      <div class="row" style="justify-content:space-between">
+        <h2 id="studentHeader">Student Panel</h2>
+        <button id="btnLogoutStudent" class="muted">Logout</button>
+      </div>
+
+      <!-- Subject list -->
+      <div id="studentSubjects" class="card"></div>
+
+      <!-- Exam view -->
+      <div id="examCard" class="card hidden">
+        <div class="row" style="justify-content:space-between">
+          <h3 id="examSubjectTitle">Exam</h3>
+          <div>Time left: <span id="examTimer" class="timer">--:--</span></div>
+        </div>
+        <div id="examQuestionBox" class="card" style="background:#fafafa"></div>
+        <div class="row" style="justify-content:space-between; margin-top:6px">
+          <div class="row">
+            <button id="btnPrevQ" class="muted">Previous</button>
+            <button id="btnNextQ" class="primary">Next</button>
+            <button id="btnSubmitExam" class="danger hidden">Submit</button>
+          </div>
+        </div>
+        <div id="questionKeys" class="qkeys"></div>
+        <p id="examMsg" class="muted"></p>
+      </div>
     </div>
   </div>
 
 <script>
 /* ============================
-   DATABASE
+   SIMPLE DATABASE (in-memory)
 ============================ */
 let db = {
-  subjects: [],
-  questions: [],
-  students: [],
-  scores: []
+  subjects: [
+    // Example:
+    // {id: 1, name: "Mathematics", class: "JSS1", duration: 5}
+  ],
+  questions: [
+    // Example:
+    // { id: 11, subjectId: 1, question: "2 + 2 = ?", A:"3", B:"4", C:"5", correct:"B" }
+  ],
+  students: [
+    // Example student if needed:
+    // {id:101, username:"jss1stud", name:"John Doe", class:"JSS1", password:"1234"}
+  ],
+  scores: [
+    // { studentId: 101, subjectId: 1, subject:"Mathematics", score: 3 }
+  ]
 };
+
 let currentUser = null;
 
 /* ============================
-   LOGIN
+   LOGIN / LOGOUT
 ============================ */
 btnLogin.onclick = () => {
   const username = loginUser.value.trim();
@@ -142,136 +200,503 @@ btnLogin.onclick = () => {
   if (username === "admin" && password === "admin") {
     loginCard.classList.add("hidden");
     adminCard.classList.remove("hidden");
-    renderSubjects(); renderQuestions(); renderStudents(); renderResults();
+    renderSubjects(); renderQuestionSubjects(); renderQuestions();
+    renderStudents(); refreshResultsFilters(); renderResults();
+    loginMsg.textContent = "";
     currentUser = { role: "admin" };
     return;
   }
 
-  const student = db.students.find(s=>s.username===username && s.class===cls && s.password===password);
+  const student = db.students.find(
+    s => s.username === username && s.class === cls && s.password === password
+  );
   if (student) {
     loginCard.classList.add("hidden");
     studentCard.classList.remove("hidden");
-    studentHeader.textContent = "Student Panel — " + student.name + " (" + student.class + ")";
-    currentUser = { role:"student", ...student };
+    studentHeader.textContent = `Student Panel — ${student.name} (${student.class})`;
+    currentUser = { role: "student", ...student };
     renderStudentSubjects();
     return;
   }
 
-  loginMsg.textContent = "Invalid login";
+  loginMsg.textContent = "Invalid username, password, or class.";
 };
 
 btnLogoutAdmin.onclick = () => { adminCard.classList.add("hidden"); loginCard.classList.remove("hidden"); };
-btnLogoutStudent.onclick = () => { studentCard.classList.add("hidden"); loginCard.classList.remove("hidden"); };
+btnLogoutStudent.onclick = () => { studentCard.classList.add("hidden"); loginCard.classList.remove("hidden"); stopExamTimer(); };
 
 /* ============================
-   SUBJECTS CRUD
+   SUBJECTS — CRUD
 ============================ */
 btnAddSubject.onclick = () => {
-  const name=newSubjectInput.value.trim(), cls=newSubjectClassInput.value.trim();
-  if(!name||!cls) return alert("Enter subject & class");
-  db.subjects.push({id:Date.now(),name, class:cls});
-  newSubjectInput.value=newSubjectClassInput.value="";
-  renderSubjects(); renderQuestionSubjects();
+  const name = newSubjectInput.value.trim();
+  const cls  = newSubjectClassInput.value.trim();
+  const dur  = parseInt(newSubjectDuration.value,10);
+  if (!name || !cls || !dur || dur < 1) return alert("Enter subject, class and duration (mins)");
+  db.subjects.push({ id: Date.now(), name, class: cls, duration: dur });
+  newSubjectInput.value = newSubjectClassInput.value = newSubjectDuration.value = "";
+  renderSubjects(); renderQuestionSubjects(); renderStudentSubjects();
+  refreshResultsFilters(); renderResults();
 };
+
 function renderSubjects(){
-  subjectsTbody.innerHTML="";
-  db.subjects.forEach(s=>{
-    subjectsTbody.innerHTML+=`<tr><td>${s.name}</td><td>${s.class}</td>
-      <td><button class="small" onclick="editSubject(${s.id})">Edit</button>
-      <button class="small danger" onclick="deleteSubject(${s.id})">Delete</button></td></tr>`;
+  subjectsTbody.innerHTML = "";
+  db.subjects.forEach(s => {
+    subjectsTbody.innerHTML += `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.class}</td>
+        <td>${s.duration}</td>
+        <td>
+          <button class="small" onclick="editSubject(${s.id})">Edit</button>
+          <button class="small danger" onclick="deleteSubject(${s.id})">Delete</button>
+        </td>
+      </tr>`;
   });
-  renderQuestionSubjects();
 }
 function editSubject(id){
-  const s=db.subjects.find(x=>x.id===id);
-  const newName=prompt("Edit subject name:",s.name);
-  const newClass=prompt("Edit class:",s.class);
-  if(newName&&newClass){ s.name=newName; s.class=newClass; renderSubjects(); }
+  const s = db.subjects.find(x => x.id === id);
+  if (!s) return;
+  const name = prompt("Edit subject name:", s.name) ?? s.name;
+  const cls  = prompt("Edit class:", s.class) ?? s.class;
+  let dur    = prompt("Edit duration (minutes):", s.duration);
+  dur = parseInt(dur,10) || s.duration;
+  s.name = name.trim() || s.name;
+  s.class = cls.trim() || s.class;
+  s.duration = dur > 0 ? dur : s.duration;
+  renderSubjects(); renderQuestionSubjects(); renderStudentSubjects();
+  refreshResultsFilters(); renderResults();
 }
-function deleteSubject(id){ db.subjects=db.subjects.filter(s=>s.id!==id); renderSubjects(); }
+function deleteSubject(id){
+  if (!confirm("Delete this subject and its questions?")) return;
+  db.subjects = db.subjects.filter(s => s.id !== id);
+  db.questions = db.questions.filter(q => q.subjectId !== id);
+  db.scores = db.scores.filter(sc => sc.subjectId !== id);
+  renderSubjects(); renderQuestionSubjects(); renderQuestions();
+  renderStudentSubjects(); refreshResultsFilters(); renderResults();
+}
 
 /* ============================
-   QUESTIONS CRUD
+   QUESTIONS — CRUD (A,B,C only)
 ============================ */
-btnAddQuestion.onclick = () => {
-  const subId=parseInt(questionSubjectSelect.value);
-  const text=questionText.value.trim();
-  if(!subId||!text) return alert("Enter question & select subject");
-  db.questions.push({
-    id:Date.now(), subjectId:subId, question:text,
-    A:optionA.value, B:optionB.value, C:optionC.value,
-    correct:correctOption.value
-  });
-  questionText.value=optionA.value=optionB.value=optionC.value="";
-  renderQuestions();
-};
 function renderQuestionSubjects(){
-  questionSubjectSelect.innerHTML="";
-  db.subjects.forEach(s=>{
-    questionSubjectSelect.innerHTML+=`<option value="${s.id}">${s.name} (${s.class})</option>`;
+  questionSubjectSelect.innerHTML = "";
+  db.subjects.forEach(s => {
+    questionSubjectSelect.innerHTML += `<option value="${s.id}">${s.name} (${s.class}) — ${s.duration} mins</option>`;
   });
 }
+btnAddQuestion.onclick = () => {
+  const subId = parseInt(questionSubjectSelect.value,10);
+  const text  = questionText.value.trim();
+  const A = optionA.value.trim(), B = optionB.value.trim(), C = optionC.value.trim();
+  const correct = correctOption.value;
+  if (!subId || !text || !A || !B || !C) return alert("Enter question and all options A, B, C");
+  db.questions.push({ id: Date.now(), subjectId: subId, question: text, A, B, C, correct });
+  questionText.value = optionA.value = optionB.value = optionC.value = "";
+  renderQuestions();
+};
 function renderQuestions(){
-  questionsTbody.innerHTML="";
-  db.questions.forEach(q=>{
-    const subj=db.subjects.find(s=>s.id===q.subjectId);
-    questionsTbody.innerHTML+=`<tr><td>${q.question}</td><td>${subj?subj.name+" ("+subj.class+")":""}</td>
-      <td>${q.correct}</td>
-      <td><button class="small" onclick="editQuestion(${q.id})">Edit</button>
-      <button class="small danger" onclick="deleteQuestion(${q.id})">Delete</button></td></tr>`;
+  questionsTbody.innerHTML = "";
+  let i = 1;
+  db.questions.forEach(q => {
+    const subj = db.subjects.find(s => s.id === q.subjectId);
+    questionsTbody.innerHTML += `
+      <tr>
+        <td>${i++}</td>
+        <td>${q.question}</td>
+        <td>${subj ? `${subj.name} (${subj.class})` : "-"}</td>
+        <td>${q.correct}</td>
+        <td>
+          <button class="small" onclick="editQuestion(${q.id})">Edit</button>
+          <button class="small danger" onclick="deleteQuestion(${q.id})">Delete</button>
+        </td>
+      </tr>`;
   });
 }
 function editQuestion(id){
-  const q=db.questions.find(x=>x.id===id);
-  const newQ=prompt("Edit question:",q.question);
-  if(newQ) q.question=newQ;
+  const q = db.questions.find(x => x.id === id);
+  if (!q) return;
+  const newQ = prompt("Edit question:", q.question);
+  if (newQ && newQ.trim()) q.question = newQ.trim();
+  const newA = prompt("Edit option A:", q.A); if (newA !== null) q.A = newA;
+  const newB = prompt("Edit option B:", q.B); if (newB !== null) q.B = newB;
+  const newC = prompt("Edit option C:", q.C); if (newC !== null) q.C = newC;
+  const newCorrect = prompt("Correct option (A/B/C):", q.correct);
+  if (newCorrect && ["A","B","C"].includes(newCorrect.toUpperCase())) q.correct = newCorrect.toUpperCase();
   renderQuestions();
 }
-function deleteQuestion(id){ db.questions=db.questions.filter(q=>q.id!==id); renderQuestions(); }
+function deleteQuestion(id){
+  db.questions = db.questions.filter(q => q.id !== id);
+  renderQuestions();
+}
 
 /* ============================
-   STUDENTS CRUD
+   STUDENTS — CRUD
 ============================ */
 btnAddStudent.onclick = () => {
-  db.students.push({id:Date.now(),username:stuUsername.value,name:stuFullName.value,class:stuClass.value,password:stuPassword.value});
-  stuUsername.value=stuFullName.value=stuClass.value=stuPassword.value="";
-  renderStudents();
+  const username = stuUsername.value.trim();
+  const name = stuFullName.value.trim();
+  const cls = stuClass.value.trim();
+  const pwd = stuPassword.value.trim();
+  if (!username || !name || !cls || !pwd) return alert("Fill all student fields");
+  if (db.students.some(s => s.username === username))
+    return alert("Username already exists");
+  db.students.push({ id: Date.now(), username, name, class: cls, password: pwd });
+  stuUsername.value = stuFullName.value = stuClass.value = stuPassword.value = "";
+  renderStudents(); refreshResultsFilters(); renderResults();
 };
 function renderStudents(){
-  studentsTbody.innerHTML="";
-  db.students.forEach(s=>{
-    studentsTbody.innerHTML+=`<tr><td>${s.username}</td><td>${s.name}</td><td>${s.class}</td>
-      <td><button class="small" onclick="editStudent(${s.id})">Edit</button>
-      <button class="small danger" onclick="deleteStudent(${s.id})">Delete</button></td></tr>`;
+  studentsTbody.innerHTML = "";
+  db.students.forEach(s => {
+    studentsTbody.innerHTML += `
+      <tr>
+        <td>${s.username}</td>
+        <td>${s.name}</td>
+        <td>${s.class}</td>
+        <td>
+          <button class="small" onclick="editStudent(${s.id})">Edit</button>
+          <button class="small danger" onclick="deleteStudent(${s.id})">Delete</button>
+        </td>
+      </tr>`;
   });
 }
 function editStudent(id){
-  const s=db.students.find(x=>x.id===id);
-  const newName=prompt("Edit name:",s.name);
-  if(newName) s.name=newName;
-  renderStudents();
+  const s = db.students.find(x => x.id === id);
+  if (!s) return;
+  const name = prompt("Edit full name:", s.name);
+  const cls  = prompt("Edit class:", s.class);
+  const pwd  = prompt("Edit password:", s.password);
+  if (name !== null && name.trim()) s.name = name.trim();
+  if (cls  !== null && cls.trim())  s.class = cls.trim();
+  if (pwd  !== null && pwd.trim())  s.password = pwd.trim();
+  renderStudents(); renderStudentSubjects(); refreshResultsFilters(); renderResults();
 }
-function deleteStudent(id){ db.students=db.students.filter(s=>s.id!==id); renderStudents(); }
+function deleteStudent(id){
+  if (!confirm("Delete this student and their scores?")) return;
+  db.students = db.students.filter(s => s.id !== id);
+  db.scores = db.scores.filter(sc => sc.studentId !== id);
+  renderStudents(); refreshResultsFilters(); renderResults(); renderStudentSubjects();
+}
 
 /* ============================
-   RESULTS
+   RESULTS (table + CSV with Total)
 ============================ */
+function refreshResultsFilters(){
+  const sel = adminStudentClassFilter;
+  const current = sel.value || "all";
+  const classes = [...new Set(db.students.map(s=>s.class))].sort();
+  sel.innerHTML = `<option value="all">All Classes</option>` + classes.map(c=>`<option value="${c}" ${c===current?"selected":""}>${c}</option>`).join("");
+}
+adminStudentClassFilter.onchange = renderResults;
+
 function renderResults(){
-  resultsThead.innerHTML="<tr><th>No results yet</th></tr>";
-  resultsTbody.innerHTML="";
-}
-btnExportResults.onclick=()=>alert("CSV export coming soon");
+  resultsThead.innerHTML = "";
+  resultsTbody.innerHTML = "";
+  if (!db.scores.length) {
+    resultsThead.innerHTML = "<tr><th>No results yet</th></tr>";
+    return;
+  }
+  const filter = adminStudentClassFilter.value;
+  const scoresFiltered = db.scores.filter(score => {
+    if (filter === "all") return true;
+    const student = db.students.find(s => s.id == score.studentId);
+    return student && student.class === filter;
+  });
+  if (!scoresFiltered.length){
+    resultsThead.innerHTML = `<tr><th>No results for ${filter}</th></tr>`;
+    return;
+  }
+  const students = {};
+  const subjects = {};
+  scoresFiltered.forEach(score => {
+    const student = db.students.find(s => s.id == score.studentId);
+    if (student){
+      students[student.id] = { name: student.name, class: student.class };
+      subjects[score.subjectId] = score.subject;
+    }
+  });
+  const sids = Object.keys(students);
+  const subids = Object.keys(subjects);
 
-/* ============================
-   STUDENT PANEL
-============================ */
-function renderStudentSubjects(){
-  const subs=db.subjects.filter(s=>s.class===currentUser.class);
-  studentSubjects.innerHTML="<h3>Your Subjects:</h3>";
-  subs.forEach(s=>{
-    studentSubjects.innerHTML+=`<div>${s.name}</div>`;
+  // header
+  let head = "<tr><th>Student</th><th>Class</th>";
+  subids.forEach(id => head += `<th>${subjects[id]}</th>`);
+  head += "<th>Total</th></tr>";
+  resultsThead.innerHTML = head;
+
+  // body
+  sids.forEach(sid => {
+    const st = students[sid];
+    let row = `<tr><td>${st.name}</td><td>${st.class}</td>`;
+    let total = 0;
+    subids.forEach(subid => {
+      const sc = scoresFiltered.find(x => x.studentId == sid && x.subjectId == subid);
+      const val = sc ? sc.score : "N/A";
+      if (sc) total += Number(sc.score || 0);
+      row += `<td>${val}</td>`;
+    });
+    row += `<td>${total}</td></tr>`;
+    resultsTbody.innerHTML += row;
   });
 }
+btnExportResults.onclick = exportResultsCSV;
+
+function exportResultsCSV(){
+  const filter = adminStudentClassFilter.value;
+  const scoresFiltered = db.scores.filter(score => {
+    if (filter === "all") return true;
+    const student = db.students.find(s => s.id == score.studentId);
+    return student && student.class === filter;
+  });
+  if (!scoresFiltered.length) return alert("No results for selected class");
+
+  const students = {}, subjects = {};
+  scoresFiltered.forEach(score => {
+    const student = db.students.find(s => s.id == score.studentId);
+    if (student){
+      students[student.id] = { name: student.name, class: student.class };
+      subjects[score.subjectId] = score.subject;
+    }
+  });
+
+  const sids = Object.keys(students);
+  const subids = Object.keys(subjects);
+  let csv = "Student,Class";
+  subids.forEach(id => csv += `,${subjects[id]}`);
+  csv += ",Total\n";
+
+  sids.forEach(sid => {
+    const st = students[sid];
+    let line = `"${st.name}",${st.class}`;
+    let total = 0;
+    subids.forEach(subid => {
+      const sc = scoresFiltered.find(x => x.studentId == sid && x.subjectId == subid);
+      const val = sc ? sc.score : "N/A";
+      if (sc) total += Number(sc.score || 0);
+      line += `,${val}`;
+    });
+    line += `,${total}\n`;
+    csv += line;
+  });
+
+  downloadCSV(csv, filter === "all" ? "results_all.csv" : `results_${filter}.csv`);
+}
+btnExportStudents.onclick = exportStudentsCSV;
+function exportStudentsCSV(){
+  const classes = [...new Set(db.students.map(s=>s.class))];
+  let csv = "username,fullName,class\n";
+  db.students.forEach(s => { csv += `${s.username},"${s.name}",${s.class}\n`; });
+  downloadCSV(csv, "students_all.csv");
+}
+function downloadCSV(content, filename){
+  const blob = new Blob([content], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ============================
+   STUDENT — SUBJECTS LIST (no retakes)
+============================ */
+function renderStudentSubjects(){
+  if (!currentUser || currentUser.role !== "student") return;
+  const subs = db.subjects.filter(s => s.class === currentUser.class);
+  if (!subs.length){
+    studentSubjects.innerHTML = "<p class='muted'>No subjects assigned to your class yet.</p>";
+    return;
+  }
+  let html = "<h3>Your Subjects</h3>";
+  subs.forEach(s => {
+    const already = db.scores.some(sc => sc.studentId === currentUser.id && sc.subjectId === s.id);
+    html += `
+      <div class="row" style="justify-content:space-between; border:1px solid #eee; border-radius:10px; padding:10px">
+        <div>
+          <strong>${s.name}</strong> <span class="pill">${s.class}</span>
+          <span class="pill">${s.duration} mins</span>
+        </div>
+        <div>
+          <button class="primary" ${already ? "disabled" : ""} onclick="startExam(${s.id})">
+            ${already ? "Completed" : "Start Exam"}
+          </button>
+        </div>
+      </div>`;
+  });
+  studentSubjects.innerHTML = html;
+}
+
+/* ============================
+   EXAM (one-by-one with visible timer)
+============================ */
+let examState = null;
+let examInterval = null;
+
+function startExam(subjectId){
+  const subj = db.subjects.find(s => s.id === subjectId);
+  if (!subj) return alert("Subject not found");
+  // prevent retake
+  if (db.scores.some(sc => sc.studentId === currentUser.id && sc.subjectId === subjectId)) {
+    return alert("You have already completed this subject.");
+  }
+  const qs = db.questions.filter(q => q.subjectId === subjectId);
+  if (!qs.length) return alert("No questions for this subject yet.");
+
+  examState = {
+    subjectId,
+    subjectName: subj.name,
+    durationSec: subj.duration * 60,
+    index: 0,
+    questions: qs,
+    answers: Array(qs.length).fill(null), // "A" | "B" | "C" | null
+    startedAt: Date.now()
+  };
+
+  // UI swap
+  examCard.classList.remove("hidden");
+  studentSubjects.classList.add("hidden");
+  examSubjectTitle.textContent = `${subj.name} — ${subj.class}`;
+  renderExamQuestion();
+  renderQuestionKeys();
+  startExamTimer();
+}
+
+function renderExamQuestion(){
+  const i = examState.index;
+  const q = examState.questions[i];
+  const a = examState.answers[i];
+
+  const option = (key, text) => `
+    <div class="exam-option ${a===key?"selected":""}" onclick="selectAnswer('${key}')">
+      <strong>${key}.</strong> ${text}
+    </div>`;
+
+  examQuestionBox.innerHTML = `
+    <div class="muted">Question ${i+1} of ${examState.questions.length}</div>
+    <h3 style="margin:8px 0">${q.question}</h3>
+    <div style="display:grid; gap:10px">
+      ${option("A", q.A)}
+      ${option("B", q.B)}
+      ${option("C", q.C)}
+    </div>
+  `;
+
+  // Nav buttons
+  btnPrevQ.disabled = (i === 0);
+  const last = (i === examState.questions.length - 1);
+  btnNextQ.classList.toggle("hidden", last);
+  btnSubmitExam.classList.toggle("hidden", !last);
+  renderQuestionKeys(); // refresh highlight/answered states
+}
+
+function selectAnswer(letter){
+  examState.answers[examState.index] = letter;
+  renderExamQuestion(); // re-render to show selected state
+}
+
+btnPrevQ.onclick = () => {
+  if (examState.index > 0) {
+    examState.index--;
+    renderExamQuestion();
+  }
+};
+btnNextQ.onclick = () => {
+  if (examState.index < examState.questions.length - 1) {
+    examState.index++;
+    renderExamQuestion();
+  }
+};
+
+function renderQuestionKeys(){
+  let html = "";
+  for (let i = 0; i < examState.questions.length; i++){
+    const isActive = (i === examState.index);
+    const answered = !!examState.answers[i];
+    html += `<div class="qkey ${isActive?"active":""} ${answered?"answered":""}" onclick="jumpToQuestion(${i})">${i+1}</div>`;
+  }
+  questionKeys.innerHTML = html;
+}
+function jumpToQuestion(i){
+  examState.index = i;
+  renderExamQuestion();
+}
+
+/* ===== Timer ===== */
+function startExamTimer(){
+  stopExamTimer();
+  updateTimerLabel();
+  examInterval = setInterval(() => {
+    examState.durationSec--;
+    updateTimerLabel();
+    if (examState.durationSec <= 0){
+      stopExamTimer();
+      autoSubmitExam();
+    }
+  }, 1000);
+}
+function stopExamTimer(){
+  if (examInterval) clearInterval(examInterval);
+  examInterval = null;
+}
+function updateTimerLabel(){
+  examTimer.textContent = formatTime(examState.durationSec);
+}
+function formatTime(s){
+  const mm = Math.floor(s/60).toString().padStart(2,"0");
+  const ss = Math.floor(s%60).toString().padStart(2,"0");
+  return `${mm}:${ss}`;
+}
+
+/* ===== Submit ===== */
+btnSubmitExam.onclick = submitExam;
+
+function autoSubmitExam(){
+  examMsg.textContent = "Time is up. Submitting your exam...";
+  setTimeout(submitExam, 800);
+}
+
+function submitExam(){
+  // score
+  const { questions, answers, subjectId, subjectName } = examState;
+  let score = 0;
+  questions.forEach((q, idx) => {
+    if (answers[idx] && answers[idx] === q.correct) score += 1;
+  });
+
+  // save or update score (no retake: this should only create once)
+  const existing = db.scores.find(sc => sc.studentId === currentUser.id && sc.subjectId === subjectId);
+  if (existing) {
+    existing.score = score; // should not happen due to no-retake, but safe
+  } else {
+    db.scores.push({ studentId: currentUser.id, subjectId, subject: subjectName, score });
+  }
+
+  // show result to student
+  examCard.classList.add("hidden");
+  studentSubjects.classList.remove("hidden");
+  renderStudentSubjects();
+  alert(`Submitted! Your score in ${subjectName} is ${score} / ${questions.length}.`);
+
+  // update admin results
+  refreshResultsFilters();
+  renderResults();
+
+  // cleanup
+  stopExamTimer();
+  examState = null;
+}
+
+/* ============================
+   INIT
+============================ */
+function init(){
+  renderSubjects();
+  renderQuestionSubjects();
+  renderQuestions();
+  renderStudents();
+  refreshResultsFilters();
+  renderResults();
+}
+init();
 </script>
 </body>
 </html>
