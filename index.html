@@ -265,18 +265,22 @@
   <div class="wrap">
 
     <div id="loginCard" class="card">
-      <h2>Login</h2>
-      <div class="row" style="gap:8px">
-        <input id="loginUser" placeholder="Username (admin or student username)" />
-        <select id="loginClassSelect">
-          <option value="">Select Class</option>
-        </select>
-        <div class="password-container">
-          <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()">👁️</span>
-        </div>
-        <button id="btnLogin">Login</button>
-      </div>
+  <h2>Login</h2>
+  <div class="row" style="gap:8px">
+    <input id="loginUser" placeholder="Username (admin or student username)" />
+
+    <select id="loginClass">
+      <option value="">Select Class</option>
+    </select>
+
+    <div class="password-container">
+      <input id="loginPass" placeholder="Password" type="password" />
+      <span class="password-toggle" onclick="togglePassword()">👁️</span>
+    </div>
+
+    <button id="loginBtn" type="button">Login</button>
+  </div>
+</div>
       <p id="loginMsg" class="muted"></p>
     </div>
 
