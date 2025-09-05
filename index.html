@@ -12,9 +12,11 @@
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
     th { background: #f0f0f0; }
-    button { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
+    button { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; }
     button.muted { background: #ddd; }
     button.danger { background: #e74c3c; color: #fff; }
+    button.small { font-size: 12px; padding: 2px 6px; }
+    input, select { padding: 4px; }
     .muted { color: #555; }
   </style>
 </head>
@@ -47,52 +49,61 @@
           <input id="newSubjectClassInput" placeholder="Class (e.g. JSS1)" />
           <button id="btnAddSubject">Add</button>
         </div>
-        <div class="row">
-          <label for="adminClassFilter" class="muted">Filter by Class:</label>
-          <select id="adminClassFilter"><option value="all">All Classes</option></select>
-        </div>
         <table>
-          <thead><tr><th>Subject</th><th>Class</th></tr></thead>
+          <thead><tr><th>Subject</th><th>Class</th><th>Actions</th></tr></thead>
           <tbody id="subjectsTbody"></tbody>
         </table>
       </div>
 
-      <!-- STUDENTS & SCORES -->
+      <!-- QUESTIONS -->
       <div class="card">
-        <h3>Students & Scores</h3>
+        <h3>Questions</h3>
         <div class="row">
-          <label for="adminStudentClassFilter" class="muted">Filter by Class:</label>
-          <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+          <select id="questionSubjectSelect"></select>
         </div>
+        <div class="row">
+          <input id="questionText" placeholder="Question text" style="flex:1" />
+        </div>
+        <div class="row">
+          <input id="optionA" placeholder="Option A" />
+          <input id="optionB" placeholder="Option B" />
+          <input id="optionC" placeholder="Option C" />
+        </div>
+        <div class="row">
+          <label>Correct:</label>
+          <select id="correctOption">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <button id="btnAddQuestion">Add Question</button>
+        </div>
+        <table>
+          <thead><tr><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
+          <tbody id="questionsTbody"></tbody>
+        </table>
+      </div>
 
-        <div class="row" style="justify-content:space-between">
-          <h4>Students</h4>
-          <button id="btnExportStudents" class="muted">Export Students CSV</button>
+      <!-- STUDENTS -->
+      <div class="card">
+        <h3>Students</h3>
+        <div class="row">
+          <input id="stuUsername" placeholder="Username" />
+          <input id="stuFullName" placeholder="Full name" />
+          <input id="stuClass" placeholder="Class (e.g. JSS1)" />
+          <input id="stuPassword" placeholder="Password" />
+          <button id="btnAddStudent">Add</button>
         </div>
+        <table>
+          <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
+          <tbody id="studentsTbody"></tbody>
+        </table>
+      </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <h4>Add student</h4>
-            <input id="stuUsername" placeholder="Username" />
-            <input id="stuFullName" placeholder="Full name" />
-            <input id="stuClass" placeholder="Class (e.g. JSS1)" />
-            <input id="stuPassword" placeholder="Password" />
-            <button id="btnAddStudent">Add Student</button>
-          </div>
-          <div>
-            <h4>Registered students</h4>
-            <table>
-              <thead><tr><th>Username</th><th>Full Name</th><th>Class</th></tr></thead>
-              <tbody id="studentsTbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <h3 style="margin-top:12px">Results</h3>
-        <div class="row" style="justify-content:space-between">
-          <button id="btnResetScores" class="danger">Reset All Scores</button>
-          <button id="btnExportResults" class="muted">Export Results CSV</button>
-        </div>
+      <!-- RESULTS -->
+      <div class="card">
+        <h3>Results</h3>
+        <button id="btnExportResults" class="muted">Export Results CSV</button>
         <table>
           <thead id="resultsThead"></thead>
           <tbody id="resultsTbody"></tbody>
@@ -103,6 +114,7 @@
     <!-- STUDENT DASHBOARD -->
     <div id="studentCard" class="card hidden">
       <h2 id="studentHeader">Student Panel</h2>
+      <div id="studentSubjects"></div>
       <button id="btnLogoutStudent" class="muted">Logout</button>
     </div>
   </div>
@@ -112,199 +124,153 @@
    DATABASE
 ============================ */
 let db = {
-  subjects: [
-    {id:1, name:"Mathematics", class:"JSS1"},
-    {id:2, name:"English Language", class:"JSS2"}
-  ],
+  subjects: [],
+  questions: [],
   students: [],
   scores: []
 };
 let currentUser = null;
 
 /* ============================
-   LOGIN HANDLER
+   LOGIN
 ============================ */
-document.getElementById("btnLogin").onclick = () => {
+btnLogin.onclick = () => {
   const username = loginUser.value.trim();
   const password = loginPass.value.trim();
   const cls = loginClass.value.trim();
 
   if (username === "admin" && password === "admin") {
-    // Admin login
     loginCard.classList.add("hidden");
     adminCard.classList.remove("hidden");
-    renderSubjects();
-    renderStudents();
-    renderResults();
+    renderSubjects(); renderQuestions(); renderStudents(); renderResults();
     currentUser = { role: "admin" };
-    loginMsg.textContent = "";
     return;
   }
 
-  // Student login
-  const student = db.students.find(
-    s => s.username === username && s.class === cls && s.password === password
-  );
+  const student = db.students.find(s=>s.username===username && s.class===cls && s.password===password);
   if (student) {
     loginCard.classList.add("hidden");
     studentCard.classList.remove("hidden");
     studentHeader.textContent = "Student Panel — " + student.name + " (" + student.class + ")";
-    currentUser = { role: "student", ...student };
-    loginMsg.textContent = "";
+    currentUser = { role:"student", ...student };
+    renderStudentSubjects();
     return;
   }
 
-  // Invalid
-  loginMsg.textContent = "Invalid username, password, or class.";
+  loginMsg.textContent = "Invalid login";
 };
 
-/* ============================
-   LOGOUT
-============================ */
-btnLogoutAdmin.onclick = () => {
-  adminCard.classList.add("hidden");
-  loginCard.classList.remove("hidden");
-};
-btnLogoutStudent.onclick = () => {
-  studentCard.classList.add("hidden");
-  loginCard.classList.remove("hidden");
-};
+btnLogoutAdmin.onclick = () => { adminCard.classList.add("hidden"); loginCard.classList.remove("hidden"); };
+btnLogoutStudent.onclick = () => { studentCard.classList.add("hidden"); loginCard.classList.remove("hidden"); };
 
 /* ============================
-   ADD SUBJECT
+   SUBJECTS CRUD
 ============================ */
 btnAddSubject.onclick = () => {
-  const name = newSubjectInput.value.trim();
-  const cls = newSubjectClassInput.value.trim();
-  if(!name || !cls) return alert("Enter subject name and class");
-  db.subjects.push({ id: Date.now(), name, class: cls });
-  newSubjectInput.value = ""; newSubjectClassInput.value = "";
-  renderSubjects();
+  const name=newSubjectInput.value.trim(), cls=newSubjectClassInput.value.trim();
+  if(!name||!cls) return alert("Enter subject & class");
+  db.subjects.push({id:Date.now(),name, class:cls});
+  newSubjectInput.value=newSubjectClassInput.value="";
+  renderSubjects(); renderQuestionSubjects();
 };
+function renderSubjects(){
+  subjectsTbody.innerHTML="";
+  db.subjects.forEach(s=>{
+    subjectsTbody.innerHTML+=`<tr><td>${s.name}</td><td>${s.class}</td>
+      <td><button class="small" onclick="editSubject(${s.id})">Edit</button>
+      <button class="small danger" onclick="deleteSubject(${s.id})">Delete</button></td></tr>`;
+  });
+  renderQuestionSubjects();
+}
+function editSubject(id){
+  const s=db.subjects.find(x=>x.id===id);
+  const newName=prompt("Edit subject name:",s.name);
+  const newClass=prompt("Edit class:",s.class);
+  if(newName&&newClass){ s.name=newName; s.class=newClass; renderSubjects(); }
+}
+function deleteSubject(id){ db.subjects=db.subjects.filter(s=>s.id!==id); renderSubjects(); }
 
 /* ============================
-   RENDER SUBJECTS (FILTER)
+   QUESTIONS CRUD
 ============================ */
-function renderSubjects(){
-  subjectsTbody.innerHTML = "";
-  const filter = adminClassFilter.value;
-  const classes = [...new Set(db.subjects.map(s=>s.class))];
-  adminClassFilter.innerHTML = `<option value="all">All Classes</option>`;
-  classes.forEach(c=>{
-    adminClassFilter.innerHTML += `<option value="${c}" ${filter===c?"selected":""}>${c}</option>`;
+btnAddQuestion.onclick = () => {
+  const subId=parseInt(questionSubjectSelect.value);
+  const text=questionText.value.trim();
+  if(!subId||!text) return alert("Enter question & select subject");
+  db.questions.push({
+    id:Date.now(), subjectId:subId, question:text,
+    A:optionA.value, B:optionB.value, C:optionC.value,
+    correct:correctOption.value
   });
-  db.subjects.filter(s=>filter==="all"||s.class===filter).forEach(s=>{
-    subjectsTbody.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td></tr>`;
+  questionText.value=optionA.value=optionB.value=optionC.value="";
+  renderQuestions();
+};
+function renderQuestionSubjects(){
+  questionSubjectSelect.innerHTML="";
+  db.subjects.forEach(s=>{
+    questionSubjectSelect.innerHTML+=`<option value="${s.id}">${s.name} (${s.class})</option>`;
   });
 }
-adminClassFilter.onchange = renderSubjects;
+function renderQuestions(){
+  questionsTbody.innerHTML="";
+  db.questions.forEach(q=>{
+    const subj=db.subjects.find(s=>s.id===q.subjectId);
+    questionsTbody.innerHTML+=`<tr><td>${q.question}</td><td>${subj?subj.name+" ("+subj.class+")":""}</td>
+      <td>${q.correct}</td>
+      <td><button class="small" onclick="editQuestion(${q.id})">Edit</button>
+      <button class="small danger" onclick="deleteQuestion(${q.id})">Delete</button></td></tr>`;
+  });
+}
+function editQuestion(id){
+  const q=db.questions.find(x=>x.id===id);
+  const newQ=prompt("Edit question:",q.question);
+  if(newQ) q.question=newQ;
+  renderQuestions();
+}
+function deleteQuestion(id){ db.questions=db.questions.filter(q=>q.id!==id); renderQuestions(); }
 
 /* ============================
-   ADD STUDENT
+   STUDENTS CRUD
 ============================ */
 btnAddStudent.onclick = () => {
-  db.students.push({ id: Date.now(), username: stuUsername.value, name: stuFullName.value, class: stuClass.value, password: stuPassword.value });
-  stuUsername.value = stuFullName.value = stuClass.value = stuPassword.value = "";
+  db.students.push({id:Date.now(),username:stuUsername.value,name:stuFullName.value,class:stuClass.value,password:stuPassword.value});
+  stuUsername.value=stuFullName.value=stuClass.value=stuPassword.value="";
   renderStudents();
 };
-
-/* ============================
-   RENDER STUDENTS (FILTER)
-============================ */
 function renderStudents(){
-  studentsTbody.innerHTML = "";
-  const filter = adminStudentClassFilter.value;
-  const classes = [...new Set(db.students.map(s=>s.class))];
-  adminStudentClassFilter.innerHTML = `<option value="all">All Classes</option>`;
-  classes.forEach(c=>{
-    adminStudentClassFilter.innerHTML += `<option value="${c}" ${filter===c?"selected":""}>${c}</option>`;
-  });
-  db.students.filter(s=>filter==="all"||s.class===filter).forEach(s=>{
-    studentsTbody.innerHTML += `<tr><td>${s.username}</td><td>${s.name}</td><td>${s.class}</td></tr>`;
+  studentsTbody.innerHTML="";
+  db.students.forEach(s=>{
+    studentsTbody.innerHTML+=`<tr><td>${s.username}</td><td>${s.name}</td><td>${s.class}</td>
+      <td><button class="small" onclick="editStudent(${s.id})">Edit</button>
+      <button class="small danger" onclick="deleteStudent(${s.id})">Delete</button></td></tr>`;
   });
 }
-adminStudentClassFilter.onchange = ()=>{ renderStudents(); renderResults(); };
-
-/* ============================
-   EXPORT STUDENTS CSV
-============================ */
-function exportStudentsCSV(){
-  const filter = adminStudentClassFilter.value;
-  const list = db.students.filter(s=>filter==="all"||s.class===filter);
-  if(!list.length) return alert("No students");
-  let csv="username,fullName,class\n";
-  list.forEach(s=> csv+=`${s.username},"${s.name}",${s.class}\n`);
-  downloadCSV(csv, filter==="all"?"students_all.csv":`students_${filter}.csv`);
+function editStudent(id){
+  const s=db.students.find(x=>x.id===id);
+  const newName=prompt("Edit name:",s.name);
+  if(newName) s.name=newName;
+  renderStudents();
 }
-btnExportStudents.onclick=exportStudentsCSV;
+function deleteStudent(id){ db.students=db.students.filter(s=>s.id!==id); renderStudents(); }
 
 /* ============================
-   EXPORT RESULTS CSV
-============================ */
-function exportResultsCSV(){
-  const filter = adminStudentClassFilter.value;
-  const scoresFiltered = db.scores.filter(sc=>{
-    if(filter==="all") return true;
-    const st=db.students.find(s=>s.id==sc.studentId);
-    return st&&st.class===filter;
-  });
-  if(!scoresFiltered.length) return alert("No results");
-  const students={}, subjects={};
-  scoresFiltered.forEach(sc=>{
-    const st=db.students.find(s=>s.id==sc.studentId);
-    if(st){ students[st.id]={name:st.name,class:st.class}; subjects[sc.subjectId]=sc.subject; }
-  });
-  const sids=Object.keys(students), subids=Object.keys(subjects);
-  let csv="Student,Class"; subids.forEach(sid=>csv+=`,`+subjects[sid]); csv+=",Total\n";
-  sids.forEach(sid=>{
-    const st=students[sid]; let total=0, row=`"${st.name}",${st.class}`;
-    subids.forEach(subid=>{
-      const sc=scoresFiltered.find(x=>x.studentId==sid&&x.subjectId==subid);
-      const val=sc?sc.score:"N/A"; if(sc) total+=parseFloat(sc.score);
-      row+=`,`+val;
-    });
-    row+=`,`+total; csv+=row+"\n";
-  });
-  downloadCSV(csv, filter==="all"?"results_all.csv":`results_${filter}.csv`);
-}
-btnExportResults.onclick=exportResultsCSV;
-
-/* ============================
-   RENDER RESULTS
+   RESULTS
 ============================ */
 function renderResults(){
-  resultsThead.innerHTML=""; resultsTbody.innerHTML="";
-  const filter=adminStudentClassFilter.value;
-  const scoresFiltered=db.scores.filter(sc=>{
-    if(filter==="all") return true;
-    const st=db.students.find(s=>s.id==sc.studentId);
-    return st&&st.class===filter;
-  });
-  if(!scoresFiltered.length){ resultsThead.innerHTML="<tr><th>No results</th></tr>"; return; }
-  const students={}, subjects={};
-  scoresFiltered.forEach(sc=>{ students[sc.studentId]=sc.studentName; subjects[sc.subjectId]=sc.subject; });
-  const sids=Object.keys(students), subids=Object.keys(subjects);
-  let head="<tr><th>Student</th>"; subids.forEach(id=>head+=`<th>${subjects[id]}</th>`); head+="<th>Total</th></tr>";
-  resultsThead.innerHTML=head;
-  sids.forEach(sid=>{
-    let total=0, row=`<tr><td>${students[sid]}</td>`;
-    subids.forEach(subid=>{
-      const sc=scoresFiltered.find(x=>x.studentId==sid&&x.subjectId==subid);
-      const val=sc?sc.score:"N/A"; if(sc) total+=parseFloat(sc.score);
-      row+=`<td>${val}</td>`;
-    });
-    row+=`<td>${total}</td></tr>`; resultsTbody.innerHTML+=row;
-  });
+  resultsThead.innerHTML="<tr><th>No results yet</th></tr>";
+  resultsTbody.innerHTML="";
 }
+btnExportResults.onclick=()=>alert("CSV export coming soon");
 
 /* ============================
-   CSV HELPER
+   STUDENT PANEL
 ============================ */
-function downloadCSV(content, filename){
-  const blob=new Blob([content],{type:"text/csv"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download=filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+function renderStudentSubjects(){
+  const subs=db.subjects.filter(s=>s.class===currentUser.class);
+  studentSubjects.innerHTML="<h3>Your Subjects:</h3>";
+  subs.forEach(s=>{
+    studentSubjects.innerHTML+=`<div>${s.name}</div>`;
+  });
 }
 </script>
 </body>
