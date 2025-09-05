@@ -294,9 +294,8 @@
           <span class="icon">&#9660;</span>
         </div>
         <div id="subjectsAccordion" class="accordion-content hidden">
-          <div class="row" style="gap:8px">
+          <div class="row">
             <input id="newSubjectInput" placeholder="New subject name" />
-            <select id="newSubjectClassSelect"></select>
             <button id="btnAddSubject">Add</button>
           </div>
           <div>
@@ -314,7 +313,7 @@
               </div>
             </div>
           </div>
-          <table><thead><tr><th>Subject</th><th>Class</th><th style="width:160px">Actions</th></tr></thead>
+          <table><thead><tr><th>Subject</th><th style="width:160px">Actions</th></tr></thead>
             <tbody id="subjectsTbody"></tbody></table>
         </div>
       </div>
@@ -445,17 +444,12 @@ const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy"; 
     Local fallback state (used if bin not available)
     ============================ */
 let db = {
-  // Subjects now include a 'class' property
-  subjects: [
-    {id:1,name:"Mathematics", class:"JSS1", duration: 1, defaultMark: 1},
-    {id:2,name:"English", class:"JSS1", duration: 1, defaultMark: 1}
-  ],
+  subjects: [{id:1,name:"Mathematics", duration: 1, defaultMark: 1},{id:2,name:"English", duration: 1, defaultMark: 1}],
   questions: [
     {id:101, subjectId:1, question:"What is 2 + 2?", options:["1","2","3"], answer:2, scoreValue: 1}
   ],
   students: [
-    {id:201, username:"student01", name:"John Doe", class:"JSS1", password:"pass123"},
-    {id:202, username:"student02", name:"Jane Smith", class:"SS3", password:"pass123"}
+    {id:201, username:"student01", name:"John Doe", class:"SS1", password:"pass123"}
   ],
   scores: []
 };
@@ -487,7 +481,6 @@ const adminCard = document.getElementById('adminCard');
 const studentCard = document.getElementById('studentCard');
 
 const newSubjectInput = document.getElementById('newSubjectInput');
-const newSubjectClassSelect = document.getElementById('newSubjectClassSelect'); // NEW: Added ref for new class select
 const btnAddSubject = document.getElementById('btnAddSubject');
 const subjectsTbody = document.getElementById('subjectsTbody');
 const subjectSelectForQuestions = document.getElementById('subjectSelectForQuestions');
@@ -666,11 +659,9 @@ function togglePassword() {
     ============================ */
 function handleAddSubject(){
   const name = newSubjectInput.value.trim();
-  const cls = newSubjectClassSelect.value.trim(); // Get the selected class
-  if(!name || !cls) return alert('Enter subject name and select a class');
+  if(!name) return alert('Enter subject name');
   const id = Date.now();
-  // Include the class in the new subject object
-  db.subjects.push({ id, name, class: cls, duration: 1, defaultMark: 1 });
+  db.subjects.push({ id, name, duration: 1, defaultMark: 1 });
   db.questions = db.questions || [];
   saveToBin();
   newSubjectInput.value = '';
@@ -730,7 +721,7 @@ function renderSubjectsTable(){
   subjectSelectForQuestions.innerHTML = '';
   db.subjects.forEach(s => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${s.name}</td><td>${s.class}</td><td></td>`;
+    tr.innerHTML = `<td>${s.name}</td><td></td>`;
     const td = tr.querySelector('td:last-child');
     const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
     editBtn.onclick = ()=> editSubject(s.id);
@@ -739,25 +730,9 @@ function renderSubjectsTable(){
     td.appendChild(editBtn); td.appendChild(delBtn);
     subjectsTbody.appendChild(tr);
 
-    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = `${s.name} (${s.class})`;
+    const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name;
     subjectSelectForQuestions.appendChild(opt);
   });
-}
-
-// NEW: Function to populate the class dropdown for adding new subjects
-function populateClassSelects() {
-  const uniqueClasses = [...new Set(db.students.map(s => s.class))].filter(c => c);
-  newSubjectClassSelect.innerHTML = '';
-  if (uniqueClasses.length > 0) {
-      uniqueClasses.forEach(cls => {
-          const opt = document.createElement('option');
-          opt.value = cls;
-          opt.textContent = cls;
-          newSubjectClassSelect.appendChild(opt);
-      });
-  } else {
-      newSubjectClassSelect.innerHTML = '<option value="">No Classes Found</option>';
-  }
 }
 
 /* ============================
@@ -988,7 +963,6 @@ function showStudent(){
 }
 
 function renderAllAdminLists(){
-  populateClassSelects(); // NEW: Populate the class dropdown for new subjects
   renderSubjectsTable();
   renderStudents();
   renderResults();
@@ -1003,28 +977,11 @@ function renderAllAdminLists(){
 }
 
 function populateStudentSubjects(){
-  const studentClass = currentUser.class;
-  const subjectsForStudent = db.subjects.filter(s => s.class === studentClass);
-
   studentSubjectSelect.innerHTML = '';
-  if (subjectsForStudent.length > 0) {
-      subjectsForStudent.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s.id;
-          opt.textContent = s.name;
-          studentSubjectSelect.appendChild(opt);
-      });
-  } else {
-      const opt = document.createElement('option');
-      opt.textContent = "No subjects available for your class.";
-      studentSubjectSelect.appendChild(opt);
-      btnStartExam.disabled = true;
-      examDurationInput.value = '';
-      return;
-  }
-
-  btnStartExam.disabled = false;
-  const selectedSubject = subjectsForStudent.find(s => s.id == studentSubjectSelect.value);
+  (db.subjects||[]).forEach(s => {
+    const opt = document.createElement('option'); opt.value=s.id; opt.textContent = s.name; studentSubjectSelect.appendChild(opt);
+  });
+  const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
   if(selectedSubject) {
       examDurationInput.value = selectedSubject.duration;
   }
@@ -1218,7 +1175,6 @@ function startEditQuestion(qid){
 }
 
 function renderAllAdminLists(){
-  populateClassSelects();
   renderSubjectsTable();
   renderStudents();
   renderResults();
