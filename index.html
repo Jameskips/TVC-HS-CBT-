@@ -5,25 +5,30 @@
   <title>TVC High School — CBT (JSONBin)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* Your original CSS is unchanged */
+    /* Keep your original CSS here */
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .hidden { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    th { background: #f0f0f0; }
+    button { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
+    button.muted { background: #ddd; }
+    button.danger { background: #e74c3c; color: #fff; }
   </style>
 </head>
 <body>
   <header><h1>The Valued Child (TVC) High School — CBT</h1></header>
   <div class="wrap">
 
-    <!-- LOGIN -->
+    <!-- LOGIN CARD (simplified) -->
     <div id="loginCard" class="card">
       <h2>Login</h2>
-      <div class="row" style="gap:8px">
-        <input id="loginUser" placeholder="Username (admin or student username)" />
-        <input id="loginClass" placeholder="Class (e.g. JSS1)" />
-        <div class="password-container">
-          <input id="loginPass" placeholder="Password" type="password" />
-          <span class="password-toggle" onclick="togglePassword()">  </span>
-        </div>
-        <button id="btnLogin">Login</button>
-      </div>
+      <input id="loginUser" placeholder="Username" />
+      <input id="loginClass" placeholder="Class (e.g. JSS1)" />
+      <input id="loginPass" type="password" placeholder="Password" />
+      <button id="btnLogin">Login</button>
       <p id="loginMsg" class="muted"></p>
     </div>
 
@@ -31,229 +36,226 @@
     <div id="adminCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2>Admin Dashboard</h2>
-        <div class="row">
-          <button id="btnSaveBin" class="muted">Save to JSONBin</button>
-          <button id="btnReloadBin" class="muted">Reload from JSONBin</button>
-          <button id="btnLogoutAdmin" class="muted">Logout</button>
-        </div>
+        <button id="btnLogoutAdmin" class="muted">Logout</button>
       </div>
 
-      <!-- SUBJECTS MANAGEMENT -->
-      <div class="card accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion('subjects')">
-          <h3>Subjects</h3>
-          <span class="icon">&#9660;</span>
+      <!-- SUBJECTS -->
+      <div class="card">
+        <h3>Subjects</h3>
+        <div class="row">
+          <input id="newSubjectInput" placeholder="New subject name" />
+          <input id="newSubjectClassInput" placeholder="Class (e.g. JSS1)" />
+          <button id="btnAddSubject">Add</button>
         </div>
-        <div id="subjectsAccordion" class="accordion-content hidden">
-          <div class="row">
-            <input id="newSubjectInput" placeholder="New subject name" />
-            <input id="newSubjectClassInput" placeholder="Class (e.g. JSS1)" />
-            <button id="btnAddSubject">Add</button>
+        <div class="row">
+          <label for="adminClassFilter" class="muted">Filter by Class:</label>
+          <select id="adminClassFilter"><option value="all">All Classes</option></select>
+        </div>
+        <table>
+          <thead><tr><th>Subject</th><th>Class</th></tr></thead>
+          <tbody id="subjectsTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- STUDENTS & SCORES -->
+      <div class="card">
+        <h3>Students & Scores</h3>
+        <div class="row">
+          <label for="adminStudentClassFilter" class="muted">Filter by Class:</label>
+          <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+        </div>
+
+        <div class="row" style="justify-content:space-between">
+          <h4>Students</h4>
+          <button id="btnExportStudents" class="muted">Export Students CSV</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <h4>Add student</h4>
+            <input id="stuUsername" placeholder="Username" />
+            <input id="stuFullName" placeholder="Full name" />
+            <input id="stuClass" placeholder="Class (e.g. JSS1)" />
+            <input id="stuPassword" placeholder="Password" />
+            <button id="btnAddStudent">Add Student</button>
           </div>
           <div>
-            <h4>Settings</h4>
-            <div class="row">
-              <div class="row">
-                <div class="muted">Default duration (min):</div>
-                <input id="subjectDurationInput" type="number" value="1" style="width:120px" />
-                <button id="btnSetDuration" class="muted">Set</button>
-              </div>
-              <div class="row">
-                <div class="muted">Default mark:</div>
-                <input id="subjectMarkInput" type="number" value="1" style="width:120px" />
-                <button id="btnSetMark" class="muted">Set</button>
-              </div>
-            </div>
+            <h4>Registered students</h4>
+            <table>
+              <thead><tr><th>Username</th><th>Full Name</th><th>Class</th></tr></thead>
+              <tbody id="studentsTbody"></tbody>
+            </table>
           </div>
-          <table>
-            <thead>
-              <tr><th>Subject</th><th>Class</th><th style="width:160px">Actions</th></tr>
-            </thead>
-            <tbody id="subjectsTbody"></tbody>
-          </table>
         </div>
-      </div>
 
-      <!-- QUESTIONS MANAGEMENT -->
-      <div class="card accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion('questions')">
-          <h3>Questions (selected subject)</h3>
-          <span class="icon">&#9660;</span>
+        <h3 style="margin-top:12px">Results</h3>
+        <div class="row" style="justify-content:space-between">
+          <button id="btnResetScores" class="danger">Reset All Scores</button>
+          <button id="btnExportResults" class="muted">Export Results CSV</button>
         </div>
-        <div id="questionsAccordion" class="accordion-content hidden">
-          <div class="row">
-            <select id="subjectSelectForQuestions"></select>
-            <button id="btnLoadQuestions" class="muted">Load</button>
-          </div>
-          <div style="margin-top:10px">
-            <h4 id="qFormTitle">Add New Question</h4>
-            <textarea id="qText" placeholder="Question text"></textarea>
-            <div class="row">
-              <input id="qA" placeholder="Option A" />
-              <input id="qB" placeholder="Option B" />
-              <input id="qC" placeholder="Option C" />
-              <input id="qMark" type="number" placeholder="Mark per question" style="display:none"/>
-            </div>
-            <div class="row">
-              <select id="qAnswer">
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-              </select>
-              <button id="btnAddQuestion">Add Question</button>
-              <button id="btnCancelEdit" class="muted" style="display:none">Cancel Edit</button>
-            </div>
-          </div>
-          <h4 style="margin-top:12px">Existing Questions</h4>
-          <table>
-            <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Mark</th><th style="width:200px">Actions</th></tr></thead>
-            <tbody id="questionsTbody"></tbody>
-          </table>
-        </div>
+        <table>
+          <thead id="resultsThead"></thead>
+          <tbody id="resultsTbody"></tbody>
+        </table>
       </div>
-
-      <!-- (Students & Scores section remains unchanged) -->
     </div>
 
-    <!-- STUDENT DASHBOARD -->
+    <!-- STUDENT DASHBOARD (placeholder) -->
     <div id="studentCard" class="card hidden">
-      <div class="row" style="justify-content:space-between">
-        <h2>Student Panel — <span id="studentNameDisplay"></span></h2>
-        <div class="row"><button id="btnLogoutStudent" class="muted">Logout</button></div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <h3>Available Subjects</h3>
-        <select id="studentSubjectSelect"></select>
-        <div class="row" style="margin-top:8px">
-          <div class="muted">Exam duration (minutes)</div>
-          <input id="examDurationInput" type="number" readonly style="width:120px" />
-          <button id="btnStartExam">Start Exam</button>
-        </div>
-      </div>
-
-      <!-- Exam interface unchanged -->
-      <div id="examCard" class="card hidden">
-        <!-- ... existing exam UI ... -->
-      </div>
+      <h2>Student Panel</h2>
+      <button id="btnLogoutStudent" class="muted">Logout</button>
     </div>
-
-    <div id="status" class="muted" style="margin-top:8px"></div>
   </div>
 
 <script>
 /* ============================
-   CONFIG
-============================ */
-const BIN_ID = "";
-const API_KEY = "";
-
-/* ============================
-   Local fallback db
+   Demo database
 ============================ */
 let db = {
   subjects: [
-    {id:1,name:"Mathematics", class:"JSS1", duration: 1, defaultMark: 1},
-    {id:2,name:"English Language", class:"JSS2", duration: 1, defaultMark: 1}
+    {id:1, name:"Mathematics", class:"JSS1"},
+    {id:2, name:"English Language", class:"JSS2"}
   ],
-  questions: [],
   students: [],
   scores: []
 };
 
 /* ============================
-   Admin: Add Subject
+   Add Subject
 ============================ */
-function handleAddSubject(){
+document.getElementById("btnAddSubject").onclick = () => {
   const name = newSubjectInput.value.trim();
   const cls = newSubjectClassInput.value.trim();
-  if(!name || !cls) return alert('Enter subject name and class');
-  const id = Date.now();
-  db.subjects.push({ id, name, class: cls, duration: 1, defaultMark: 1 });
-  db.questions = db.questions || [];
-  saveToBin();
-  newSubjectInput.value = '';
-  newSubjectClassInput.value = '';
-  renderAllAdminLists();
+  if(!name || !cls) return alert("Enter subject name and class");
+  db.subjects.push({ id: Date.now(), name, class: cls });
+  newSubjectInput.value = ""; newSubjectClassInput.value = "";
+  renderSubjects();
+};
+
+/* ============================
+   Render Subjects (with filter)
+============================ */
+function renderSubjects(){
+  subjectsTbody.innerHTML = "";
+  const filter = adminClassFilter.value;
+  const classes = [...new Set(db.subjects.map(s=>s.class))];
+  adminClassFilter.innerHTML = `<option value="all">All Classes</option>`;
+  classes.forEach(c=>{
+    adminClassFilter.innerHTML += `<option value="${c}" ${filter===c?"selected":""}>${c}</option>`;
+  });
+  db.subjects.filter(s=>filter==="all"||s.class===filter).forEach(s=>{
+    subjectsTbody.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td></tr>`;
+  });
 }
+adminClassFilter.onchange = renderSubjects;
 
-function renderSubjectsTable(){
-  subjectsTbody.innerHTML = '';
-  subjectSelectForQuestions.innerHTML = '';
-  db.subjects.forEach(s => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${s.name}</td><td>${s.class}</td><td></td>`;
-    const td = tr.querySelector('td:last-child');
-    const editBtn = document.createElement('button'); editBtn.className='muted'; editBtn.textContent='Edit';
-    editBtn.onclick = ()=> editSubject(s.id);
-    const delBtn = document.createElement('button'); delBtn.className='danger'; delBtn.textContent='Delete';
-    delBtn.onclick = ()=> deleteSubject(s.id);
-    td.appendChild(editBtn); td.appendChild(delBtn);
-    subjectsTbody.appendChild(tr);
+/* ============================
+   Add Student
+============================ */
+document.getElementById("btnAddStudent").onclick = () => {
+  db.students.push({ id: Date.now(), username: stuUsername.value, name: stuFullName.value, class: stuClass.value });
+  stuUsername.value = stuFullName.value = stuClass.value = stuPassword.value = "";
+  renderStudents();
+};
 
-    const opt = document.createElement('option'); 
-    opt.value = s.id; 
-    opt.textContent = `${s.name} (${s.class})`;
-    subjectSelectForQuestions.appendChild(opt);
+/* ============================
+   Render Students (with filter)
+============================ */
+function renderStudents(){
+  studentsTbody.innerHTML = "";
+  const filter = adminStudentClassFilter.value;
+  const classes = [...new Set(db.students.map(s=>s.class))];
+  adminStudentClassFilter.innerHTML = `<option value="all">All Classes</option>`;
+  classes.forEach(c=>{
+    adminStudentClassFilter.innerHTML += `<option value="${c}" ${filter===c?"selected":""}>${c}</option>`;
+  });
+  db.students.filter(s=>filter==="all"||s.class===filter).forEach(s=>{
+    studentsTbody.innerHTML += `<tr><td>${s.username}</td><td>${s.name}</td><td>${s.class}</td></tr>`;
+  });
+}
+adminStudentClassFilter.onchange = ()=>{ renderStudents(); renderResults(); };
+
+/* ============================
+   Export Students CSV
+============================ */
+function exportStudentsCSV(){
+  const filter = adminStudentClassFilter.value;
+  const list = db.students.filter(s=>filter==="all"||s.class===filter);
+  if(!list.length) return alert("No students");
+  let csv="username,fullName,class\n";
+  list.forEach(s=> csv+=`${s.username},"${s.name}",${s.class}\n`);
+  downloadCSV(csv, filter==="all"?"students_all.csv":`students_${filter}.csv`);
+}
+document.getElementById("btnExportStudents").onclick=exportStudentsCSV;
+
+/* ============================
+   Export Results CSV (with Total)
+============================ */
+function exportResultsCSV(){
+  const filter = adminStudentClassFilter.value;
+  const scoresFiltered = db.scores.filter(sc=>{
+    if(filter==="all") return true;
+    const st=db.students.find(s=>s.id==sc.studentId);
+    return st&&st.class===filter;
+  });
+  if(!scoresFiltered.length) return alert("No results");
+  const students={}, subjects={};
+  scoresFiltered.forEach(sc=>{
+    const st=db.students.find(s=>s.id==sc.studentId);
+    if(st){ students[st.id]={name:st.name,class:st.class}; subjects[sc.subjectId]=sc.subject; }
+  });
+  const sids=Object.keys(students), subids=Object.keys(subjects);
+  let csv="Student,Class"; subids.forEach(sid=>csv+=`,`+subjects[sid]); csv+=",Total\n";
+  sids.forEach(sid=>{
+    const st=students[sid]; let total=0, row=`"${st.name}",${st.class}`;
+    subids.forEach(subid=>{
+      const sc=scoresFiltered.find(x=>x.studentId==sid&&x.subjectId==subid);
+      const val=sc?sc.score:"N/A"; if(sc) total+=parseFloat(sc.score);
+      row+=`,`+val;
+    });
+    row+=`,`+total; csv+=row+"\n";
+  });
+  downloadCSV(csv, filter==="all"?"results_all.csv":`results_${filter}.csv`);
+}
+document.getElementById("btnExportResults").onclick=exportResultsCSV;
+
+/* ============================
+   Render Results (with Total)
+============================ */
+function renderResults(){
+  resultsThead.innerHTML=""; resultsTbody.innerHTML="";
+  const filter=adminStudentClassFilter.value;
+  const scoresFiltered=db.scores.filter(sc=>{
+    if(filter==="all") return true;
+    const st=db.students.find(s=>s.id==sc.studentId);
+    return st&&st.class===filter;
+  });
+  if(!scoresFiltered.length){ resultsThead.innerHTML="<tr><th>No results</th></tr>"; return; }
+  const students={}, subjects={};
+  scoresFiltered.forEach(sc=>{ students[sc.studentId]=sc.studentName; subjects[sc.subjectId]=sc.subject; });
+  const sids=Object.keys(students), subids=Object.keys(subjects);
+  let head="<tr><th>Student</th>"; subids.forEach(id=>head+=`<th>${subjects[id]}</th>`); head+="<th>Total</th></tr>";
+  resultsThead.innerHTML=head;
+  sids.forEach(sid=>{
+    let total=0, row=`<tr><td>${students[sid]}</td>`;
+    subids.forEach(subid=>{
+      const sc=scoresFiltered.find(x=>x.studentId==sid&&x.subjectId==subid);
+      const val=sc?sc.score:"N/A"; if(sc) total+=parseFloat(sc.score);
+      row+=`<td>${val}</td>`;
+    });
+    row+=`<td>${total}</td></tr>`; resultsTbody.innerHTML+=row;
   });
 }
 
 /* ============================
-   Student subjects filtering
+   CSV Download Helper
 ============================ */
-function populateStudentSubjects(){
-  studentSubjectSelect.innerHTML = '';
-  (db.subjects||[]).filter(s => s.class === currentUser.class).forEach(s => {
-    const opt = document.createElement('option'); 
-    opt.value=s.id; 
-    opt.textContent = s.name; 
-    studentSubjectSelect.appendChild(opt);
-  });
-  const selectedSubject = db.subjects.find(s => s.id == studentSubjectSelect.value);
-  if(selectedSubject) {
-      examDurationInput.value = selectedSubject.duration;
-  }
+function downloadCSV(content, filename){
+  const blob=new Blob([content],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-
-/* ============================
-   Questions CRUD
-============================ */
-function handleAddQuestion(){
-  const subjId = parseInt(subjectSelectForQuestions.value);
-  if(!subjId) return alert('Select subject first');
-  const text = qText.value.trim(), A=qA.value.trim(), B=qB.value.trim(), C=qC.value.trim();
-  const ans=qAnswer.value;
-  if(!text || !A || !B || !C) return alert('Fill question and all options');
-
-  const selectedSubject = db.subjects.find(s => s.id === subjId);
-  const mark = selectedSubject ? selectedSubject.defaultMark : 1;
-
-  db.questions = db.questions || [];
-  const id = Date.now();
-  db.questions.push({ id, subjectId:subjId, question:text, options:[A,B,C], answer: ['A','B','C'].indexOf(ans), scoreValue: mark });
-  saveToBin();
-  clearQuestionForm();
-  renderQuestionsFor(subjId);
-}
-
-function renderQuestionsFor(subjectId){
-  questionsTbody.innerHTML = '';
-  (db.questions || []).filter(q => q.subjectId === parseInt(subjectId)).forEach((q, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${idx+1}</td><td>${q.question}</td><td>${q.options[q.answer]||''}</td><td>${q.scoreValue || 1}</td><td></td>`;
-    const td = tr.querySelector('td:last-child');
-    const delBtn = document.createElement('button'); delBtn.className='danger'; delBtn.textContent='Delete';
-    delBtn.onclick = ()=> deleteQuestion(q.id);
-    td.appendChild(delBtn);
-    questionsTbody.appendChild(tr);
-  });
-}
-
-function clearQuestionForm(){ qText.value=''; qA.value=''; qB.value=''; qC.value=''; qAnswer.value='A'; }
-
-/* ============================
-   (Other code remains unchanged)
-============================ */
 </script>
 </body>
 </html>
