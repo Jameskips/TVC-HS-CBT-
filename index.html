@@ -5,7 +5,6 @@
   <title>TVC High School — CBT (JSONBin)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* Keep your original CSS here */
     body { font-family: Arial, sans-serif; margin: 20px; }
     .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
     .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
@@ -16,13 +15,14 @@
     button { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
     button.muted { background: #ddd; }
     button.danger { background: #e74c3c; color: #fff; }
+    .muted { color: #555; }
   </style>
 </head>
 <body>
   <header><h1>The Valued Child (TVC) High School — CBT</h1></header>
   <div class="wrap">
 
-    <!-- LOGIN CARD (simplified) -->
+    <!-- LOGIN -->
     <div id="loginCard" class="card">
       <h2>Login</h2>
       <input id="loginUser" placeholder="Username" />
@@ -100,16 +100,16 @@
       </div>
     </div>
 
-    <!-- STUDENT DASHBOARD (placeholder) -->
+    <!-- STUDENT DASHBOARD -->
     <div id="studentCard" class="card hidden">
-      <h2>Student Panel</h2>
+      <h2 id="studentHeader">Student Panel</h2>
       <button id="btnLogoutStudent" class="muted">Logout</button>
     </div>
   </div>
 
 <script>
 /* ============================
-   Demo database
+   DATABASE
 ============================ */
 let db = {
   subjects: [
@@ -119,11 +119,61 @@ let db = {
   students: [],
   scores: []
 };
+let currentUser = null;
 
 /* ============================
-   Add Subject
+   LOGIN HANDLER
 ============================ */
-document.getElementById("btnAddSubject").onclick = () => {
+document.getElementById("btnLogin").onclick = () => {
+  const username = loginUser.value.trim();
+  const password = loginPass.value.trim();
+  const cls = loginClass.value.trim();
+
+  if (username === "admin" && password === "admin") {
+    // Admin login
+    loginCard.classList.add("hidden");
+    adminCard.classList.remove("hidden");
+    renderSubjects();
+    renderStudents();
+    renderResults();
+    currentUser = { role: "admin" };
+    loginMsg.textContent = "";
+    return;
+  }
+
+  // Student login
+  const student = db.students.find(
+    s => s.username === username && s.class === cls && s.password === password
+  );
+  if (student) {
+    loginCard.classList.add("hidden");
+    studentCard.classList.remove("hidden");
+    studentHeader.textContent = "Student Panel — " + student.name + " (" + student.class + ")";
+    currentUser = { role: "student", ...student };
+    loginMsg.textContent = "";
+    return;
+  }
+
+  // Invalid
+  loginMsg.textContent = "Invalid username, password, or class.";
+};
+
+/* ============================
+   LOGOUT
+============================ */
+btnLogoutAdmin.onclick = () => {
+  adminCard.classList.add("hidden");
+  loginCard.classList.remove("hidden");
+};
+btnLogoutStudent.onclick = () => {
+  studentCard.classList.add("hidden");
+  loginCard.classList.remove("hidden");
+};
+
+/* ============================
+   ADD SUBJECT
+============================ */
+btnAddSubject.onclick = () => {
   const name = newSubjectInput.value.trim();
   const cls = newSubjectClassInput.value.trim();
   if(!name || !cls) return alert("Enter subject name and class");
@@ -133,7 +183,7 @@ document.getElementById("btnAddSubject").onclick = () => {
 };
 
 /* ============================
-   Render Subjects (with filter)
+   RENDER SUBJECTS (FILTER)
 ============================ */
 function renderSubjects(){
   subjectsTbody.innerHTML = "";
@@ -150,16 +200,16 @@ function renderSubjects(){
 adminClassFilter.onchange = renderSubjects;
 
 /* ============================
-   Add Student
+   ADD STUDENT
 ============================ */
-document.getElementById("btnAddStudent").onclick = () => {
-  db.students.push({ id: Date.now(), username: stuUsername.value, name: stuFullName.value, class: stuClass.value });
+btnAddStudent.onclick = () => {
+  db.students.push({ id: Date.now(), username: stuUsername.value, name: stuFullName.value, class: stuClass.value, password: stuPassword.value });
   stuUsername.value = stuFullName.value = stuClass.value = stuPassword.value = "";
   renderStudents();
 };
 
 /* ============================
-   Render Students (with filter)
+   RENDER STUDENTS (FILTER)
 ============================ */
 function renderStudents(){
   studentsTbody.innerHTML = "";
@@ -176,7 +226,7 @@ function renderStudents(){
 adminStudentClassFilter.onchange = ()=>{ renderStudents(); renderResults(); };
 
 /* ============================
-   Export Students CSV
+   EXPORT STUDENTS CSV
 ============================ */
 function exportStudentsCSV(){
   const filter = adminStudentClassFilter.value;
@@ -186,10 +236,10 @@ function exportStudentsCSV(){
   list.forEach(s=> csv+=`${s.username},"${s.name}",${s.class}\n`);
   downloadCSV(csv, filter==="all"?"students_all.csv":`students_${filter}.csv`);
 }
-document.getElementById("btnExportStudents").onclick=exportStudentsCSV;
+btnExportStudents.onclick=exportStudentsCSV;
 
 /* ============================
-   Export Results CSV (with Total)
+   EXPORT RESULTS CSV
 ============================ */
 function exportResultsCSV(){
   const filter = adminStudentClassFilter.value;
@@ -217,10 +267,10 @@ function exportResultsCSV(){
   });
   downloadCSV(csv, filter==="all"?"results_all.csv":`results_${filter}.csv`);
 }
-document.getElementById("btnExportResults").onclick=exportResultsCSV;
+btnExportResults.onclick=exportResultsCSV;
 
 /* ============================
-   Render Results (with Total)
+   RENDER RESULTS
 ============================ */
 function renderResults(){
   resultsThead.innerHTML=""; resultsTbody.innerHTML="";
@@ -248,7 +298,7 @@ function renderResults(){
 }
 
 /* ============================
-   CSV Download Helper
+   CSV HELPER
 ============================ */
 function downloadCSV(content, filename){
   const blob=new Blob([content],{type:"text/csv"});
