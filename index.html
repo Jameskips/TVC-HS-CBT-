@@ -5,6 +5,17 @@
   <title>TVC High School — CBT (Complete)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <style>
+    .qkey.is-answered {
+      background-color: #ebfffc;
+      border-color: #209cee;
+      color: #209cee;
+    }
+    .qkey.is-answered.is-active {
+      background-color: #209cee;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
   <div class="container is-max-desktop p-4">
@@ -38,7 +49,7 @@
       <p id="loginMsg" class="is-size-7 has-text-grey"></p>
     </div>
 
-    <div id="adminCard" class="box hidden">
+    <div id="adminCard" class="box is-hidden">
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
         <h2 class="title is-5 mb-0">Admin Dashboard</h2>
         <div class="buttons is-small">
@@ -197,7 +208,7 @@
       </div>
     </div>
 
-    <div id="studentCard" class="box hidden">
+    <div id="studentCard" class="box is-hidden">
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
         <h2 id="studentHeader" class="title is-5 mb-0">Student Panel</h2>
         <div class="buttons is-small">
@@ -220,19 +231,19 @@
         <p class="is-size-7 has-text-grey">Completed subjects are disabled. After submitting an exam you will only see a confirmation (score is available to admin).</p>
       </div>
 
-      <div id="examCard" class="box hidden">
+      <div id="examCard" class="box is-hidden">
         <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
           <h3 id="examSubjectTitle" class="subtitle is-5 mb-0"></h3>
           <div>Time left: <span id="examTimer" class="has-text-weight-bold">--:--</span></div>
         </div>
 
-        <div id="examQuestionBox" class="box" style="margin-top:10px"></div>
+        <div id="examQuestionBox" class="box"></div>
 
         <div class="buttons mt-4 is-justify-content-space-between">
           <div class="buttons">
             <button id="btnPrevQ" class="button is-light">Previous</button>
             <button id="btnNextQ" class="button is-primary">Next</button>
-            <button id="btnSubmitExam" class="button is-danger hidden">Submit</button>
+            <button id="btnSubmitExam" class="button is-danger is-hidden">Submit</button>
           </div>
           <p id="examProgress" class="has-text-grey is-size-7"></p>
         </div>
@@ -284,8 +295,8 @@ document.getElementById("btnLogin").onclick = () => {
 
   if (username === "admin" && password === "admin") {
     currentUser = { role: "admin", username: "admin" };
-    document.getElementById("loginCard").classList.add("hidden");
-    document.getElementById("adminCard").classList.remove("hidden");
+    document.getElementById("loginCard").classList.add("is-hidden");
+    document.getElementById("adminCard").classList.remove("is-hidden");
     renderAllAdmin();
     document.getElementById("loginMsg").textContent = "";
     return;
@@ -298,8 +309,8 @@ document.getElementById("btnLogin").onclick = () => {
   }
 
   currentUser = { role: "student", ...student };
-  document.getElementById("loginCard").classList.add("hidden");
-  document.getElementById("studentCard").classList.remove("hidden");
+  document.getElementById("loginCard").classList.add("is-hidden");
+  document.getElementById("studentCard").classList.remove("is-hidden");
   document.getElementById("studentHeader").textContent = `Student Panel — ${student.name} (${student.class})`;
   prepareStudentSubjectDropdown();
   document.getElementById("loginMsg").textContent = "";
@@ -307,15 +318,15 @@ document.getElementById("btnLogin").onclick = () => {
 
 document.getElementById("btnLogoutAdmin").onclick = () => {
   currentUser = null;
-  document.getElementById("adminCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
+  document.getElementById("adminCard").classList.add("is-hidden");
+  document.getElementById("loginCard").classList.remove("is-hidden");
 };
 document.getElementById("btnLogoutStudent").onclick = () => {
   currentUser = null;
   stopExamTimer();
-  document.getElementById("studentCard").classList.add("hidden");
-  document.getElementById("examCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
+  document.getElementById("studentCard").classList.add("is-hidden");
+  document.getElementById("examCard").classList.add("is-hidden");
+  document.getElementById("loginCard").classList.remove("is-hidden");
 };
 
 /* Save/Clear local */
@@ -676,7 +687,7 @@ function startExam(subjectId){
   };
 
   // UI
-  document.getElementById("examCard").classList.remove("hidden");
+  document.getElementById("examCard").classList.remove("is-hidden");
   document.getElementById("examSubjectTitle").textContent = `${subj.name} — ${subj.class}`;
   renderExamQuestion();
   renderExamKeys();
@@ -713,8 +724,8 @@ function renderExamQuestion(){
   `;
   document.getElementById("btnPrevQ").disabled = (i === 0);
   const last = (i === examState.questions.length - 1);
-  document.getElementById("btnNextQ").classList.toggle("hidden", last);
-  document.getElementById("btnSubmitExam").classList.toggle("hidden", !last);
+  document.getElementById("btnNextQ").classList.toggle("is-hidden", last);
+  document.getElementById("btnSubmitExam").classList.toggle("is-hidden", !last);
   document.getElementById("examProgress").textContent = `Q ${i+1} / ${examState.questions.length}`;
   renderExamKeys();
 }
@@ -741,7 +752,7 @@ function renderExamKeys(){
   for (let i = 0; i < examState.questions.length; i++){
     const active = i === examState.index;
     const answered = !!examState.answers[i];
-    html += `<a class="button is-small is-rounded ${active ? "is-info is-light has-text-info-dark has-text-weight-bold" : (answered ? "is-link is-light" : "is-light")}" onclick="examJump(${i})">${i+1}</a>`;
+    html += `<a class="button is-small is-rounded qkey ${active ? "is-active" : ""} ${answered ? "is-answered" : "is-light"}" onclick="examJump(${i})">${i+1}</a>`;
   }
   keysDiv.innerHTML = html;
 }
@@ -814,7 +825,7 @@ function finalizeExam(isAuto=false){
   // cleanup UI
   stopExamTimer();
   examState = null;
-  document.getElementById("examCard").classList.add("hidden");
+  document.getElementById("examCard").classList.add("is-hidden");
   // refresh dropdown to disable completed subject
   prepareStudentSubjectDropdown();
   renderResults();
@@ -868,6 +879,7 @@ window.deleteQuestion = deleteQuestion;
 window.editStudent = editStudent;
 window.deleteStudent = deleteStudent;
 window.examJump = examJump;
+window.studentSelect = studentSelect;
 
 </script>
 </body>
