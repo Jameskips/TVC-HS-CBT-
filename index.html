@@ -151,7 +151,6 @@
         <input id="loginPass" type="password" placeholder="Password" />
         <button id="btnLogin" class="primary">Login</button>
       </div>
-      <p class="muted">Admin credentials: <span class="pill">admin / admin</span></p>
       <p id="loginMsg" class="muted"></p>
     </div>
 
@@ -254,6 +253,9 @@
                 <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
               </div>
               <div class="row">
+                <label class="muted">Reset by subject:</label>
+                <select id="resetSubjectDropdown"><option value="">-- Select Subject --</option></select>
+                <button id="btnResetSubject" class="danger">Reset All</button>
                 <button id="btnExportStudents" class="muted">Export Students CSV</button>
                 <button id="btnExportResults" class="muted">Export Results CSV</button>
               </div>
@@ -645,6 +647,33 @@ function refreshClassFilters(){
 }
 document.getElementById("adminStudentClassFilter").onchange = renderResults;
 
+function refreshResetSubjectDropdown() {
+  const dropdown = document.getElementById("resetSubjectDropdown");
+  const prev = dropdown.value;
+  dropdown.innerHTML = `<option value="">-- Select Subject --</option>`;
+  db.subjects.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.text = `${s.name} (${s.class})`;
+    dropdown.appendChild(opt);
+  });
+  if (prev) dropdown.value = prev;
+}
+
+document.getElementById("btnResetSubject").onclick = () => {
+  const subjectId = document.getElementById("resetSubjectDropdown").value;
+  if (!subjectId) return alert("Please select a subject to reset.");
+  const subject = db.subjects.find(s => s.id === subjectId);
+  if (!subject) return alert("Subject not found.");
+  if (!confirm(`Are you sure you want to reset ALL exam results for ${subject.name} (${subject.class})? This cannot be undone.`)) return;
+
+  const initialScoreCount = db.scores.length;
+  db.scores = db.scores.filter(sc => sc.subjectId !== subjectId);
+  const scoresRemoved = initialScoreCount - db.scores.length;
+  commit();
+  alert(`${scoresRemoved} exam result(s) for ${subject.name} have been reset.`);
+};
+
 function renderResults(){
   const thead = document.getElementById("resultsThead");
   const tbody = document.getElementById("resultsTbody");
@@ -927,6 +956,7 @@ function renderAllAdmin(){
   refreshClassFilters();
   refreshQuestionFilterSubjects();
   refreshQuestionAddSubjects();
+  refreshResetSubjectDropdown();
   renderSubjects();
   renderQuestions();
   renderStudents();
