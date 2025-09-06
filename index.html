@@ -148,6 +148,10 @@
               <input id="stuPassword" placeholder="Password" />
               <button id="btnAddStudent" class="primary">Add Student</button>
             </div>
+            <div class="row">
+              <label class="muted">Filter by class:</label>
+              <select id="studentClassFilter"><option value="all">All Classes</option></select>
+            </div>
             <table>
               <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
               <tbody id="studentsTbody"></tbody>
@@ -193,6 +197,7 @@
           <button id="btnStartExam" class="primary">Start Exam</button>
         </div>
         <p class="muted">Completed subjects are disabled. After submitting an exam you will only see a confirmation (score is available to admin).</p>
+        <p id="studentMsg" class="muted" style="margin-top:10px"></p>
       </div>
 
       <div id="examCard" class="card hidden">
@@ -495,11 +500,15 @@ document.getElementById("btnAddStudent").onclick = () => {
   document.getElementById("stuPassword").value = "";
   commit();
 };
+document.getElementById("studentClassFilter").onchange = () => renderStudents();
 
 function renderStudents(){
   const tbody = document.getElementById("studentsTbody");
   tbody.innerHTML = "";
-  db.students.forEach(s => {
+  const filterClass = document.getElementById("studentClassFilter").value;
+  const filteredStudents = db.students.filter(s => filterClass === "all" || s.class === filterClass);
+
+  filteredStudents.forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
         <td>${escapeHtml(s.username)}</td>
@@ -537,7 +546,7 @@ function deleteStudent(id){
    --------------------------- */
 function refreshClassFilters(){
   const classes = [...new Set(db.subjects.map(s => s.class))].sort();
-  const filters = ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter"];
+  const filters = ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter", "studentClassFilter"];
   filters.forEach(id => {
     const sel = document.getElementById(id);
     const curr = sel.value || "all";
@@ -669,6 +678,7 @@ document.getElementById("btnStartExam").onclick = () => {
   if (!sid) return alert("Select a subject first.");
   // check no duplicate
   if (db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == sid)) return alert("You already completed this subject.");
+  document.getElementById("studentMsg").textContent = ""; // clear any prior messages
   startExam(sid);
 };
 
@@ -773,13 +783,10 @@ function updateTimerLabel(){
   el.textContent = `${mm}:${ss}`;
 }
 
-/* Submit (with review unanswered) */
+/* Submit (with confirmation and review unanswered) */
 document.getElementById("btnSubmitExam").onclick = () => {
   if (!examState) return;
-  const unanswered = examState.answers.reduce((acc,a,i)=> a?acc:acc.concat(i+1), []);
-  if (unanswered.length) {
-    if (!confirm(`You left ${unanswered.length} unanswered (questions: ${unanswered.join(", ")}). Submit anyway?`)) return;
-  }
+  if (!confirm("Are you sure you want to submit?")) return;
   finalizeExam(false);
 };
 
@@ -812,8 +819,9 @@ function finalizeExam(isAuto=false){
   prepareStudentSubjectDropdown();
   renderResults();
 
-  // Student sees only confirmation
-  alert("Your exam has been submitted successfully. The administrator will view your score.");
+  // Student sees a confirmation alert and message
+  document.getElementById("studentMsg").textContent = "Your exam has been submitted successfully. The administrator will view your score.";
+  alert("Your exam has been submitted successfully.");
 }
 
 /* ---------------------------
