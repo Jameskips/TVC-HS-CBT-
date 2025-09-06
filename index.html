@@ -7,62 +7,126 @@
   <style>
     body { 
       font-family: Arial, sans-serif; 
-      margin: 18px; 
+      margin: 0; 
       color:#222; 
-      /* Updated background with a subtle gradient */
-      background: #eef5ff; /* fallback color */
-      background: linear-gradient(135deg, #eef5ff 0%, #f7fcff 100%);
+      /* Updated background with a vibrant, captivating gradient */
+      background: #c3e0ff;
+      background: linear-gradient(135deg, #c3e0ff 0%, #d8f0ff 100%);
+      background-attachment: fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      
+      /* Subtle pattern for texture */
+      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.2) 1px, transparent 1px);
+      background-size: 20px 20px;
     }
-    .wrap { max-width:1100px; margin:0 auto; flex-grow: 1; }
-    header h1 { margin: 4px 0 18px; font-size:20px; color:#1a237e; }
+    .wrap { 
+      max-width:1100px; 
+      margin: 18px auto; 
+      flex-grow: 1; 
+      padding: 0 10px;
+    }
+    header h1 { 
+      margin: 4px 0 18px; 
+      font-size:24px; 
+      color:#1a237e; 
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+      font-weight: bold;
+    }
     .card { 
       background:#fff; 
       border:1px solid #e6e9ee; 
-      border-radius:12px; /* Slightly more rounded */
-      padding:16px; /* Slightly more padding */
-      margin-bottom:18px; /* More space between cards */
-      box-shadow:0 4px 12px rgba(0,0,0,0.06); /* More prominent shadow */
+      border-radius:16px; /* More rounded */
+      padding:20px; /* More padding */
+      margin-bottom:20px; /* More space between cards */
+      box-shadow:0 6px 20px rgba(0,0,0,0.08); /* More prominent shadow */
+      transition: box-shadow 0.3s ease;
     }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    input, select, textarea, button { font-family: inherit; font-size:14px; }
-    input, select, textarea { padding:10px; border:1px solid #dfe6ef; border-radius:8px; }
-    button { padding:10px 16px; border-radius:8px; cursor:pointer; border:0; font-weight: 500; }
+    .card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+    input, select, textarea, button { font-family: inherit; font-size:15px; }
+    input, select, textarea { 
+      padding:12px; 
+      border:1px solid #dfe6ef; 
+      border-radius:10px; 
+      background: #fdfefe;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { 
+      border-color: #246bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(36, 107, 255, 0.1);
+    }
+    button { 
+      padding:12px 20px; 
+      border-radius:10px; 
+      cursor:pointer; 
+      border:0; 
+      font-weight: 600; 
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     button.primary { background:#246bff; color:#fff; transition: background-color 0.2s; }
     button.primary:hover { background:#1e5be0; }
     button.muted { background:#f0f3f8; color:#222; transition: background-color 0.2s; }
     button.muted:hover { background:#e5e8ec; }
     button.danger { background:#e53935; color:#fff; transition: background-color 0.2s; }
     button.danger:hover { background:#c62828; }
-    button.small { padding:6px 12px; font-size:13px; }
-    table { width:100%; border-collapse:collapse; margin-top:8px; }
-    th, td { padding:12px; border:1px solid #eef2f6; text-align:left; vertical-align:middle; }
+    button.small { padding:8px 16px; font-size:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; }
+    th, td { padding:14px; border:1px solid #eef2f6; text-align:left; vertical-align:middle; }
     th { background:#fafcff; }
-    .muted { color:#666; font-size:13px; }
+    .muted { color:#666; font-size:14px; }
     .hidden { display:none; }
-    .timer { font-weight:700; color:#e53935; }
-    .exam-option { padding:12px; border:1px solid #d9e2ef; border-radius:8px; cursor:pointer; background:#fff; transition: box-shadow 0.2s; }
-    .exam-option:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .exam-option.selected { background:#e8f0ff; outline:3px solid rgba(36,107,255,0.12); border-color: #246bff; }
-    .qkeys { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .qkey { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border:1px solid #d9e3f5; border-radius:8px; cursor:pointer; user-select:none; background:#fff; font-weight:500; }
+    .timer { font-weight:700; color:#e53935; font-size: 1.1em; }
+    .exam-option { 
+      padding:16px; 
+      border:1px solid #d9e2ef; 
+      border-radius:10px; 
+      cursor:pointer; 
+      background:#fdfefe; 
+      transition: box-shadow 0.2s, transform 0.2s; 
+    }
+    .exam-option:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); transform: translateY(-1px); }
+    .exam-option.selected { 
+      background:#e8f0ff; 
+      outline:3px solid rgba(36,107,255,0.12); 
+      border-color: #246bff; 
+      box-shadow: 0 2px 8px rgba(36, 107, 255, 0.1);
+      transform: none;
+    }
+    .qkeys { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .qkey { 
+      width:44px; 
+      height:44px; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      border:1px solid #d9e3f5; 
+      border-radius:10px; 
+      cursor:pointer; 
+      user-select:none; 
+      background:#fff; 
+      font-weight:600;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .qkey:hover { background: #f0f3f8; }
     .qkey.active { background:#246bff; color:#fff; border-color:#246bff; }
     .qkey.answered { background:#eaf3ff; color:#0b57ff; border-color:#cfe3ff; }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#eef5ff; color:#1350d6; font-size:12px; }
+    .pill { display:inline-block; padding:6px 12px; border-radius:999px; background:#eef5ff; color:#1350d6; font-size:13px; font-weight: bold; }
 
     /* Accordion CSS */
     .accordion details {
         background:#fff;
         border:1px solid #e6e9ee;
-        border-radius:12px;
-        margin-bottom:18px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.06);
+        border-radius:16px;
+        margin-bottom:20px;
+        box-shadow:0 6px 20px rgba(0,0,0,0.08);
     }
     .accordion summary {
-        padding:16px;
-        font-size:16px;
+        padding:20px;
+        font-size:18px;
         font-weight:bold;
         cursor:pointer;
         user-select:none;
@@ -70,7 +134,7 @@
     }
     .accordion summary::-webkit-details-marker { display:none; }
     .accordion .accordion-content {
-        padding:16px;
+        padding:20px;
         border-top:1px solid #e6e9ee;
     }
   </style>
@@ -617,13 +681,24 @@ function renderResults(){
     let total = 0, maxTotal = 0;
     subids.forEach(subid => {
       const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
-      if (sc) { row += `<td>${sc.score} / ${sc.totalMarks}</td>`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
+      if (sc) { 
+        row += `<td>${sc.score} / ${sc.totalMarks} <button class="small danger" onclick="resetScore('${sc.studentId}', '${sc.subjectId}')">Reset</button></td>`; 
+        total += Number(sc.score); 
+        maxTotal += Number(sc.totalMarks); 
+      }
       else row += `<td>N/A</td>`;
     });
     const pct = maxTotal ? (total / maxTotal * 100) : 0;
     row += `<td>${total}</td><td>${pct.toFixed(2)}%</td></tr>`;
     tbody.insertAdjacentHTML("beforeend", row);
   });
+}
+
+function resetScore(studentId, subjectId) {
+  if (!confirm("Are you sure you want to reset this student's result for this subject?")) return;
+  db.scores = db.scores.filter(sc => !(sc.studentId === studentId && sc.subjectId === subjectId));
+  commit();
+  alert("Result has been reset. The student can now re-take the exam.");
 }
 
 document.getElementById("btnExportStudents").onclick = () => {
@@ -891,6 +966,7 @@ window.editStudent = editStudent;
 window.deleteStudent = deleteStudent;
 window.examJump = examJump;
 window.studentSelect = studentSelect;
+window.resetScore = resetScore;
 </script>
 </body>
 </html>
