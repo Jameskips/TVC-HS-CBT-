@@ -92,6 +92,10 @@
               <input id="newSubjectMarks" type="number" min="1" placeholder="Marks per question" style="width:160px" />
               <button id="btnAddSubject" class="primary">Add Subject</button>
             </div>
+            <div class="row">
+                <label class="muted">Filter by class:</label>
+                <select id="subjectClassFilter"><option value="all">All Classes</option></select>
+            </div>
             <table>
               <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
               <tbody id="subjectsTbody"></tbody>
@@ -102,7 +106,7 @@
         <details>
           <summary>Questions</summary>
           <div class="accordion-content">
-            <h3>Questions (A / B / C only). Selected subject stays selected after adding.</h3>
+            <h3>Questions (A / B / C only)</h3>
             <div class="row">
               <label class="muted">Subject:</label>
               <select id="questionSubjectSelect" style="min-width:260px"></select>
@@ -119,6 +123,12 @@
               <label>Correct:</label>
               <select id="correctOption"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
               <button id="btnAddQuestion" class="primary">Add Question</button>
+            </div>
+            <div class="row">
+              <label class="muted">Filter by class:</label>
+              <select id="questionClassFilter"><option value="all">All Classes</option></select>
+              <label class="muted">Filter by subject:</label>
+              <select id="questionFilterSubjectSelect"><option value="all">All Subjects</option></select>
             </div>
             <table>
               <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
@@ -323,10 +333,15 @@ document.getElementById("btnAddSubject").onclick = () => {
   commit();
 };
 
+document.getElementById("subjectClassFilter").onchange = () => renderSubjects();
+
 function renderSubjects(){
   const tbody = document.getElementById("subjectsTbody");
   tbody.innerHTML = "";
-  db.subjects.forEach(s => {
+  const filterClass = document.getElementById("subjectClassFilter").value;
+  const filteredSubjects = db.subjects.filter(s => filterClass === "all" || s.class === filterClass);
+
+  filteredSubjects.forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
         <td>${escapeHtml(s.name)}</td>
@@ -366,7 +381,7 @@ function deleteSubject(id){
 /* ---------------------------
    Admin: Questions (A/B/C only). Keep subject selected after add.
    --------------------------- */
-function renderQuestionSubjects(){
+function refreshQuestionAddSubjects(){
   const sel = document.getElementById("questionSubjectSelect");
   const prev = sel.value;
   sel.innerHTML = "";
@@ -376,7 +391,7 @@ function renderQuestionSubjects(){
     opt.text = `${s.name} (${s.class}) — ${s.duration}m, ${s.marksPerQuestion} mark(s)`;
     sel.appendChild(opt);
   });
-  if (prev) sel.value = prev; // keep previous selection
+  if (prev) sel.value = prev;
 }
 
 document.getElementById("btnAddQuestion").onclick = () => {
@@ -389,7 +404,6 @@ document.getElementById("btnAddQuestion").onclick = () => {
   if (!subjectId || !text || !A || !B || !C) return alert("Fill question and options A, B, C.");
   if (!["A","B","C"].includes(correct)) return alert("Correct must be A, B, or C.");
   db.questions.push({ id: uid(), subjectId, question: text, A, B, C, correct });
-  // clear text/options but keep subject selection
   document.getElementById("questionText").value = "";
   document.getElementById("optionA").value = "";
   document.getElementById("optionB").value = "";
@@ -397,11 +411,36 @@ document.getElementById("btnAddQuestion").onclick = () => {
   commit();
 };
 
+document.getElementById("questionClassFilter").onchange = () => {
+    refreshQuestionFilterSubjects();
+    renderQuestions();
+};
+document.getElementById("questionFilterSubjectSelect").onchange = () => renderQuestions();
+
+function refreshQuestionFilterSubjects() {
+    const classFilter = document.getElementById("questionClassFilter").value;
+    const subjectFilter = document.getElementById("questionFilterSubjectSelect");
+    const prev = subjectFilter.value;
+
+    subjectFilter.innerHTML = `<option value="all">All Subjects</option>`;
+    const filteredSubjects = db.subjects.filter(s => classFilter === "all" || s.class === classFilter);
+    filteredSubjects.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.text = `${s.name} (${s.class})`;
+        subjectFilter.appendChild(opt);
+    });
+    if (prev) subjectFilter.value = prev;
+}
+
 function renderQuestions(){
   const tbody = document.getElementById("questionsTbody");
   tbody.innerHTML = "";
+  const subjectIdFilter = document.getElementById("questionFilterSubjectSelect").value;
+  const filteredQuestions = db.questions.filter(q => subjectIdFilter === "all" || q.subjectId === subjectIdFilter);
+
   let i = 1;
-  db.questions.forEach(q => {
+  filteredQuestions.forEach(q => {
     const subj = db.subjects.find(s => s.id == q.subjectId);
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
@@ -496,15 +535,18 @@ function deleteStudent(id){
 /* ---------------------------
    Admin: Results (render & export)
    --------------------------- */
-function refreshResultsFilters(){
-  const sel = document.getElementById("adminStudentClassFilter");
-  const curr = sel.value || "all";
-  const classes = [...new Set(db.students.map(s => s.class))].sort();
-  sel.innerHTML = `<option value="all">All Classes</option>`;
-  classes.forEach(c => {
-    const opt = document.createElement("option"); opt.value = c; opt.text = c;
-    if (c === curr) opt.selected = true;
-    sel.appendChild(opt);
+function refreshClassFilters(){
+  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+  const filters = ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter"];
+  filters.forEach(id => {
+    const sel = document.getElementById(id);
+    const curr = sel.value || "all";
+    sel.innerHTML = `<option value="all">All Classes</option>`;
+    classes.forEach(c => {
+      const opt = document.createElement("option"); opt.value = c; opt.text = c;
+      if (c === curr) opt.selected = true;
+      sel.appendChild(opt);
+    });
   });
 }
 document.getElementById("adminStudentClassFilter").onchange = renderResults;
@@ -778,20 +820,16 @@ function finalizeExam(isAuto=false){
    Render / Init helpers
    --------------------------- */
 function renderAllAdmin(){
+  refreshClassFilters();
+  refreshQuestionFilterSubjects();
+  refreshQuestionAddSubjects();
   renderSubjects();
-  renderQuestionSubjects();
   renderQuestions();
   renderStudents();
-  refreshResultsFilters();
   renderResults();
 }
 function renderAllForStartup(){
-  renderSubjects();
-  renderQuestionSubjects();
-  renderQuestions();
-  renderStudents();
-  refreshResultsFilters();
-  renderResults();
+  renderAllAdmin();
   prepareStudentSubjectDropdown();
 }
 
@@ -805,6 +843,10 @@ function renderAllForStartup(){
   db.questions.push({ id: uid(), subjectId: s1, question: "What is 2 + 2?", A:"3", B:"4", C:"5", correct:"B" });
   db.questions.push({ id: uid(), subjectId: s1, question: "What is 3 + 1?", A:"4", B:"2", C:"5", correct:"A" });
   db.students.push({ id: uid(), username: "stud1", name: "John Doe", class: "JSS1", password: "1234" });
+  db.students.push({ id: uid(), username: "stud2", name: "Jane Doe", class: "JSS1", password: "1234" });
+  db.subjects.push({ id: uid(), name: "Physics", class: "SSS1", duration: 5, marksPerQuestion: 2 });
+  db.subjects.push({ id: uid(), name: "Chemistry", class: "SSS1", duration: 5, marksPerQuestion: 2 });
+  db.questions.push({ id: uid(), subjectId: uid(), question: "What is H2O?", A:"Water", B:"Oxygen", C:"Hydrogen", correct:"A" });
   saveDB();
 })();
 
