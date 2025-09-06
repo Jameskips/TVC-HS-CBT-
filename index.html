@@ -59,152 +59,171 @@
         </div>
       </div>
 
-      <div class="box">
-        <h3 class="subtitle is-6">Subjects — duration & marks-per-question</h3>
-        <div class="columns is-multiline">
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field">
-              <div class="control">
-                <input id="newSubjectInput" class="input is-small" placeholder="Subject name (e.g. Mathematics)" />
-              </div>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field">
-              <div class="control">
-                <input id="newSubjectClassInput" class="input is-small" placeholder="Class (e.g. JSS1)" />
-              </div>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input id="newSubjectDuration" class="input is-small" type="number" min="1" placeholder="Duration (mins)" />
-              </div>
-              <p class="control"><span class="button is-static is-small">mins</span></p>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <div class="control is-expanded">
-                <input id="newSubjectMarks" class="input is-small" type="number" min="1" placeholder="Marks per question" />
-              </div>
-              <p class="control"><span class="button is-static is-small">marks</span></p>
-            </div>
-          </div>
-          <div class="column is-full">
-            <button id="btnAddSubject" class="button is-primary is-small">Add Subject</button>
-          </div>
-        </div>
-        <table class="table is-fullwidth is-striped mt-4">
-          <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
-          <tbody id="subjectsTbody"></tbody>
-        </table>
+      <div class="tabs is-centered is-toggle is-fullwidth">
+        <ul>
+          <li class="is-active" data-tab="subjects"><a><span class="icon"><i class="fa fa-book"></i></span>Subjects</a></li>
+          <li data-tab="questions"><a><span class="icon"><i class="fa fa-question-circle"></i></span>Questions</a></li>
+          <li data-tab="students"><a><span class="icon"><i class="fa fa-users"></i></span>Students</a></li>
+          <li data-tab="results"><a><span class="icon"><i class="fa fa-chart-bar"></i></span>Results</a></li>
+        </ul>
       </div>
 
-      <div class="box">
-        <h3 class="subtitle is-6">Questions (A / B / C only)</h3>
-        <div class="field">
-          <label class="label is-small">Subject:</label>
-          <div class="control">
-            <div class="select is-small">
-              <select id="questionSubjectSelect" style="min-width:260px"></select>
+      <div id="tabContent">
+        <div id="subjectsTab" class="content-tab">
+          <div class="box">
+            <h3 class="subtitle is-6">Subjects — duration & marks-per-question</h3>
+            <div class="columns is-multiline">
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field">
+                  <div class="control">
+                    <input id="newSubjectInput" class="input is-small" placeholder="Subject name (e.g. Mathematics)" />
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field">
+                  <div class="control">
+                    <input id="newSubjectClassInput" class="input is-small" placeholder="Class (e.g. JSS1)" />
+                  </div>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <div class="control is-expanded">
+                    <input id="newSubjectDuration" class="input is-small" type="number" min="1" placeholder="Duration (mins)" />
+                  </div>
+                  <p class="control"><span class="button is-static is-small">mins</span></p>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <div class="control is-expanded">
+                    <input id="newSubjectMarks" class="input is-small" type="number" min="1" placeholder="Marks per question" />
+                  </div>
+                  <p class="control"><span class="button is-static is-small">marks</span></p>
+                </div>
+              </div>
+              <div class="column is-full">
+                <button id="btnAddSubject" class="button is-primary is-small">Add Subject</button>
+              </div>
             </div>
+            <table class="table is-fullwidth is-striped mt-4">
+              <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
+              <tbody id="subjectsTbody"></tbody>
+            </table>
           </div>
         </div>
-        <div class="field">
-          <div class="control">
-            <textarea id="questionText" class="textarea is-small" rows="2" placeholder="Question text"></textarea>
-          </div>
-        </div>
-        <div class="columns is-multiline">
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <p class="control"><a class="button is-static is-small">A</a></p>
-              <div class="control is-expanded"><input id="optionA" class="input is-small" placeholder="Option A" /></div>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <p class="control"><a class="button is-static is-small">B</a></p>
-              <div class="control is-expanded"><input id="optionB" class="input is-small" placeholder="Option B" /></div>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <p class="control"><a class="button is-static is-small">C</a></p>
-              <div class="control is-expanded"><input id="optionC" class="input is-small" placeholder="Option C" /></div>
-            </div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field has-addons">
-              <p class="control"><a class="button is-static is-small">Correct</a></p>
+
+        <div id="questionsTab" class="content-tab is-hidden">
+          <div class="box">
+            <h3 class="subtitle is-6">Questions (A / B / C only)</h3>
+            <div class="field">
+              <label class="label is-small">Subject:</label>
               <div class="control">
                 <div class="select is-small">
-                  <select id="correctOption"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                  <select id="questionSubjectSelect" style="min-width:260px"></select>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="field">
-          <div class="control">
-            <button id="btnAddQuestion" class="button is-primary is-small">Add Question</button>
-          </div>
-        </div>
-        <table class="table is-fullwidth is-striped mt-4">
-          <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
-          <tbody id="questionsTbody"></tbody>
-        </table>
-      </div>
-
-      <div class="box">
-        <h3 class="subtitle is-6">Students (add / edit / delete)</h3>
-        <div class="columns is-multiline is-mobile">
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field"><div class="control"><input id="stuUsername" class="input is-small" placeholder="Username" /></div></div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field"><div class="control"><input id="stuFullName" class="input is-small" placeholder="Full name" /></div></div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field"><div class="control"><input id="stuClass" class="input is-small" placeholder="Class (e.g. JSS1)" /></div></div>
-          </div>
-          <div class="column is-one-quarter-desktop is-half-tablet">
-            <div class="field"><div class="control"><input id="stuPassword" class="input is-small" placeholder="Password" /></div></div>
-          </div>
-          <div class="column is-full">
-            <button id="btnAddStudent" class="button is-primary is-small">Add Student</button>
-          </div>
-        </div>
-        <table class="table is-fullwidth is-striped mt-4">
-          <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
-          <tbody id="studentsTbody"></tbody>
-        </table>
-      </div>
-
-      <div class="box">
-        <h3 class="subtitle is-6">Results (admin)</h3>
-        <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
-          <div class="field is-grouped is-grouped-multiline">
-            <div class="control">
-              <label class="label is-small mr-2">Filter by class:</label>
-            </div>
-            <div class="control">
-              <div class="select is-small">
-                <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+            <div class="field">
+              <div class="control">
+                <textarea id="questionText" class="textarea is-small" rows="2" placeholder="Question text"></textarea>
               </div>
             </div>
-          </div>
-          <div class="buttons is-small">
-            <button id="btnExportStudents" class="button is-light">Export Students CSV</button>
-            <button id="btnExportResults" class="button is-light">Export Results CSV</button>
+            <div class="columns is-multiline">
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <p class="control"><a class="button is-static is-small">A</a></p>
+                  <div class="control is-expanded"><input id="optionA" class="input is-small" placeholder="Option A" /></div>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <p class="control"><a class="button is-static is-small">B</a></p>
+                  <div class="control is-expanded"><input id="optionB" class="input is-small" placeholder="Option B" /></div>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <p class="control"><a class="button is-static is-small">C</a></p>
+                  <div class="control is-expanded"><input id="optionC" class="input is-small" placeholder="Option C" /></div>
+                </div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field has-addons">
+                  <p class="control"><a class="button is-static is-small">Correct</a></p>
+                  <div class="control">
+                    <div class="select is-small">
+                      <select id="correctOption"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button id="btnAddQuestion" class="button is-primary is-small">Add Question</button>
+              </div>
+            </div>
+            <table class="table is-fullwidth is-striped mt-4">
+              <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
+              <tbody id="questionsTbody"></tbody>
+            </table>
           </div>
         </div>
-        <table class="table is-fullwidth is-striped">
-          <thead id="resultsThead"></thead>
-          <tbody id="resultsTbody"></tbody>
-        </table>
+
+        <div id="studentsTab" class="content-tab is-hidden">
+          <div class="box">
+            <h3 class="subtitle is-6">Students (add / edit / delete)</h3>
+            <div class="columns is-multiline is-mobile">
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field"><div class="control"><input id="stuUsername" class="input is-small" placeholder="Username" /></div></div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field"><div class="control"><input id="stuFullName" class="input is-small" placeholder="Full name" /></div></div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field"><div class="control"><input id="stuClass" class="input is-small" placeholder="Class (e.g. JSS1)" /></div></div>
+              </div>
+              <div class="column is-one-quarter-desktop is-half-tablet">
+                <div class="field"><div class="control"><input id="stuPassword" class="input is-small" placeholder="Password" /></div></div>
+              </div>
+              <div class="column is-full">
+                <button id="btnAddStudent" class="button is-primary is-small">Add Student</button>
+              </div>
+            </div>
+            <table class="table is-fullwidth is-striped mt-4">
+              <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
+              <tbody id="studentsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="resultsTab" class="content-tab is-hidden">
+          <div class="box">
+            <h3 class="subtitle is-6">Results (admin)</h3>
+            <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+              <div class="field is-grouped is-grouped-multiline">
+                <div class="control">
+                  <label class="label is-small mr-2">Filter by class:</label>
+                </div>
+                <div class="control">
+                  <div class="select is-small">
+                    <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+                  </div>
+                </div>
+              </div>
+              <div class="buttons is-small">
+                <button id="btnExportStudents" class="button is-light">Export Students CSV</button>
+                <button id="btnExportResults" class="button is-light">Export Results CSV</button>
+              </div>
+            </div>
+            <table class="table is-fullwidth is-striped">
+              <thead id="resultsThead"></thead>
+              <tbody id="resultsTbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -253,634 +272,657 @@
       </div>
     </div>
   </div>
+  
+  <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+  <script>
+    /* ---------------------------
+       Persistence & DB
+       --------------------------- */
+    const STORAGE_KEY = "tvc_cbt_db_final_v1";
 
-<script>
-/* ---------------------------
-   Persistence & DB
-   --------------------------- */
-const STORAGE_KEY = "tvc_cbt_db_final_v1";
+    let db = { subjects: [], questions: [], students: [], scores: [] };
+    function saveDB(){
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+      catch(e){ console.error("saveDB error", e); }
+    }
+    function loadDB(){
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) db = JSON.parse(raw);
+      } catch(e){ console.error("loadDB error", e); }
+    }
+    loadDB();
 
-let db = { subjects: [], questions: [], students: [], scores: [] };
-function saveDB(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
-  catch(e){ console.error("saveDB error", e); }
-}
-function loadDB(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) db = JSON.parse(raw);
-  } catch(e){ console.error("loadDB error", e); }
-}
-loadDB();
+    function commit(){
+      saveDB();
+      renderAllAdmin();
+    }
 
-function commit(){
-  saveDB();
-  renderAllAdmin();
-}
+    /* Utility */
+    function uid(){ return Date.now().toString(36) + Math.floor(Math.random()*9999).toString(36); }
+    function escapeHtml(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" })[m]); }
+    function downloadCSV(content, filename){ const blob=new Blob([content], {type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-/* Utility */
-function uid(){ return Date.now().toString(36) + Math.floor(Math.random()*9999).toString(36); }
-function escapeHtml(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" })[m]); }
-function downloadCSV(content, filename){ const blob=new Blob([content], {type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    /* ---------------------------
+       Tab Switching (New)
+       --------------------------- */
+    const adminTabs = document.querySelectorAll('.tabs li');
+    const adminTabContent = document.querySelectorAll('.content-tab');
 
-/* ---------------------------
-   Login / Logout
-   --------------------------- */
-let currentUser = null;
+    adminTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
 
-document.getElementById("btnLogin").onclick = () => {
-  const username = document.getElementById("loginUser").value.trim();
-  const password = document.getElementById("loginPass").value.trim();
-  const cls = document.getElementById("loginClass").value.trim();
+        // Deactivate all tabs
+        adminTabs.forEach(t => t.classList.remove('is-active'));
+        // Hide all content
+        adminTabContent.forEach(content => content.classList.add('is-hidden'));
 
-  if (username === "admin" && password === "admin") {
-    currentUser = { role: "admin", username: "admin" };
-    document.getElementById("loginCard").classList.add("is-hidden");
-    document.getElementById("adminCard").classList.remove("is-hidden");
-    renderAllAdmin();
-    document.getElementById("loginMsg").textContent = "";
-    return;
-  }
-
-  const student = db.students.find(s => s.username === username && s.password === password && s.class === cls);
-  if (!student) {
-    document.getElementById("loginMsg").textContent = "Invalid username, password, or class.";
-    return;
-  }
-
-  currentUser = { role: "student", ...student };
-  document.getElementById("loginCard").classList.add("is-hidden");
-  document.getElementById("studentCard").classList.remove("is-hidden");
-  document.getElementById("studentHeader").textContent = `Student Panel — ${student.name} (${student.class})`;
-  prepareStudentSubjectDropdown();
-  document.getElementById("loginMsg").textContent = "";
-};
-
-document.getElementById("btnLogoutAdmin").onclick = () => {
-  currentUser = null;
-  document.getElementById("adminCard").classList.add("is-hidden");
-  document.getElementById("loginCard").classList.remove("is-hidden");
-};
-document.getElementById("btnLogoutStudent").onclick = () => {
-  currentUser = null;
-  stopExamTimer();
-  document.getElementById("studentCard").classList.add("is-hidden");
-  document.getElementById("examCard").classList.add("is-hidden");
-  document.getElementById("loginCard").classList.remove("is-hidden");
-};
-
-/* Save/Clear local */
-document.getElementById("btnSaveLS").onclick = () => { saveDB(); alert("Saved to localStorage."); };
-document.getElementById("btnClearLS").onclick = () => {
-  if (!confirm("Clear all saved data (localStorage)? This cannot be undone.")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  db = { subjects:[], questions:[], students:[], scores:[] };
-  renderAllAdmin();
-  alert("Cleared.");
-};
-
-/* ---------------------------
-   Admin: Subjects (duration & marks per question)
-   --------------------------- */
-document.getElementById("btnAddSubject").onclick = () => {
-  const name = document.getElementById("newSubjectInput").value.trim();
-  const cls = document.getElementById("newSubjectClassInput").value.trim();
-  const dur = parseInt(document.getElementById("newSubjectDuration").value, 10);
-  const marks = parseFloat(document.getElementById("newSubjectMarks").value);
-  if (!name || !cls || !dur || isNaN(marks) || marks <= 0) return alert("Please enter subject, class, duration (mins) and marks per question.");
-  db.subjects.push({ id: uid(), name, class: cls, duration: dur, marksPerQuestion: marks });
-  document.getElementById("newSubjectInput").value = "";
-  document.getElementById("newSubjectClassInput").value = "";
-  document.getElementById("newSubjectDuration").value = "";
-  document.getElementById("newSubjectMarks").value = "";
-  commit();
-};
-
-function renderSubjects(){
-  const tbody = document.getElementById("subjectsTbody");
-  tbody.innerHTML = "";
-  db.subjects.forEach(s => {
-    tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${escapeHtml(s.name)}</td>
-        <td>${escapeHtml(s.class)}</td>
-        <td>${s.duration}</td>
-        <td>${s.marksPerQuestion}</td>
-        <td>
-          <div class="buttons is-small">
-            <button class="button is-light" onclick="editSubject('${s.id}')">Edit</button>
-            <button class="button is-danger" onclick="deleteSubject('${s.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`);
-  });
-}
-
-function editSubject(id){
-  const s = db.subjects.find(x => x.id == id);
-  if (!s) return alert("Subject not found");
-  const name = prompt("Subject name:", s.name);
-  const cls = prompt("Class:", s.class);
-  const durRaw = prompt("Duration (mins):", s.duration);
-  const marksRaw = prompt("Marks per question:", s.marksPerQuestion);
-  if (name !== null && name.trim()) s.name = name.trim();
-  if (cls !== null && cls.trim()) s.class = cls.trim();
-  const dur = parseInt(durRaw,10); if (!isNaN(dur) && dur > 0) s.duration = dur;
-  const marks = parseFloat(marksRaw); if (!isNaN(marks) && marks > 0) s.marksPerQuestion = marks;
-  commit();
-}
-
-function deleteSubject(id){
-  if (!confirm("Delete subject and all its questions and scores?")) return;
-  db.questions = db.questions.filter(q => q.subjectId != id);
-  db.scores = db.scores.filter(sc => sc.subjectId != id);
-  db.subjects = db.subjects.filter(s => s.id != id);
-  commit();
-}
-
-/* ---------------------------
-   Admin: Questions (A/B/C only). Keep subject selected after add.
-   --------------------------- */
-function renderQuestionSubjects(){
-  const sel = document.getElementById("questionSubjectSelect");
-  const prev = sel.value;
-  sel.innerHTML = "";
-  db.subjects.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.text = `${s.name} (${s.class}) — ${s.duration}m, ${s.marksPerQuestion} mark(s)`;
-    sel.appendChild(opt);
-  });
-  if (prev) sel.value = prev; // keep previous selection
-}
-
-document.getElementById("btnAddQuestion").onclick = () => {
-  const subjectId = document.getElementById("questionSubjectSelect").value;
-  const text = document.getElementById("questionText").value.trim();
-  const A = document.getElementById("optionA").value.trim();
-  const B = document.getElementById("optionB").value.trim();
-  const C = document.getElementById("optionC").value.trim();
-  const correct = document.getElementById("correctOption").value;
-  if (!subjectId || !text || !A || !B || !C) return alert("Fill question and options A, B, C.");
-  if (!["A","B","C"].includes(correct)) return alert("Correct must be A, B, or C.");
-  db.questions.push({ id: uid(), subjectId, question: text, A, B, C, correct });
-  // clear text/options but keep subject selection
-  document.getElementById("questionText").value = "";
-  document.getElementById("optionA").value = "";
-  document.getElementById("optionB").value = "";
-  document.getElementById("optionC").value = "";
-  commit();
-};
-
-function renderQuestions(){
-  const tbody = document.getElementById("questionsTbody");
-  tbody.innerHTML = "";
-  let i = 1;
-  db.questions.forEach(q => {
-    const subj = db.subjects.find(s => s.id == q.subjectId);
-    tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${i++}</td>
-        <td>${escapeHtml(q.question)}</td>
-        <td>${subj ? escapeHtml(subj.name + " (" + subj.class + ")") : "-"}</td>
-        <td>${q.correct}</td>
-        <td>
-          <div class="buttons is-small">
-            <button class="button is-light" onclick="editQuestion('${q.id}')">Edit</button>
-            <button class="button is-danger" onclick="deleteQuestion('${q.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`);
-  });
-}
-
-function editQuestion(id){
-  const q = db.questions.find(x => x.id == id);
-  if (!q) return alert("Question not found");
-  const text = prompt("Question text:", q.question);
-  const A = prompt("Option A:", q.A);
-  const B = prompt("Option B:", q.B);
-  const C = prompt("Option C:", q.C);
-  const correct = prompt("Correct (A/B/C):", q.correct);
-  if (text !== null && text.trim()) q.question = text.trim();
-  if (A !== null) q.A = A;
-  if (B !== null) q.B = B;
-  if (C !== null) q.C = C;
-  if (correct !== null && ["A","B","C"].includes(correct.toUpperCase())) q.correct = correct.toUpperCase();
-  commit();
-}
-
-function deleteQuestion(id){
-  if (!confirm("Delete question?")) return;
-  db.questions = db.questions.filter(q => q.id != id);
-  commit();
-}
-
-/* ---------------------------
-   Admin: Students
-   --------------------------- */
-document.getElementById("btnAddStudent").onclick = () => {
-  const username = document.getElementById("stuUsername").value.trim();
-  const name = document.getElementById("stuFullName").value.trim();
-  const cls = document.getElementById("stuClass").value.trim();
-  const pwd = document.getElementById("stuPassword").value.trim();
-  if (!username || !name || !cls || !pwd) return alert("Fill all student fields");
-  if (db.students.some(s => s.username === username)) return alert("Username already exists");
-  db.students.push({ id: uid(), username, name, class: cls, password: pwd });
-  document.getElementById("stuUsername").value = "";
-  document.getElementById("stuFullName").value = "";
-  document.getElementById("stuClass").value = "";
-  document.getElementById("stuPassword").value = "";
-  commit();
-};
-
-function renderStudents(){
-  const tbody = document.getElementById("studentsTbody");
-  tbody.innerHTML = "";
-  db.students.forEach(s => {
-    tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${escapeHtml(s.username)}</td>
-        <td>${escapeHtml(s.name)}</td>
-        <td>${escapeHtml(s.class)}</td>
-        <td>
-          <div class="buttons is-small">
-            <button class="button is-light" onclick="editStudent('${s.id}')">Edit</button>
-            <button class="button is-danger" onclick="deleteStudent('${s.id}')">Delete</button>
-          </div>
-        </td>
-      </tr>`);
-  });
-}
-
-function editStudent(id){
-  const s = db.students.find(x => x.id == id);
-  if (!s) return alert("Student not found");
-  const name = prompt("Full name:", s.name);
-  const cls = prompt("Class:", s.class);
-  const pwd = prompt("Password (leave blank to keep):", "");
-  if (name !== null && name.trim()) s.name = name.trim();
-  if (cls !== null && cls.trim()) s.class = cls.trim();
-  if (pwd !== null && pwd.trim()) s.password = pwd;
-  commit();
-}
-
-function deleteStudent(id){
-  if (!confirm("Delete student and their scores?")) return;
-  db.students = db.students.filter(s => s.id != id);
-  db.scores = db.scores.filter(sc => sc.studentId != id);
-  commit();
-}
-
-/* ---------------------------
-   Admin: Results (render & export)
-   --------------------------- */
-function refreshResultsFilters(){
-  const sel = document.getElementById("adminStudentClassFilter");
-  const curr = sel.value || "all";
-  const classes = [...new Set(db.students.map(s => s.class))].sort();
-  sel.innerHTML = `<option value="all">All Classes</option>`;
-  classes.forEach(c => {
-    const opt = document.createElement("option"); opt.value = c; opt.text = c;
-    if (c === curr) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-document.getElementById("adminStudentClassFilter").onchange = renderResults;
-
-function renderResults(){
-  const thead = document.getElementById("resultsThead");
-  const tbody = document.getElementById("resultsTbody");
-  thead.innerHTML = ""; tbody.innerHTML = "";
-  if (!db.scores.length) { thead.innerHTML = "<tr><th>No results yet</th></tr>"; return; }
-
-  const filter = document.getElementById("adminStudentClassFilter").value || "all";
-  const filtered = db.scores.filter(sc => {
-    if (filter === "all") return true;
-    const st = db.students.find(s => s.id == sc.studentId);
-    return st && st.class === filter;
-  });
-  if (!filtered.length){ thead.innerHTML = `<tr><th>No results for ${filter}</th></tr>`; return; }
-
-  // Build maps
-  const studentsMap = {}, subjectsMap = {};
-  filtered.forEach(sc => {
-    const st = db.students.find(s => s.id == sc.studentId);
-    if (st) studentsMap[st.id] = { name: st.name, class: st.class };
-    subjectsMap[sc.subjectId] = sc.subject;
-  });
-  const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
-
-  // Header
-  let head = "<tr><th>Student</th><th>Class</th>";
-  subids.forEach(id => head += `<th>${escapeHtml(subjectsMap[id])}</th>`);
-  head += "<th>Total</th><th>Percentage</th></tr>";
-  thead.innerHTML = head;
-
-  // Rows
-  sids.forEach(sid => {
-    const st = studentsMap[sid];
-    let row = `<tr><td>${escapeHtml(st.name)}</td><td>${escapeHtml(st.class)}</td>`;
-    let total = 0, maxTotal = 0;
-    subids.forEach(subid => {
-      const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
-      if (sc) { row += `<td>${sc.score} / ${sc.totalMarks}</td>`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
-      else row += `<td>N/A</td>`;
+        // Activate the clicked tab
+        tab.classList.add('is-active');
+        // Show the corresponding content
+        document.getElementById(`${targetTab}Tab`).classList.remove('is-hidden');
+      });
     });
-    const pct = maxTotal ? (total / maxTotal * 100) : 0;
-    row += `<td>${total}</td><td>${pct.toFixed(2)}%</td></tr>`;
-    tbody.insertAdjacentHTML("beforeend", row);
-  });
-}
 
-document.getElementById("btnExportStudents").onclick = () => {
-  if (!db.students.length) return alert("No students");
-  let csv = "username,fullName,class\n";
-  db.students.forEach(s => csv += `${s.username},"${s.name}",${s.class}\n`);
-  downloadCSV(csv, "students_all.csv");
-};
+    /* ---------------------------
+       Login / Logout
+       --------------------------- */
+    let currentUser = null;
 
-document.getElementById("btnExportResults").onclick = () => {
-  if (!db.scores.length) return alert("No results");
-  const filter = document.getElementById("adminStudentClassFilter").value || "all";
-  const filtered = db.scores.filter(sc => {
-    if (filter === "all") return true;
-    const st = db.students.find(s => s.id == sc.studentId);
-    return st && st.class === filter;
-  });
-  if (!filtered.length) return alert("No results for this filter");
-  // Build maps
-  const studentsMap = {}, subjectsMap = {};
-  filtered.forEach(sc => {
-    const st = db.students.find(s => s.id == sc.studentId);
-    if (st) studentsMap[st.id] = { name: st.name, class: st.class };
-    subjectsMap[sc.subjectId] = sc.subject;
-  });
-  const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
-  let csv = "Student,Class";
-  subids.forEach(id => csv += `,${subjectsMap[id]}`);
-  csv += ",Total,Percentage\n";
+    document.getElementById("btnLogin").onclick = () => {
+      const username = document.getElementById("loginUser").value.trim();
+      const password = document.getElementById("loginPass").value.trim();
+      const cls = document.getElementById("loginClass").value.trim();
 
-  sids.forEach(sid => {
-    const st = studentsMap[sid];
-    let total = 0, maxTotal = 0;
-    let line = `"${st.name}",${st.class}`;
-    subids.forEach(subid => {
-      const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
-      if (sc) { line += `,${sc.score}/${sc.totalMarks}`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
-      else line += ",N/A";
-    });
-    const pct = maxTotal ? (total / maxTotal * 100) : 0;
-    line += `,${total},${pct.toFixed(2)}%\n`;
-    csv += line;
-  });
+      if (username === "admin" && password === "admin") {
+        currentUser = { role: "admin", username: "admin" };
+        document.getElementById("loginCard").classList.add("is-hidden");
+        document.getElementById("adminCard").classList.remove("is-hidden");
+        renderAllAdmin();
+        document.getElementById("loginMsg").textContent = "";
+        return;
+      }
 
-  downloadCSV(csv, filter === "all" ? "results_all.csv" : `results_${filter}.csv`);
-};
+      const student = db.students.find(s => s.username === username && s.password === password && s.class === cls);
+      if (!student) {
+        document.getElementById("loginMsg").textContent = "Invalid username, password, or class.";
+        return;
+      }
 
-/* ---------------------------
-   Student: subject dropdown + exam
-   --------------------------- */
-function prepareStudentSubjectDropdown(){
-  const sel = document.getElementById("studentSubjectDropdown");
-  sel.innerHTML = `<option value="">-- Select subject --</option>`;
-  if (!currentUser) return;
-  const subs = db.subjects.filter(s => s.class === currentUser.class);
-  subs.forEach(s => {
-    // disable if completed
-    const done = db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == s.id);
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.text = `${s.name} (${s.duration}m) ${done ? "— Completed": ""}`;
-    if (done) opt.disabled = true;
-    sel.appendChild(opt);
-  });
-}
+      currentUser = { role: "student", ...student };
+      document.getElementById("loginCard").classList.add("is-hidden");
+      document.getElementById("studentCard").classList.remove("is-hidden");
+      document.getElementById("studentHeader").textContent = `Student Panel — ${student.name} (${student.class})`;
+      prepareStudentSubjectDropdown();
+      document.getElementById("loginMsg").textContent = "";
+    };
 
-/* Exam state */
-let examState = null; // { subjectId, subjectName, subjectClass, durationSec, index, questions[], answers[], totalMarks }
-let examInterval = null;
-
-document.getElementById("btnStartExam").onclick = () => {
-  const sid = document.getElementById("studentSubjectDropdown").value;
-  if (!sid) return alert("Select a subject first.");
-  // check no duplicate
-  if (db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == sid)) return alert("You already completed this subject.");
-  startExam(sid);
-};
-
-function startExam(subjectId){
-  const subj = db.subjects.find(s => s.id == subjectId);
-  if (!subj) return alert("Subject not found");
-  const questions = db.questions.filter(q => q.subjectId == subjectId);
-  if (!questions.length) return alert("No questions for this subject yet.");
-
-  examState = {
-    subjectId,
-    subjectName: subj.name,
-    subjectClass: subj.class,
-    durationSec: subj.duration * 60,
-    index: 0,
-    questions,
-    answers: Array(questions.length).fill(null),
-    totalMarks: questions.length * (Number(subj.marksPerQuestion) || 1)
-  };
-
-  // UI
-  document.getElementById("examCard").classList.remove("is-hidden");
-  document.getElementById("examSubjectTitle").textContent = `${subj.name} — ${subj.class}`;
-  renderExamQuestion();
-  renderExamKeys();
-  startExamTimer();
-  document.getElementById("examMsg").textContent = "";
-}
-
-function renderExamQuestion(){
-  if (!examState) return;
-  const i = examState.index;
-  const q = examState.questions[i];
-  const a = examState.answers[i];
-  const box = document.getElementById("examQuestionBox");
-  box.innerHTML = `
-    <div class="is-size-7 has-text-grey-light">Question ${i+1} of ${examState.questions.length}</div>
-    <h3 class="subtitle is-5 mt-2 mb-4">${escapeHtml(q.question)}</h3>
-    <div class="field is-grouped is-grouped-multiline">
-      <div id="optA" class="control is-expanded">
-        <div class="box p-3 is-size-6 ${a==="A"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('A')">
-          <strong class="mr-2">A.</strong> ${escapeHtml(q.A)}
-        </div>
-      </div>
-      <div id="optB" class="control is-expanded">
-        <div class="box p-3 is-size-6 ${a==="B"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('B')">
-          <strong class="mr-2">B.</strong> ${escapeHtml(q.B)}
-        </div>
-      </div>
-      <div id="optC" class="control is-expanded">
-        <div class="box p-3 is-size-6 ${a==="C"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('C')">
-          <strong class="mr-2">C.</strong> ${escapeHtml(q.C)}
-        </div>
-      </div>
-    </div>
-  `;
-  document.getElementById("btnPrevQ").disabled = (i === 0);
-  const last = (i === examState.questions.length - 1);
-  document.getElementById("btnNextQ").classList.toggle("is-hidden", last);
-  document.getElementById("btnSubmitExam").classList.toggle("is-hidden", !last);
-  document.getElementById("examProgress").textContent = `Q ${i+1} / ${examState.questions.length}`;
-  renderExamKeys();
-}
-
-function studentSelect(letter){
-  if (!examState) return;
-  examState.answers[examState.index] = letter;
-  renderExamQuestion();
-}
-
-document.getElementById("btnPrevQ").onclick = () => {
-  if (!examState) return;
-  if (examState.index > 0) { examState.index--; renderExamQuestion(); }
-};
-document.getElementById("btnNextQ").onclick = () => {
-  if (!examState) return;
-  if (examState.index < examState.questions.length - 1) { examState.index++; renderExamQuestion(); }
-};
-
-function renderExamKeys(){
-  const keysDiv = document.getElementById("questionKeys");
-  if (!examState) { keysDiv.innerHTML = ""; return; }
-  let html = "";
-  for (let i = 0; i < examState.questions.length; i++){
-    const active = i === examState.index;
-    const answered = !!examState.answers[i];
-    html += `<a class="button is-small is-rounded qkey ${active ? "is-active" : ""} ${answered ? "is-answered" : "is-light"}" onclick="examJump(${i})">${i+1}</a>`;
-  }
-  keysDiv.innerHTML = html;
-}
-function examJump(i){ if (!examState) return; examState.index = i; renderExamQuestion(); }
-
-/* Timer */
-function startExamTimer(){
-  stopExamTimer();
-  updateTimerLabel();
-  examInterval = setInterval(() => {
-    examState.durationSec--;
-    updateTimerLabel();
-    if (examState.durationSec <= 0) {
+    document.getElementById("btnLogoutAdmin").onclick = () => {
+      currentUser = null;
+      document.getElementById("adminCard").classList.add("is-hidden");
+      document.getElementById("loginCard").classList.remove("is-hidden");
+    };
+    document.getElementById("btnLogoutStudent").onclick = () => {
+      currentUser = null;
       stopExamTimer();
-      document.getElementById("examMsg").textContent = "Time is up — auto-submitting...";
-      setTimeout(() => finalizeExam(true), 700);
+      document.getElementById("studentCard").classList.add("is-hidden");
+      document.getElementById("examCard").classList.add("is-hidden");
+      document.getElementById("loginCard").classList.remove("is-hidden");
+    };
+
+    /* Save/Clear local */
+    document.getElementById("btnSaveLS").onclick = () => { saveDB(); alert("Saved to localStorage."); };
+    document.getElementById("btnClearLS").onclick = () => {
+      if (!confirm("Clear all saved data (localStorage)? This cannot be undone.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      db = { subjects:[], questions:[], students:[], scores:[] };
+      renderAllAdmin();
+      alert("Cleared.");
+    };
+
+    /* ---------------------------
+       Admin: Subjects (duration & marks per question)
+       --------------------------- */
+    document.getElementById("btnAddSubject").onclick = () => {
+      const name = document.getElementById("newSubjectInput").value.trim();
+      const cls = document.getElementById("newSubjectClassInput").value.trim();
+      const dur = parseInt(document.getElementById("newSubjectDuration").value, 10);
+      const marks = parseFloat(document.getElementById("newSubjectMarks").value);
+      if (!name || !cls || !dur || isNaN(marks) || marks <= 0) return alert("Please enter subject, class, duration (mins) and marks per question.");
+      db.subjects.push({ id: uid(), name, class: cls, duration: dur, marksPerQuestion: marks });
+      document.getElementById("newSubjectInput").value = "";
+      document.getElementById("newSubjectClassInput").value = "";
+      document.getElementById("newSubjectDuration").value = "";
+      document.getElementById("newSubjectMarks").value = "";
+      commit();
+    };
+
+    function renderSubjects(){
+      const tbody = document.getElementById("subjectsTbody");
+      tbody.innerHTML = "";
+      db.subjects.forEach(s => {
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${escapeHtml(s.class)}</td>
+            <td>${s.duration}</td>
+            <td>${s.marksPerQuestion}</td>
+            <td>
+              <div class="buttons is-small">
+                <button class="button is-light" onclick="editSubject('${s.id}')">Edit</button>
+                <button class="button is-danger" onclick="deleteSubject('${s.id}')">Delete</button>
+              </div>
+            </td>
+          </tr>`);
+      });
     }
-  }, 1000);
-}
-function stopExamTimer(){ if (examInterval) clearInterval(examInterval); examInterval = null; }
-function updateTimerLabel(){
-  const el = document.getElementById("examTimer");
-  if (!examState) { el.textContent = "--:--"; return; }
-  const s = Math.max(0, examState.durationSec);
-  const mm = Math.floor(s/60).toString().padStart(2,"0");
-  const ss = Math.floor(s%60).toString().padStart(2,"0");
-  el.textContent = `${mm}:${ss}`;
-}
 
-/* Submit (with review unanswered) */
-document.getElementById("btnSubmitExam").onclick = () => {
-  if (!examState) return;
-
-  const unanswered = examState.answers.reduce((acc,a,i)=> a?acc:acc.concat(i+1), []);
-
-  // Check for unanswered questions and ask for confirmation
-  if (unanswered.length) {
-    if (!confirm(`You left ${unanswered.length} unanswered (questions: ${unanswered.join(", ")}). Submit anyway?`)) {
-      return; // Exit if the user cancels
+    function editSubject(id){
+      const s = db.subjects.find(x => x.id == id);
+      if (!s) return alert("Subject not found");
+      const name = prompt("Subject name:", s.name);
+      const cls = prompt("Class:", s.class);
+      const durRaw = prompt("Duration (mins):", s.duration);
+      const marksRaw = prompt("Marks per question:", s.marksPerQuestion);
+      if (name !== null && name.trim()) s.name = name.trim();
+      if (cls !== null && cls.trim()) s.class = cls.trim();
+      const dur = parseInt(durRaw,10); if (!isNaN(dur) && dur > 0) s.duration = dur;
+      const marks = parseFloat(marksRaw); if (!isNaN(marks) && marks > 0) s.marksPerQuestion = marks;
+      commit();
     }
-  }
 
-  // Final confirmation before submitting
-  if (confirm("Are you sure you want to submit your exam? This action cannot be undone.")) {
-    finalizeExam(false);
-  }
-};
+    function deleteSubject(id){
+      if (!confirm("Delete subject and all its questions and scores?")) return;
+      db.questions = db.questions.filter(q => q.subjectId != id);
+      db.scores = db.scores.filter(sc => sc.subjectId != id);
+      db.subjects = db.subjects.filter(s => s.id != id);
+      commit();
+    }
 
-function finalizeExam(isAuto=false){
-  if (!examState) return;
-  // compute score using subject marks-per-question
-  const subj = db.subjects.find(s => s.id == examState.subjectId);
-  const marksPerQ = subj ? (Number(subj.marksPerQuestion) || 1) : 1;
-  let score = 0, totalMarks = 0;
-  examState.questions.forEach((q, idx) => {
-    totalMarks += marksPerQ;
-    if (examState.answers[idx] && examState.answers[idx] === q.correct) score += marksPerQ;
-  });
+    /* ---------------------------
+       Admin: Questions (A/B/C only). Keep subject selected after add.
+       --------------------------- */
+    function renderQuestionSubjects(){
+      const sel = document.getElementById("questionSubjectSelect");
+      const prev = sel.value;
+      sel.innerHTML = "";
+      db.subjects.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.text = `${s.name} (${s.class}) — ${s.duration}m, ${s.marksPerQuestion} mark(s)`;
+        sel.appendChild(opt);
+      });
+      if (prev) sel.value = prev; // keep previous selection
+    }
 
-  // save result (students should NOT see score)
-  db.scores.push({
-    studentId: currentUser.id,
-    subjectId: examState.subjectId,
-    subject: examState.subjectName,
-    score,
-    totalMarks
-  });
-  saveDB();
+    document.getElementById("btnAddQuestion").onclick = () => {
+      const subjectId = document.getElementById("questionSubjectSelect").value;
+      const text = document.getElementById("questionText").value.trim();
+      const A = document.getElementById("optionA").value.trim();
+      const B = document.getElementById("optionB").value.trim();
+      const C = document.getElementById("optionC").value.trim();
+      const correct = document.getElementById("correctOption").value;
+      if (!subjectId || !text || !A || !B || !C) return alert("Fill question and options A, B, C.");
+      if (!["A","B","C"].includes(correct)) return alert("Correct must be A, B, or C.");
+      db.questions.push({ id: uid(), subjectId, question: text, A, B, C, correct });
+      // clear text/options but keep subject selection
+      document.getElementById("questionText").value = "";
+      document.getElementById("optionA").value = "";
+      document.getElementById("optionB").value = "";
+      document.getElementById("optionC").value = "";
+      commit();
+    };
 
-  // cleanup UI
-  stopExamTimer();
-  examState = null;
-  document.getElementById("examCard").classList.add("is-hidden");
-  // refresh dropdown to disable completed subject
-  prepareStudentSubjectDropdown();
-  renderResults();
+    function renderQuestions(){
+      const tbody = document.getElementById("questionsTbody");
+      tbody.innerHTML = "";
+      let i = 1;
+      db.questions.forEach(q => {
+        const subj = db.subjects.find(s => s.id == q.subjectId);
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${i++}</td>
+            <td>${escapeHtml(q.question)}</td>
+            <td>${subj ? escapeHtml(subj.name + " (" + subj.class + ")") : "-"}</td>
+            <td>${q.correct}</td>
+            <td>
+              <div class="buttons is-small">
+                <button class="button is-light" onclick="editQuestion('${q.id}')">Edit</button>
+                <button class="button is-danger" onclick="deleteQuestion('${q.id}')">Delete</button>
+              </div>
+            </td>
+          </tr>`);
+      });
+    }
 
-  // Student sees only confirmation
-  alert("Your exam has been submitted successfully. The administrator will view your score.");
-}
+    function editQuestion(id){
+      const q = db.questions.find(x => x.id == id);
+      if (!q) return alert("Question not found");
+      const text = prompt("Question text:", q.question);
+      const A = prompt("Option A:", q.A);
+      const B = prompt("Option B:", q.B);
+      const C = prompt("Option C:", q.C);
+      const correct = prompt("Correct (A/B/C):", q.correct);
+      if (text !== null && text.trim()) q.question = text.trim();
+      if (A !== null) q.A = A;
+      if (B !== null) q.B = B;
+      if (C !== null) q.C = C;
+      if (correct !== null && ["A","B","C"].includes(correct.toUpperCase())) q.correct = correct.toUpperCase();
+      commit();
+    }
 
-/* ---------------------------
-   Render / Init helpers
-   --------------------------- */
-function renderAllAdmin(){
-  renderSubjects();
-  renderQuestionSubjects();
-  renderQuestions();
-  renderStudents();
-  refreshResultsFilters();
-  renderResults();
-}
-function renderAllForStartup(){
-  renderSubjects();
-  renderQuestionSubjects();
-  renderQuestions();
-  renderStudents();
-  refreshResultsFilters();
-  renderResults();
-  prepareStudentSubjectDropdown();
-}
+    function deleteQuestion(id){
+      if (!confirm("Delete question?")) return;
+      db.questions = db.questions.filter(q => q.id != id);
+      commit();
+    }
 
-/* initial demo data if empty (optional) */
-(function seedIfEmpty(){
-  if (db.subjects.length || db.questions.length || db.students.length) return;
-  // small demo
-  const s1 = uid(); const s2 = uid();
-  db.subjects.push({ id: s1, name: "Mathematics", class: "JSS1", duration: 5, marksPerQuestion: 1 });
-  db.subjects.push({ id: s2, name: "English Language", class: "JSS1", duration: 5, marksPerQuestion: 1 });
-  db.questions.push({ id: uid(), subjectId: s1, question: "What is 2 + 2?", A:"3", B:"4", C:"5", correct:"B" });
-  db.questions.push({ id: uid(), subjectId: s1, question: "What is 3 + 1?", A:"4", B:"2", C:"5", correct:"A" });
-  db.students.push({ id: uid(), username: "stud1", name: "John Doe", class: "JSS1", password: "1234" });
-  saveDB();
-})();
+    /* ---------------------------
+       Admin: Students
+       --------------------------- */
+    document.getElementById("btnAddStudent").onclick = () => {
+      const username = document.getElementById("stuUsername").value.trim();
+      const name = document.getElementById("stuFullName").value.trim();
+      const cls = document.getElementById("stuClass").value.trim();
+      const pwd = document.getElementById("stuPassword").value.trim();
+      if (!username || !name || !cls || !pwd) return alert("Fill all student fields");
+      if (db.students.some(s => s.username === username)) return alert("Username already exists");
+      db.students.push({ id: uid(), username, name, class: cls, password: pwd });
+      document.getElementById("stuUsername").value = "";
+      document.getElementById("stuFullName").value = "";
+      document.getElementById("stuClass").value = "";
+      document.getElementById("stuPassword").value = "";
+      commit();
+    };
 
-/* initial render */
-renderAllForStartup();
+    function renderStudents(){
+      const tbody = document.getElementById("studentsTbody");
+      tbody.innerHTML = "";
+      db.students.forEach(s => {
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${escapeHtml(s.username)}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${escapeHtml(s.class)}</td>
+            <td>
+              <div class="buttons is-small">
+                <button class="button is-light" onclick="editStudent('${s.id}')">Edit</button>
+                <button class="button is-danger" onclick="deleteStudent('${s.id}')">Delete</button>
+              </div>
+            </td>
+          </tr>`);
+      });
+    }
 
-/* expose some functions for inline handlers (used above) */
-window.editSubject = editSubject;
-window.deleteSubject = deleteSubject;
-window.editQuestion = editQuestion;
-window.deleteQuestion = deleteQuestion;
-window.editStudent = editStudent;
-window.deleteStudent = deleteStudent;
-window.examJump = examJump;
-window.studentSelect = studentSelect;
+    function editStudent(id){
+      const s = db.students.find(x => x.id == id);
+      if (!s) return alert("Student not found");
+      const name = prompt("Full name:", s.name);
+      const cls = prompt("Class:", s.class);
+      const pwd = prompt("Password (leave blank to keep):", "");
+      if (name !== null && name.trim()) s.name = name.trim();
+      if (cls !== null && cls.trim()) s.class = cls.trim();
+      if (pwd !== null && pwd.trim()) s.password = pwd;
+      commit();
+    }
 
-</script>
+    function deleteStudent(id){
+      if (!confirm("Delete student and their scores?")) return;
+      db.students = db.students.filter(s => s.id != id);
+      db.scores = db.scores.filter(sc => sc.studentId != id);
+      commit();
+    }
+
+    /* ---------------------------
+       Admin: Results (render & export)
+       --------------------------- */
+    function refreshResultsFilters(){
+      const sel = document.getElementById("adminStudentClassFilter");
+      const curr = sel.value || "all";
+      const classes = [...new Set(db.students.map(s => s.class))].sort();
+      sel.innerHTML = `<option value="all">All Classes</option>`;
+      classes.forEach(c => {
+        const opt = document.createElement("option"); opt.value = c; opt.text = c;
+        if (c === curr) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+    document.getElementById("adminStudentClassFilter").onchange = renderResults;
+
+    function renderResults(){
+      const thead = document.getElementById("resultsThead");
+      const tbody = document.getElementById("resultsTbody");
+      thead.innerHTML = ""; tbody.innerHTML = "";
+      if (!db.scores.length) { thead.innerHTML = "<tr><th>No results yet</th></tr>"; return; }
+
+      const filter = document.getElementById("adminStudentClassFilter").value || "all";
+      const filtered = db.scores.filter(sc => {
+        if (filter === "all") return true;
+        const st = db.students.find(s => s.id == sc.studentId);
+        return st && st.class === filter;
+      });
+      if (!filtered.length){ thead.innerHTML = `<tr><th>No results for ${filter}</th></tr>`; return; }
+
+      // Build maps
+      const studentsMap = {}, subjectsMap = {};
+      filtered.forEach(sc => {
+        const st = db.students.find(s => s.id == sc.studentId);
+        if (st) studentsMap[st.id] = { name: st.name, class: st.class };
+        subjectsMap[sc.subjectId] = sc.subject;
+      });
+      const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
+
+      // Header
+      let head = "<tr><th>Student</th><th>Class</th>";
+      subids.forEach(id => head += `<th>${escapeHtml(subjectsMap[id])}</th>`);
+      head += "<th>Total</th><th>Percentage</th></tr>";
+      thead.innerHTML = head;
+
+      // Rows
+      sids.forEach(sid => {
+        const st = studentsMap[sid];
+        let row = `<tr><td>${escapeHtml(st.name)}</td><td>${escapeHtml(st.class)}</td>`;
+        let total = 0, maxTotal = 0;
+        subids.forEach(subid => {
+          const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
+          if (sc) { row += `<td>${sc.score} / ${sc.totalMarks}</td>`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
+          else row += `<td>N/A</td>`;
+        });
+        const pct = maxTotal ? (total / maxTotal * 100) : 0;
+        row += `<td>${total}</td><td>${pct.toFixed(2)}%</td></tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    document.getElementById("btnExportStudents").onclick = () => {
+      if (!db.students.length) return alert("No students");
+      let csv = "username,fullName,class\n";
+      db.students.forEach(s => csv += `${s.username},"${s.name}",${s.class}\n`);
+      downloadCSV(csv, "students_all.csv");
+    };
+
+    document.getElementById("btnExportResults").onclick = () => {
+      if (!db.scores.length) return alert("No results");
+      const filter = document.getElementById("adminStudentClassFilter").value || "all";
+      const filtered = db.scores.filter(sc => {
+        if (filter === "all") return true;
+        const st = db.students.find(s => s.id == sc.studentId);
+        return st && st.class === filter;
+      });
+      if (!filtered.length) return alert("No results for this filter");
+      // Build maps
+      const studentsMap = {}, subjectsMap = {};
+      filtered.forEach(sc => {
+        const st = db.students.find(s => s.id == sc.studentId);
+        if (st) studentsMap[st.id] = { name: st.name, class: st.class };
+        subjectsMap[sc.subjectId] = sc.subject;
+      });
+      const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
+      let csv = "Student,Class";
+      subids.forEach(id => csv += `,${subjectsMap[id]}`);
+      csv += ",Total,Percentage\n";
+
+      sids.forEach(sid => {
+        const st = studentsMap[sid];
+        let total = 0, maxTotal = 0;
+        let line = `"${st.name}",${st.class}`;
+        subids.forEach(subid => {
+          const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
+          if (sc) { line += `,${sc.score}/${sc.totalMarks}`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
+          else line += ",N/A";
+        });
+        const pct = maxTotal ? (total / maxTotal * 100) : 0;
+        line += `,${total},${pct.toFixed(2)}%\n`;
+        csv += line;
+      });
+
+      downloadCSV(csv, filter === "all" ? "results_all.csv" : `results_${filter}.csv`);
+    };
+
+    /* ---------------------------
+       Student: subject dropdown + exam
+       --------------------------- */
+    function prepareStudentSubjectDropdown(){
+      const sel = document.getElementById("studentSubjectDropdown");
+      sel.innerHTML = `<option value="">-- Select subject --</option>`;
+      if (!currentUser) return;
+      const subs = db.subjects.filter(s => s.class === currentUser.class);
+      subs.forEach(s => {
+        // disable if completed
+        const done = db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == s.id);
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.text = `${s.name} (${s.duration}m) ${done ? "— Completed": ""}`;
+        if (done) opt.disabled = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    /* Exam state */
+    let examState = null; // { subjectId, subjectName, subjectClass, durationSec, index, questions[], answers[], totalMarks }
+    let examInterval = null;
+
+    document.getElementById("btnStartExam").onclick = () => {
+      const sid = document.getElementById("studentSubjectDropdown").value;
+      if (!sid) return alert("Select a subject first.");
+      // check no duplicate
+      if (db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == sid)) return alert("You already completed this subject.");
+      startExam(sid);
+    };
+
+    function startExam(subjectId){
+      const subj = db.subjects.find(s => s.id == subjectId);
+      if (!subj) return alert("Subject not found");
+      const questions = db.questions.filter(q => q.subjectId == subjectId);
+      if (!questions.length) return alert("No questions for this subject yet.");
+
+      examState = {
+        subjectId,
+        subjectName: subj.name,
+        subjectClass: subj.class,
+        durationSec: subj.duration * 60,
+        index: 0,
+        questions,
+        answers: Array(questions.length).fill(null),
+        totalMarks: questions.length * (Number(subj.marksPerQuestion) || 1)
+      };
+
+      // UI
+      document.getElementById("examCard").classList.remove("is-hidden");
+      document.getElementById("examSubjectTitle").textContent = `${subj.name} — ${subj.class}`;
+      renderExamQuestion();
+      renderExamKeys();
+      startExamTimer();
+      document.getElementById("examMsg").textContent = "";
+    }
+
+    function renderExamQuestion(){
+      if (!examState) return;
+      const i = examState.index;
+      const q = examState.questions[i];
+      const a = examState.answers[i];
+      const box = document.getElementById("examQuestionBox");
+      box.innerHTML = `
+        <div class="is-size-7 has-text-grey-light">Question ${i+1} of ${examState.questions.length}</div>
+        <h3 class="subtitle is-5 mt-2 mb-4">${escapeHtml(q.question)}</h3>
+        <div class="field is-grouped is-grouped-multiline">
+          <div id="optA" class="control is-expanded">
+            <div class="box p-3 is-size-6 ${a==="A"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('A')">
+              <strong class="mr-2">A.</strong> ${escapeHtml(q.A)}
+            </div>
+          </div>
+          <div id="optB" class="control is-expanded">
+            <div class="box p-3 is-size-6 ${a==="B"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('B')">
+              <strong class="mr-2">B.</strong> ${escapeHtml(q.B)}
+            </div>
+          </div>
+          <div id="optC" class="control is-expanded">
+            <div class="box p-3 is-size-6 ${a==="C"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('C')">
+              <strong class="mr-2">C.</strong> ${escapeHtml(q.C)}
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("btnPrevQ").disabled = (i === 0);
+      const last = (i === examState.questions.length - 1);
+      document.getElementById("btnNextQ").classList.toggle("is-hidden", last);
+      document.getElementById("btnSubmitExam").classList.toggle("is-hidden", !last);
+      document.getElementById("examProgress").textContent = `Q ${i+1} / ${examState.questions.length}`;
+      renderExamKeys();
+    }
+
+    function studentSelect(letter){
+      if (!examState) return;
+      examState.answers[examState.index] = letter;
+      renderExamQuestion();
+    }
+
+    document.getElementById("btnPrevQ").onclick = () => {
+      if (!examState) return;
+      if (examState.index > 0) { examState.index--; renderExamQuestion(); }
+    };
+    document.getElementById("btnNextQ").onclick = () => {
+      if (!examState) return;
+      if (examState.index < examState.questions.length - 1) { examState.index++; renderExamQuestion(); }
+    };
+
+    function renderExamKeys(){
+      const keysDiv = document.getElementById("questionKeys");
+      if (!examState) { keysDiv.innerHTML = ""; return; }
+      let html = "";
+      for (let i = 0; i < examState.questions.length; i++){
+        const active = i === examState.index;
+        const answered = !!examState.answers[i];
+        html += `<a class="button is-small is-rounded qkey ${active ? "is-active" : ""} ${answered ? "is-answered" : "is-light"}" onclick="examJump(${i})">${i+1}</a>`;
+      }
+      keysDiv.innerHTML = html;
+    }
+    function examJump(i){ if (!examState) return; examState.index = i; renderExamQuestion(); }
+
+    /* Timer */
+    function startExamTimer(){
+      stopExamTimer();
+      updateTimerLabel();
+      examInterval = setInterval(() => {
+        examState.durationSec--;
+        updateTimerLabel();
+        if (examState.durationSec <= 0) {
+          stopExamTimer();
+          document.getElementById("examMsg").textContent = "Time is up — auto-submitting...";
+          setTimeout(() => finalizeExam(true), 700);
+        }
+      }, 1000);
+    }
+    function stopExamTimer(){ if (examInterval) clearInterval(examInterval); examInterval = null; }
+    function updateTimerLabel(){
+      const el = document.getElementById("examTimer");
+      if (!examState) { el.textContent = "--:--"; return; }
+      const s = Math.max(0, examState.durationSec);
+      const mm = Math.floor(s/60).toString().padStart(2,"0");
+      const ss = Math.floor(s%60).toString().padStart(2,"0");
+      el.textContent = `${mm}:${ss}`;
+    }
+
+    /* Submit (with review unanswered) */
+    document.getElementById("btnSubmitExam").onclick = () => {
+      if (!examState) return;
+
+      const unanswered = examState.answers.reduce((acc,a,i)=> a?acc:acc.concat(i+1), []);
+
+      // Check for unanswered questions and ask for confirmation
+      if (unanswered.length) {
+        if (!confirm(`You left ${unanswered.length} unanswered (questions: ${unanswered.join(", ")}). Submit anyway?`)) {
+          return; // Exit if the user cancels
+        }
+      }
+
+      // Final confirmation before submitting
+      if (confirm("Are you sure you want to submit your exam? This action cannot be undone.")) {
+        finalizeExam(false);
+      }
+    };
+
+    function finalizeExam(isAuto=false){
+      if (!examState) return;
+      // compute score using subject marks-per-question
+      const subj = db.subjects.find(s => s.id == examState.subjectId);
+      const marksPerQ = subj ? (Number(subj.marksPerQuestion) || 1) : 1;
+      let score = 0, totalMarks = 0;
+      examState.questions.forEach((q, idx) => {
+        totalMarks += marksPerQ;
+        if (examState.answers[idx] && examState.answers[idx] === q.correct) score += marksPerQ;
+      });
+
+      // save result (students should NOT see score)
+      db.scores.push({
+        studentId: currentUser.id,
+        subjectId: examState.subjectId,
+        subject: examState.subjectName,
+        score,
+        totalMarks
+      });
+      saveDB();
+
+      // cleanup UI
+      stopExamTimer();
+      examState = null;
+      document.getElementById("examCard").classList.add("is-hidden");
+      // refresh dropdown to disable completed subject
+      prepareStudentSubjectDropdown();
+      renderResults();
+
+      // Student sees only confirmation
+      alert("Your exam has been submitted successfully. The administrator will view your score.");
+    }
+
+    /* ---------------------------
+       Render / Init helpers
+       --------------------------- */
+    function renderAllAdmin(){
+      renderSubjects();
+      renderQuestionSubjects();
+      renderQuestions();
+      renderStudents();
+      refreshResultsFilters();
+      renderResults();
+    }
+    function renderAllForStartup(){
+      renderSubjects();
+      renderQuestionSubjects();
+      renderQuestions();
+      renderStudents();
+      refreshResultsFilters();
+      renderResults();
+      prepareStudentSubjectDropdown();
+    }
+
+    /* initial demo data if empty (optional) */
+    (function seedIfEmpty(){
+      if (db.subjects.length || db.questions.length || db.students.length) return;
+      // small demo
+      const s1 = uid(); const s2 = uid();
+      db.subjects.push({ id: s1, name: "Mathematics", class: "JSS1", duration: 5, marksPerQuestion: 1 });
+      db.subjects.push({ id: s2, name: "English Language", class: "JSS1", duration: 5, marksPerQuestion: 1 });
+      db.questions.push({ id: uid(), subjectId: s1, question: "What is 2 + 2?", A:"3", B:"4", C:"5", correct:"B" });
+      db.questions.push({ id: uid(), subjectId: s1, question: "What is 3 + 1?", A:"4", B:"2", C:"5", correct:"A" });
+      db.students.push({ id: uid(), username: "stud1", name: "John Doe", class: "JSS1", password: "1234" });
+      saveDB();
+    })();
+
+    /* initial render */
+    renderAllForStartup();
+
+    /* expose some functions for inline handlers (used above) */
+    window.editSubject = editSubject;
+    window.deleteSubject = deleteSubject;
+    window.editQuestion = editQuestion;
+    window.deleteQuestion = deleteQuestion;
+    window.editStudent = editStudent;
+    window.deleteStudent = deleteStudent;
+    window.examJump = examJump;
+    window.studentSelect = studentSelect;
+    
+  </script>
 </body>
 </html>
