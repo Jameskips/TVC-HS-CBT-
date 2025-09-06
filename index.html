@@ -4,178 +4,241 @@
   <meta charset="utf-8" />
   <title>TVC High School — CBT (Complete)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    body { font-family: Arial, sans-serif; margin: 18px; background:#f7f9fc; color:#222; }
-    .wrap { max-width:1100px; margin:0 auto; }
-    header h1 { margin: 4px 0 18px; font-size:20px; }
-    .card { background:#fff; border:1px solid #e6e9ee; border-radius:10px; padding:12px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,0.02); }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
-    input, select, textarea, button { font-family: inherit; font-size:14px; }
-    input, select, textarea { padding:8px; border:1px solid #dfe6ef; border-radius:6px; }
-    button { padding:8px 12px; border-radius:6px; cursor:pointer; border:0; }
-    button.primary { background:#246bff; color:#fff; }
-    button.muted { background:#f0f3f8; color:#222; }
-    button.danger { background:#e53935; color:#fff; }
-    button.small { padding:4px 8px; font-size:13px; }
-    table { width:100%; border-collapse:collapse; margin-top:8px; }
-    th, td { padding:8px; border:1px solid #eef2f6; text-align:left; vertical-align:middle; }
-    th { background:#fafcff; }
-    .muted { color:#666; font-size:13px; }
-    .hidden { display:none; }
-    .timer { font-weight:700; }
-    .exam-option { padding:10px; border:1px solid #e6eaf0; border-radius:8px; cursor:pointer; background:#fff; }
-    .exam-option.selected { background:#e8f0ff; outline:3px solid rgba(36,107,255,0.12); }
-    .qkeys { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
-    .qkey { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid #d9e3f5; border-radius:8px; cursor:pointer; user-select:none; background:#fff; }
-    .qkey.active { background:#246bff; color:#fff; border-color:#246bff; }
-    .qkey.answered { background:#eaf3ff; color:#0b57ff; border-color:#cfe3ff; }
-    .pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#eef5ff; color:#1350d6; font-size:12px; }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
 </head>
 <body>
-  <div class="wrap">
-    <header><h1>The Valued Child (TVC) High School — CBT</h1></header>
+  <div class="container is-max-desktop p-4">
+    <header>
+      <h1 class="title is-4">The Valued Child (TVC) High School — CBT</h1>
+    </header>
 
-    <!-- LOGIN -->
-    <div id="loginCard" class="card">
-      <h2>Login</h2>
-      <div class="row">
-        <input id="loginUser" placeholder="Username (admin or student)" />
-        <input id="loginClass" placeholder="Class (for students, e.g. JSS1)" />
-        <input id="loginPass" type="password" placeholder="Password" />
-        <button id="btnLogin" class="primary">Login</button>
+    <div id="loginCard" class="box">
+      <h2 class="title is-5">Login</h2>
+      <div class="field">
+        <div class="control">
+          <input id="loginUser" class="input" placeholder="Username (admin or student)" />
+        </div>
       </div>
-      <p class="muted">Admin credentials: <span class="pill">admin / admin</span></p>
-      <p id="loginMsg" class="muted"></p>
+      <div class="field">
+        <div class="control">
+          <input id="loginClass" class="input" placeholder="Class (for students, e.g. JSS1)" />
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <input id="loginPass" class="input" type="password" placeholder="Password" />
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <button id="btnLogin" class="button is-primary is-fullwidth">Login</button>
+        </div>
+      </div>
+      <p class="is-size-7 has-text-grey">Admin credentials: <span class="tag is-info is-light">admin / admin</span></p>
+      <p id="loginMsg" class="is-size-7 has-text-grey"></p>
     </div>
 
-    <!-- ADMIN DASHBOARD -->
-    <div id="adminCard" class="card hidden">
-      <div class="row" style="justify-content:space-between">
-        <h2>Admin Dashboard</h2>
-        <div class="row">
-          <button id="btnSaveLS" class="muted">Save (local)</button>
-          <button id="btnClearLS" class="muted">Clear Data</button>
-          <button id="btnLogoutAdmin" class="muted">Logout</button>
+    <div id="adminCard" class="box hidden">
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+        <h2 class="title is-5 mb-0">Admin Dashboard</h2>
+        <div class="buttons is-small">
+          <button id="btnSaveLS" class="button is-light">Save (local)</button>
+          <button id="btnClearLS" class="button is-light">Clear Data</button>
+          <button id="btnLogoutAdmin" class="button is-light">Logout</button>
         </div>
       </div>
 
-      <!-- Subjects -->
-      <div class="card">
-        <h3>Subjects — duration & marks-per-question</h3>
-        <div class="row">
-          <input id="newSubjectInput" placeholder="Subject name (e.g. Mathematics)" />
-          <input id="newSubjectClassInput" placeholder="Class (e.g. JSS1)" />
-          <input id="newSubjectDuration" type="number" min="1" placeholder="Duration (mins)" style="width:160px" />
-          <input id="newSubjectMarks" type="number" min="1" placeholder="Marks per question" style="width:160px" />
-          <button id="btnAddSubject" class="primary">Add Subject</button>
+      <div class="box">
+        <h3 class="subtitle is-6">Subjects — duration & marks-per-question</h3>
+        <div class="columns is-multiline">
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field">
+              <div class="control">
+                <input id="newSubjectInput" class="input is-small" placeholder="Subject name (e.g. Mathematics)" />
+              </div>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field">
+              <div class="control">
+                <input id="newSubjectClassInput" class="input is-small" placeholder="Class (e.g. JSS1)" />
+              </div>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <div class="control is-expanded">
+                <input id="newSubjectDuration" class="input is-small" type="number" min="1" placeholder="Duration (mins)" />
+              </div>
+              <p class="control"><span class="button is-static is-small">mins</span></p>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <div class="control is-expanded">
+                <input id="newSubjectMarks" class="input is-small" type="number" min="1" placeholder="Marks per question" />
+              </div>
+              <p class="control"><span class="button is-static is-small">marks</span></p>
+            </div>
+          </div>
+          <div class="column is-full">
+            <button id="btnAddSubject" class="button is-primary is-small">Add Subject</button>
+          </div>
         </div>
-        <table>
+        <table class="table is-fullwidth is-striped mt-4">
           <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
           <tbody id="subjectsTbody"></tbody>
         </table>
       </div>
 
-      <!-- Questions -->
-      <div class="card">
-        <h3>Questions (A / B / C only). Selected subject stays selected after adding.</h3>
-        <div class="row">
-          <label class="muted">Subject:</label>
-          <select id="questionSubjectSelect" style="min-width:260px"></select>
+      <div class="box">
+        <h3 class="subtitle is-6">Questions (A / B / C only)</h3>
+        <div class="field">
+          <label class="label is-small">Subject:</label>
+          <div class="control">
+            <div class="select is-small">
+              <select id="questionSubjectSelect" style="min-width:260px"></select>
+            </div>
+          </div>
         </div>
-        <div class="row" style="flex-direction:column">
-          <textarea id="questionText" rows="2" placeholder="Question text"></textarea>
+        <div class="field">
+          <div class="control">
+            <textarea id="questionText" class="textarea is-small" rows="2" placeholder="Question text"></textarea>
+          </div>
         </div>
-        <div class="row">
-          <input id="optionA" placeholder="Option A" />
-          <input id="optionB" placeholder="Option B" />
-          <input id="optionC" placeholder="Option C" />
+        <div class="columns is-multiline">
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <p class="control"><a class="button is-static is-small">A</a></p>
+              <div class="control is-expanded"><input id="optionA" class="input is-small" placeholder="Option A" /></div>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <p class="control"><a class="button is-static is-small">B</a></p>
+              <div class="control is-expanded"><input id="optionB" class="input is-small" placeholder="Option B" /></div>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <p class="control"><a class="button is-static is-small">C</a></p>
+              <div class="control is-expanded"><input id="optionC" class="input is-small" placeholder="Option C" /></div>
+            </div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field has-addons">
+              <p class="control"><a class="button is-static is-small">Correct</a></p>
+              <div class="control">
+                <div class="select is-small">
+                  <select id="correctOption"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="row">
-          <label>Correct:</label>
-          <select id="correctOption"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-          <button id="btnAddQuestion" class="primary">Add Question</button>
+        <div class="field">
+          <div class="control">
+            <button id="btnAddQuestion" class="button is-primary is-small">Add Question</button>
+          </div>
         </div>
-        <table>
+        <table class="table is-fullwidth is-striped mt-4">
           <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
           <tbody id="questionsTbody"></tbody>
         </table>
       </div>
 
-      <!-- Students -->
-      <div class="card">
-        <h3>Students (add / edit / delete)</h3>
-        <div class="row">
-          <input id="stuUsername" placeholder="Username" />
-          <input id="stuFullName" placeholder="Full name" />
-          <input id="stuClass" placeholder="Class (e.g. JSS1)" />
-          <input id="stuPassword" placeholder="Password" />
-          <button id="btnAddStudent" class="primary">Add Student</button>
+      <div class="box">
+        <h3 class="subtitle is-6">Students (add / edit / delete)</h3>
+        <div class="columns is-multiline is-mobile">
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuUsername" class="input is-small" placeholder="Username" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuFullName" class="input is-small" placeholder="Full name" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuClass" class="input is-small" placeholder="Class (e.g. JSS1)" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuPassword" class="input is-small" placeholder="Password" /></div></div>
+          </div>
+          <div class="column is-full">
+            <button id="btnAddStudent" class="button is-primary is-small">Add Student</button>
+          </div>
         </div>
-        <table>
+        <table class="table is-fullwidth is-striped mt-4">
           <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
           <tbody id="studentsTbody"></tbody>
         </table>
       </div>
 
-      <!-- Results (admin-only) -->
-      <div class="card">
-        <h3>Results (admin)</h3>
-        <div class="row" style="justify-content:space-between">
-          <div class="row">
-            <label class="muted">Filter by class:</label>
-            <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+      <div class="box">
+        <h3 class="subtitle is-6">Results (admin)</h3>
+        <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+          <div class="field is-grouped is-grouped-multiline">
+            <div class="control">
+              <label class="label is-small mr-2">Filter by class:</label>
+            </div>
+            <div class="control">
+              <div class="select is-small">
+                <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+              </div>
+            </div>
           </div>
-          <div class="row">
-            <button id="btnExportStudents" class="muted">Export Students CSV</button>
-            <button id="btnExportResults" class="muted">Export Results CSV</button>
+          <div class="buttons is-small">
+            <button id="btnExportStudents" class="button is-light">Export Students CSV</button>
+            <button id="btnExportResults" class="button is-light">Export Results CSV</button>
           </div>
         </div>
-        <table>
+        <table class="table is-fullwidth is-striped">
           <thead id="resultsThead"></thead>
           <tbody id="resultsTbody"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- STUDENT DASHBOARD -->
-    <div id="studentCard" class="card hidden">
-      <div class="row" style="justify-content:space-between">
-        <h2 id="studentHeader">Student Panel</h2>
-        <div class="row">
-          <button id="btnLogoutStudent" class="muted">Logout</button>
+    <div id="studentCard" class="box hidden">
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+        <h2 id="studentHeader" class="title is-5 mb-0">Student Panel</h2>
+        <div class="buttons is-small">
+          <button id="btnLogoutStudent" class="button is-light">Logout</button>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Select Subject</h3>
-        <div class="row">
-          <select id="studentSubjectDropdown" style="min-width:260px"></select>
-          <button id="btnStartExam" class="primary">Start Exam</button>
-        </div>
-        <p class="muted">Completed subjects are disabled. After submitting an exam you will only see a confirmation (score is available to admin).</p>
-      </div>
-
-      <!-- Exam card -->
-      <div id="examCard" class="card hidden">
-        <div class="row" style="justify-content:space-between">
-          <h3 id="examSubjectTitle"></h3>
-          <div>Time left: <span id="examTimer" class="timer">--:--</span></div>
-        </div>
-
-        <div id="examQuestionBox" class="card" style="margin-top:10px"></div>
-
-        <div class="row" style="justify-content:space-between">
-          <div class="row">
-            <button id="btnPrevQ" class="muted">Previous</button>
-            <button id="btnNextQ" class="primary">Next</button>
-            <button id="btnSubmitExam" class="danger hidden">Submit</button>
+      <div class="box">
+        <h3 class="subtitle is-6">Select Subject</h3>
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <div class="select is-fullwidth">
+              <select id="studentSubjectDropdown"></select>
+            </div>
           </div>
-          <div id="examProgress" class="muted"></div>
+          <div class="control">
+            <button id="btnStartExam" class="button is-primary">Start Exam</button>
+          </div>
+        </div>
+        <p class="is-size-7 has-text-grey">Completed subjects are disabled. After submitting an exam you will only see a confirmation (score is available to admin).</p>
+      </div>
+
+      <div id="examCard" class="box hidden">
+        <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+          <h3 id="examSubjectTitle" class="subtitle is-5 mb-0"></h3>
+          <div>Time left: <span id="examTimer" class="has-text-weight-bold">--:--</span></div>
         </div>
 
-        <div id="questionKeys" class="qkeys"></div>
-        <p id="examMsg" class="muted"></p>
+        <div id="examQuestionBox" class="box" style="margin-top:10px"></div>
+
+        <div class="buttons mt-4 is-justify-content-space-between">
+          <div class="buttons">
+            <button id="btnPrevQ" class="button is-light">Previous</button>
+            <button id="btnNextQ" class="button is-primary">Next</button>
+            <button id="btnSubmitExam" class="button is-danger hidden">Submit</button>
+          </div>
+          <p id="examProgress" class="has-text-grey is-size-7"></p>
+        </div>
+
+        <div id="questionKeys" class="is-flex is-flex-wrap-wrap is-gap-3 mt-4"></div>
+        <p id="examMsg" class="is-size-7 has-text-grey"></p>
       </div>
     </div>
   </div>
@@ -293,8 +356,10 @@ function renderSubjects(){
         <td>${s.duration}</td>
         <td>${s.marksPerQuestion}</td>
         <td>
-          <button class="small" onclick="editSubject('${s.id}')">Edit</button>
-          <button class="small danger" onclick="deleteSubject('${s.id}')">Delete</button>
+          <div class="buttons is-small">
+            <button class="button is-light" onclick="editSubject('${s.id}')">Edit</button>
+            <button class="button is-danger" onclick="deleteSubject('${s.id}')">Delete</button>
+          </div>
         </td>
       </tr>`);
   });
@@ -369,8 +434,10 @@ function renderQuestions(){
         <td>${subj ? escapeHtml(subj.name + " (" + subj.class + ")") : "-"}</td>
         <td>${q.correct}</td>
         <td>
-          <button class="small" onclick="editQuestion('${q.id}')">Edit</button>
-          <button class="small danger" onclick="deleteQuestion('${q.id}')">Delete</button>
+          <div class="buttons is-small">
+            <button class="button is-light" onclick="editQuestion('${q.id}')">Edit</button>
+            <button class="button is-danger" onclick="deleteQuestion('${q.id}')">Delete</button>
+          </div>
         </td>
       </tr>`);
   });
@@ -426,8 +493,10 @@ function renderStudents(){
         <td>${escapeHtml(s.name)}</td>
         <td>${escapeHtml(s.class)}</td>
         <td>
-          <button class="small" onclick="editStudent('${s.id}')">Edit</button>
-          <button class="small danger" onclick="deleteStudent('${s.id}')">Delete</button>
+          <div class="buttons is-small">
+            <button class="button is-light" onclick="editStudent('${s.id}')">Edit</button>
+            <button class="button is-danger" onclick="deleteStudent('${s.id}')">Delete</button>
+          </div>
         </td>
       </tr>`);
   });
@@ -622,12 +691,24 @@ function renderExamQuestion(){
   const a = examState.answers[i];
   const box = document.getElementById("examQuestionBox");
   box.innerHTML = `
-    <div class="muted">Question ${i+1} of ${examState.questions.length}</div>
-    <h3 style="margin:8px 0">${escapeHtml(q.question)}</h3>
-    <div style="display:grid;gap:10px">
-      <div id="optA" class="exam-option ${a==="A"?"selected":""}" onclick="studentSelect('A')"><strong>A.</strong> ${escapeHtml(q.A)}</div>
-      <div id="optB" class="exam-option ${a==="B"?"selected":""}" onclick="studentSelect('B')"><strong>B.</strong> ${escapeHtml(q.B)}</div>
-      <div id="optC" class="exam-option ${a==="C"?"selected":""}" onclick="studentSelect('C')"><strong>C.</strong> ${escapeHtml(q.C)}</div>
+    <div class="is-size-7 has-text-grey-light">Question ${i+1} of ${examState.questions.length}</div>
+    <h3 class="subtitle is-5 mt-2 mb-4">${escapeHtml(q.question)}</h3>
+    <div class="field is-grouped is-grouped-multiline">
+      <div id="optA" class="control is-expanded">
+        <div class="box p-3 is-size-6 ${a==="A"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('A')">
+          <strong class="mr-2">A.</strong> ${escapeHtml(q.A)}
+        </div>
+      </div>
+      <div id="optB" class="control is-expanded">
+        <div class="box p-3 is-size-6 ${a==="B"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('B')">
+          <strong class="mr-2">B.</strong> ${escapeHtml(q.B)}
+        </div>
+      </div>
+      <div id="optC" class="control is-expanded">
+        <div class="box p-3 is-size-6 ${a==="C"?"has-background-info-light has-text-info has-border-info-light":""}" style="cursor:pointer;" onclick="studentSelect('C')">
+          <strong class="mr-2">C.</strong> ${escapeHtml(q.C)}
+        </div>
+      </div>
     </div>
   `;
   document.getElementById("btnPrevQ").disabled = (i === 0);
@@ -660,7 +741,7 @@ function renderExamKeys(){
   for (let i = 0; i < examState.questions.length; i++){
     const active = i === examState.index;
     const answered = !!examState.answers[i];
-    html += `<div class="qkey ${active ? "active":""} ${answered ? "answered":""}" onclick="examJump(${i})">${i+1}</div>`;
+    html += `<a class="button is-small is-rounded ${active ? "is-info is-light has-text-info-dark has-text-weight-bold" : (answered ? "is-link is-light" : "is-light")}" onclick="examJump(${i})">${i+1}</a>`;
   }
   keysDiv.innerHTML = html;
 }
@@ -693,11 +774,20 @@ function updateTimerLabel(){
 /* Submit (with review unanswered) */
 document.getElementById("btnSubmitExam").onclick = () => {
   if (!examState) return;
+
   const unanswered = examState.answers.reduce((acc,a,i)=> a?acc:acc.concat(i+1), []);
+
+  // Check for unanswered questions and ask for confirmation
   if (unanswered.length) {
-    if (!confirm(`You left ${unanswered.length} unanswered (questions: ${unanswered.join(", ")}). Submit anyway?`)) return;
+    if (!confirm(`You left ${unanswered.length} unanswered (questions: ${unanswered.join(", ")}). Submit anyway?`)) {
+      return; // Exit if the user cancels
+    }
   }
-  finalizeExam(false);
+
+  // Final confirmation before submitting
+  if (confirm("Are you sure you want to submit your exam? This action cannot be undone.")) {
+    finalizeExam(false);
+  }
 };
 
 function finalizeExam(isAuto=false){
