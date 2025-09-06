@@ -58,6 +58,27 @@
           <button id="btnLogoutAdmin" class="button is-light">Logout</button>
         </div>
       </div>
+      
+      <div class="box">
+        <h3 class="subtitle is-6">Students (add)</h3>
+        <div class="columns is-multiline is-mobile">
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuUsername" class="input is-small" placeholder="Username" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuFullName" class="input is-small" placeholder="Full name" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuClass" class="input is-small" placeholder="Class (e.g. JSS1)" /></div></div>
+          </div>
+          <div class="column is-one-quarter-desktop is-half-tablet">
+            <div class="field"><div class="control"><input id="stuPassword" class="input is-small" placeholder="Password" /></div></div>
+          </div>
+          <div class="column is-full">
+            <button id="btnAddStudent" class="button is-primary is-small">Add Student</button>
+          </div>
+        </div>
+      </div>
 
       <div class="tabs is-centered is-toggle is-fullwidth">
         <ul>
@@ -174,24 +195,7 @@
 
         <div id="studentsTab" class="content-tab is-hidden">
           <div class="box">
-            <h3 class="subtitle is-6">Students (add / edit / delete)</h3>
-            <div class="columns is-multiline is-mobile">
-              <div class="column is-one-quarter-desktop is-half-tablet">
-                <div class="field"><div class="control"><input id="stuUsername" class="input is-small" placeholder="Username" /></div></div>
-              </div>
-              <div class="column is-one-quarter-desktop is-half-tablet">
-                <div class="field"><div class="control"><input id="stuFullName" class="input is-small" placeholder="Full name" /></div></div>
-              </div>
-              <div class="column is-one-quarter-desktop is-half-tablet">
-                <div class="field"><div class="control"><input id="stuClass" class="input is-small" placeholder="Class (e.g. JSS1)" /></div></div>
-              </div>
-              <div class="column is-one-quarter-desktop is-half-tablet">
-                <div class="field"><div class="control"><input id="stuPassword" class="input is-small" placeholder="Password" /></div></div>
-              </div>
-              <div class="column is-full">
-                <button id="btnAddStudent" class="button is-primary is-small">Add Student</button>
-              </div>
-            </div>
+            <h3 class="subtitle is-6">Students (list)</h3>
             <table class="table is-fullwidth is-striped mt-4">
               <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
               <tbody id="studentsTbody"></tbody>
