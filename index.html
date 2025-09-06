@@ -314,23 +314,53 @@
 /* ---------------------------
    Persistence & DB
    --------------------------- */
-const STORAGE_KEY = "tvc_cbt_db_final_v1";
+const JSONBIN_MASTER_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
+const JSONBIN_BIN_ID = "68bc605c43b1c97be9391c1d";
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
 let db = { subjects: [], questions: [], students: [], scores: [] };
-function saveDB(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
-  catch(e){ console.error("saveDB error", e); }
-}
-function loadDB(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) db = JSON.parse(raw);
-  } catch(e){ console.error("loadDB error", e); }
-}
-loadDB();
 
-function commit(){
-  saveDB();
+async function saveDB(){
+  try {
+    const response = await fetch(JSONBIN_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": JSONBIN_MASTER_KEY
+      },
+      body: JSON.stringify(db)
+    });
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    const data = await response.json();
+    console.log("Data saved to JSONBin:", data);
+  } catch(e){
+    console.error("saveDB error", e);
+    alert("Failed to save data online. Check console for details.");
+  }
+}
+
+async function loadDB(){
+  try {
+    const response = await fetch(`${JSONBIN_URL}/latest`, {
+      method: "GET",
+      headers: {
+        "X-Master-Key": JSONBIN_MASTER_KEY
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    const data = await response.json();
+    if (data.record) {
+      db = data.record;
+      console.log("Data loaded from JSONBin.");
+    }
+  } catch(e){
+    console.error("loadDB error", e);
+    alert("Failed to load data online. Check console for details.");
+  }
+}
+
+async function commit(){
+  await saveDB();
   renderAllAdmin();
 }
 
@@ -357,11 +387,14 @@ document.querySelectorAll('.accordion details').forEach(details => {
    --------------------------- */
 let currentUser = null;
 
-document.getElementById("btnLogin").onclick = () => {
+document.getElementById("btnLogin").onclick = async () => {
   const username = document.getElementById("loginUser").value.trim();
   const password = document.getElementById("loginPass").value.trim();
   const cls = document.getElementById("loginClass").value.trim();
 
+  // Load data before checking login
+  await loadDB(); 
+  
   if (username === "admin" && password === "admin") {
     currentUser = { role: "admin", username: "admin" };
     document.getElementById("loginCard").classList.add("hidden");
@@ -399,12 +432,11 @@ document.getElementById("btnLogoutStudent").onclick = () => {
 };
 
 /* Save/Clear local */
-document.getElementById("btnSaveLS").onclick = () => { saveDB(); alert("Saved to localStorage."); };
+document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
 document.getElementById("btnClearLS").onclick = () => {
-  if (!confirm("Clear all saved data (localStorage)? This cannot be undone.")) return;
-  localStorage.removeItem(STORAGE_KEY);
+  if (!confirm("Clear all saved data? This will clear the online data and cannot be undone.")) return;
   db = { subjects:[], questions:[], students:[], scores:[] };
-  renderAllAdmin();
+  commit(); // This will save the empty DB online
   alert("Cleared.");
 };
 
@@ -448,7 +480,7 @@ function renderSubjects(){
   });
 }
 
-function editSubject(id){
+async function editSubject(id){
   const s = db.subjects.find(x => x.id == id);
   if (!s) return alert("Subject not found");
   const name = prompt("Subject name:", s.name);
@@ -459,15 +491,15 @@ function editSubject(id){
   if (cls !== null && cls.trim()) s.class = cls.trim();
   const dur = parseInt(durRaw,10); if (!isNaN(dur) && dur > 0) s.duration = dur;
   const marks = parseFloat(marksRaw); if (!isNaN(marks) && marks > 0) s.marksPerQuestion = marks;
-  commit();
+  await commit();
 }
 
-function deleteSubject(id){
+async function deleteSubject(id){
   if (!confirm("Delete subject and all its questions and scores?")) return;
   db.questions = db.questions.filter(q => q.subjectId != id);
   db.scores = db.scores.filter(sc => sc.subjectId != id);
   db.subjects = db.subjects.filter(s => s.id != id);
-  commit();
+  await commit();
 }
 
 /* ---------------------------
@@ -548,7 +580,7 @@ function renderQuestions(){
   });
 }
 
-function editQuestion(id){
+async function editQuestion(id){
   const q = db.questions.find(x => x.id == id);
   if (!q) return alert("Question not found");
   const text = prompt("Question text:", q.question);
@@ -561,13 +593,13 @@ function editQuestion(id){
   if (B !== null) q.B = B;
   if (C !== null) q.C = C;
   if (correct !== null && ["A","B","C"].includes(correct.toUpperCase())) q.correct = correct.toUpperCase();
-  commit();
+  await commit();
 }
 
-function deleteQuestion(id){
+async function deleteQuestion(id){
   if (!confirm("Delete question?")) return;
   db.questions = db.questions.filter(q => q.id != id);
-  commit();
+  await commit();
 }
 
 /* ---------------------------
@@ -609,7 +641,7 @@ function renderStudents(){
   });
 }
 
-function editStudent(id){
+async function editStudent(id){
   const s = db.students.find(x => x.id == id);
   if (!s) return alert("Student not found");
   const name = prompt("Full name:", s.name);
@@ -618,14 +650,14 @@ function editStudent(id){
   if (name !== null && name.trim()) s.name = name.trim();
   if (cls !== null && cls.trim()) s.class = cls.trim();
   if (pwd !== null && pwd.trim()) s.password = pwd;
-  commit();
+  await commit();
 }
 
-function deleteStudent(id){
+async function deleteStudent(id){
   if (!confirm("Delete student and their scores?")) return;
   db.students = db.students.filter(s => s.id != id);
   db.scores = db.scores.filter(sc => sc.studentId != id);
-  commit();
+  await commit();
 }
 
 /* ---------------------------
@@ -660,7 +692,7 @@ function refreshResetSubjectDropdown() {
   if (prev) dropdown.value = prev;
 }
 
-document.getElementById("btnResetSubject").onclick = () => {
+document.getElementById("btnResetSubject").onclick = async () => {
   const subjectId = document.getElementById("resetSubjectDropdown").value;
   if (!subjectId) return alert("Please select a subject to reset.");
   const subject = db.subjects.find(s => s.id === subjectId);
@@ -670,7 +702,7 @@ document.getElementById("btnResetSubject").onclick = () => {
   const initialScoreCount = db.scores.length;
   db.scores = db.scores.filter(sc => sc.subjectId !== subjectId);
   const scoresRemoved = initialScoreCount - db.scores.length;
-  commit();
+  await commit();
   alert(`${scoresRemoved} exam result(s) for ${subject.name} have been reset.`);
 };
 
@@ -723,10 +755,10 @@ function renderResults(){
   });
 }
 
-function resetScore(studentId, subjectId) {
+async function resetScore(studentId, subjectId) {
   if (!confirm("Are you sure you want to reset this student's result for this subject?")) return;
   db.scores = db.scores.filter(sc => !(sc.studentId === studentId && sc.subjectId === subjectId));
-  commit();
+  await commit();
   alert("Result has been reset. The student can now re-take the exam.");
 }
 
@@ -915,7 +947,7 @@ document.getElementById("btnSubmitExam").onclick = () => {
   finalizeExam(false);
 };
 
-function finalizeExam(isAuto=false){
+async function finalizeExam(isAuto=false){
   if (!examState) return;
   // compute score using subject marks-per-question
   const subj = db.subjects.find(s => s.id == examState.subjectId);
@@ -934,7 +966,7 @@ function finalizeExam(isAuto=false){
     score,
     totalMarks
   });
-  saveDB();
+  await saveDB();
 
   // cleanup UI
   stopExamTimer();
@@ -962,14 +994,17 @@ function renderAllAdmin(){
   renderStudents();
   renderResults();
 }
-function renderAllForStartup(){
+async function renderAllForStartup(){
+  await loadDB();
   renderAllAdmin();
   prepareStudentSubjectDropdown();
 }
 
 /* initial demo data if empty (optional) */
-(function seedIfEmpty(){
+(async function seedIfEmpty(){
+  await loadDB(); // Check if there is existing data first
   if (db.subjects.length || db.questions.length || db.students.length) return;
+  
   // small demo
   const s1 = uid(); const s2 = uid();
   db.subjects.push({ id: s1, name: "Mathematics", class: "JSS1", duration: 5, marksPerQuestion: 1 });
@@ -981,7 +1016,7 @@ function renderAllForStartup(){
   db.subjects.push({ id: uid(), name: "Physics", class: "SSS1", duration: 5, marksPerQuestion: 2 });
   db.subjects.push({ id: uid(), name: "Chemistry", class: "SSS1", duration: 5, marksPerQuestion: 2 });
   db.questions.push({ id: uid(), subjectId: uid(), question: "What is H2O?", A:"Water", B:"Oxygen", C:"Hydrogen", correct:"A" });
-  saveDB();
+  await saveDB();
 })();
 
 /* initial render */
