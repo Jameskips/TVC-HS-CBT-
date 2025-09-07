@@ -9,15 +9,12 @@
       font-family: Arial, sans-serif; 
       margin: 0; 
       color:#222; 
-      /* Updated background with a vibrant, captivating gradient */
       background: #c3e0ff;
       background: linear-gradient(135deg, #c3e0ff 0%, #d8f0ff 100%);
       background-attachment: fixed;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      
-      /* Subtle pattern for texture */
       background-image: radial-gradient(circle at top left, rgba(255,255,255,0.2) 1px, transparent 1px);
       background-size: 20px 20px;
     }
@@ -37,13 +34,13 @@
     .card { 
       background:#fff; 
       border:1px solid #e6e9ee; 
-      border-radius:16px; /* More rounded */
-      padding:20px; /* More padding */
-      margin-bottom:20px; /* More space between cards */
-      box-shadow:0 6px 20px rgba(0,0,0,0.08); /* More prominent shadow */
+      border-radius:16px; 
+      padding:20px; 
+      margin-bottom:20px; 
+      box-shadow:0 6px 20px rgba(0,0,0,0.08); 
       transition: box-shadow 0.3s ease;
     }
-    .card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+    .card:hover { box-shadow:0 8-px 24px rgba(0,0,0,0.12); }
     .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
     input, select, textarea, button { font-family: inherit; font-size:15px; }
     input, select, textarea { 
@@ -178,7 +175,10 @@
             </div>
             <div class="row">
                 <label class="muted">Filter by class:</label>
-                <select id="subjectClassFilter"><option value="all">All Classes</option></select>
+                <select id="subjectClassFilter">
+                  <option value="" disabled selected>-- Select a Class --</option>
+                  <option value="all">All Classes</option>
+                </select>
             </div>
             <table>
               <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
@@ -210,9 +210,15 @@
             </div>
             <div class="row">
               <label class="muted">Filter by class:</label>
-              <select id="questionClassFilter"><option value="all">All Classes</option></select>
+              <select id="questionClassFilter">
+                <option value="" disabled selected>-- Select a Class --</option>
+                <option value="all">All Classes</option>
+              </select>
               <label class="muted">Filter by subject:</label>
-              <select id="questionFilterSubjectSelect"><option value="all">All Subjects</option></select>
+              <select id="questionFilterSubjectSelect">
+                <option value="" disabled selected>-- Select a Subject --</option>
+                <option value="all">All Subjects</option>
+              </select>
             </div>
             <table>
               <thead><tr><th>#</th><th>Question</th><th>Subject</th><th>Correct</th><th>Actions</th></tr></thead>
@@ -234,7 +240,10 @@
             </div>
             <div class="row">
               <label class="muted">Filter by class:</label>
-              <select id="studentClassFilter"><option value="all">All Classes</option></select>
+              <select id="studentClassFilter">
+                <option value="" disabled selected>-- Select a Class --</option>
+                <option value="all">All Classes</option>
+              </select>
             </div>
             <table>
               <thead><tr><th>Username</th><th>Name</th><th>Class</th><th>Actions</th></tr></thead>
@@ -250,11 +259,14 @@
             <div class="row" style="justify-content:space-between">
               <div class="row">
                 <label class="muted">Filter by class:</label>
-                <select id="adminStudentClassFilter"><option value="all">All Classes</option></select>
+                <select id="adminStudentClassFilter">
+                  <option value="" disabled selected>-- Select a Class --</option>
+                  <option value="all">All Classes</option>
+                </select>
               </div>
               <div class="row">
                 <label class="muted">Reset by subject:</label>
-                <select id="resetSubjectDropdown"><option value="">-- Select Subject --</option></select>
+                <select id="resetSubjectDropdown"><option value="" disabled selected>-- Select Subject --</option></select>
                 <button id="btnResetSubject" class="danger">Reset All</button>
                 <button id="btnExportStudents" class="muted">Export Students CSV</button>
                 <button id="btnExportResults" class="muted">Export Results CSV</button>
@@ -314,8 +326,8 @@
 /* ---------------------------
    Persistence & DB
    --------------------------- */
-const JSONBIN_MASTER_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
-const JSONBIN_BIN_ID = "68bc605c43b1c97be9391c1d";
+const JSONBIN_MASTER_KEY = "YOUR_MASTER_KEY_HERE";
+const JSONBIN_BIN_ID = "YOUR_BIN_ID_HERE";
 const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
 let db = { subjects: [], questions: [], students: [], scores: [] };
@@ -392,7 +404,6 @@ document.getElementById("btnLogin").onclick = async () => {
   const password = document.getElementById("loginPass").value.trim();
   const cls = document.getElementById("loginClass").value.trim();
 
-  // Load data before checking login
   await loadDB(); 
   
   if (username === "admin" && password === "admin") {
@@ -463,8 +474,15 @@ function renderSubjects(){
   const tbody = document.getElementById("subjectsTbody");
   tbody.innerHTML = "";
   const filterClass = document.getElementById("subjectClassFilter").value;
+  if (!filterClass) { 
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a class to view subjects.</td></tr>";
+    return;
+  }
   const filteredSubjects = db.subjects.filter(s => filterClass === "all" || s.class === filterClass);
-
+  if (!filteredSubjects.length) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>No subjects found for this class.</td></tr>";
+    return;
+  }
   filteredSubjects.forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
@@ -508,7 +526,7 @@ async function deleteSubject(id){
 function refreshQuestionAddSubjects(){
   const sel = document.getElementById("questionSubjectSelect");
   const prev = sel.value;
-  sel.innerHTML = "";
+  sel.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option>`;
   db.subjects.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s.id;
@@ -545,24 +563,39 @@ function refreshQuestionFilterSubjects() {
     const classFilter = document.getElementById("questionClassFilter").value;
     const subjectFilter = document.getElementById("questionFilterSubjectSelect");
     const prev = subjectFilter.value;
-
-    subjectFilter.innerHTML = `<option value="all">All Subjects</option>`;
-    const filteredSubjects = db.subjects.filter(s => classFilter === "all" || s.class === classFilter);
-    filteredSubjects.forEach(s => {
-        const opt = document.createElement("option");
-        opt.value = s.id;
-        opt.text = `${s.name} (${s.class})`;
-        subjectFilter.appendChild(opt);
-    });
-    if (prev) subjectFilter.value = prev;
+    subjectFilter.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option>`;
+    if (classFilter) {
+      const filteredSubjects = db.subjects.filter(s => classFilter === "all" || s.class === classFilter);
+      filteredSubjects.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s.id;
+          opt.text = `${s.name} (${s.class})`;
+          subjectFilter.appendChild(opt);
+      });
+      if (prev) subjectFilter.value = prev;
+    }
 }
 
 function renderQuestions(){
   const tbody = document.getElementById("questionsTbody");
   tbody.innerHTML = "";
   const subjectIdFilter = document.getElementById("questionFilterSubjectSelect").value;
-  const filteredQuestions = db.questions.filter(q => subjectIdFilter === "all" || q.subjectId === subjectIdFilter);
+  const classIdFilter = document.getElementById("questionClassFilter").value;
+  
+  if (!classIdFilter) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a class.</td></tr>";
+    return;
+  }
+  if (!subjectIdFilter) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a subject.</td></tr>";
+    return;
+  }
 
+  const filteredQuestions = db.questions.filter(q => subjectIdFilter === "all" || q.subjectId === subjectIdFilter);
+  if (!filteredQuestions.length) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>No questions found for this subject.</td></tr>";
+    return;
+  }
   let i = 1;
   filteredQuestions.forEach(q => {
     const subj = db.subjects.find(s => s.id == q.subjectId);
@@ -625,8 +658,15 @@ function renderStudents(){
   const tbody = document.getElementById("studentsTbody");
   tbody.innerHTML = "";
   const filterClass = document.getElementById("studentClassFilter").value;
+  if (!filterClass) {
+    tbody.innerHTML = "<tr><td colspan='4' class='muted'>Please select a class to view students.</td></tr>";
+    return;
+  }
   const filteredStudents = db.students.filter(s => filterClass === "all" || s.class === filterClass);
-
+  if (!filteredStudents.length) {
+    tbody.innerHTML = "<tr><td colspan='4' class='muted'>No students found for this class.</td></tr>";
+    return;
+  }
   filteredStudents.forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
@@ -668,8 +708,9 @@ function refreshClassFilters(){
   const filters = ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter", "studentClassFilter"];
   filters.forEach(id => {
     const sel = document.getElementById(id);
-    const curr = sel.value || "all";
-    sel.innerHTML = `<option value="all">All Classes</option>`;
+    const curr = sel.value || "";
+    sel.innerHTML = `<option value="" disabled selected>-- Select a Class --</option>`;
+    sel.innerHTML += `<option value="all">All Classes</option>`;
     classes.forEach(c => {
       const opt = document.createElement("option"); opt.value = c; opt.text = c;
       if (c === curr) opt.selected = true;
@@ -682,7 +723,7 @@ document.getElementById("adminStudentClassFilter").onchange = renderResults;
 function refreshResetSubjectDropdown() {
   const dropdown = document.getElementById("resetSubjectDropdown");
   const prev = dropdown.value;
-  dropdown.innerHTML = `<option value="">-- Select Subject --</option>`;
+  dropdown.innerHTML = `<option value="" disabled selected>-- Select Subject --</option>`;
   db.subjects.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s.id;
@@ -710,15 +751,23 @@ function renderResults(){
   const thead = document.getElementById("resultsThead");
   const tbody = document.getElementById("resultsTbody");
   thead.innerHTML = ""; tbody.innerHTML = "";
-  if (!db.scores.length) { thead.innerHTML = "<tr><th>No results yet</th></tr>"; return; }
+  const filter = document.getElementById("adminStudentClassFilter").value;
+  
+  if (!filter) {
+    thead.innerHTML = "<tr><th>Please select a class to view results.</th></tr>";
+    return;
+  }
 
-  const filter = document.getElementById("adminStudentClassFilter").value || "all";
   const filtered = db.scores.filter(sc => {
     if (filter === "all") return true;
     const st = db.students.find(s => s.id == sc.studentId);
     return st && st.class === filter;
   });
-  if (!filtered.length){ thead.innerHTML = `<tr><th>No results for ${filter}</th></tr>`; return; }
+
+  if (!filtered.length){ 
+    thead.innerHTML = `<tr><th>No results found for ${filter === "all" ? "any class" : filter}.</th></tr>`; 
+    return; 
+  }
 
   // Build maps
   const studentsMap = {}, subjectsMap = {};
@@ -770,13 +819,15 @@ document.getElementById("btnExportStudents").onclick = () => {
 };
 
 document.getElementById("btnExportResults").onclick = () => {
-  if (!db.scores.length) return alert("No results");
-  const filter = document.getElementById("adminStudentClassFilter").value || "all";
+  const filter = document.getElementById("adminStudentClassFilter").value;
+  if (!filter) return alert("Please select a class filter first.");
+
   const filtered = db.scores.filter(sc => {
     if (filter === "all") return true;
     const st = db.students.find(s => s.id == sc.studentId);
     return st && st.class === filter;
   });
+
   if (!filtered.length) return alert("No results for this filter");
   // Build maps
   const studentsMap = {}, subjectsMap = {};
@@ -816,7 +867,6 @@ function prepareStudentSubjectDropdown(){
   if (!currentUser) return;
   const subs = db.subjects.filter(s => s.class === currentUser.class);
   subs.forEach(s => {
-    // disable if completed
     const done = db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == s.id);
     const opt = document.createElement("option");
     opt.value = s.id;
@@ -827,15 +877,14 @@ function prepareStudentSubjectDropdown(){
 }
 
 /* Exam state */
-let examState = null; // { subjectId, subjectName, subjectClass, durationSec, index, questions[], answers[], totalMarks }
+let examState = null; 
 let examInterval = null;
 
 document.getElementById("btnStartExam").onclick = () => {
   const sid = document.getElementById("studentSubjectDropdown").value;
   if (!sid) return alert("Select a subject first.");
-  // check no duplicate
   if (db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == sid)) return alert("You already completed this subject.");
-  document.getElementById("studentMsg").textContent = ""; // clear any prior messages
+  document.getElementById("studentMsg").textContent = ""; 
   startExam(sid);
 };
 
@@ -949,7 +998,6 @@ document.getElementById("btnSubmitExam").onclick = () => {
 
 async function finalizeExam(isAuto=false){
   if (!examState) return;
-  // compute score using subject marks-per-question
   const subj = db.subjects.find(s => s.id == examState.subjectId);
   const marksPerQ = subj ? (Number(subj.marksPerQuestion) || 1) : 1;
   let score = 0, totalMarks = 0;
@@ -958,7 +1006,6 @@ async function finalizeExam(isAuto=false){
     if (examState.answers[idx] && examState.answers[idx] === q.correct) score += marksPerQ;
   });
 
-  // save result (students should NOT see score)
   db.scores.push({
     studentId: currentUser.id,
     subjectId: examState.subjectId,
@@ -968,15 +1015,12 @@ async function finalizeExam(isAuto=false){
   });
   await saveDB();
 
-  // cleanup UI
   stopExamTimer();
   examState = null;
   document.getElementById("examCard").classList.add("hidden");
-  // refresh dropdown to disable completed subject
   prepareStudentSubjectDropdown();
   renderResults();
 
-  // Student sees a confirmation alert and message
   document.getElementById("studentMsg").textContent = "Your exam has been submitted successfully. The administrator will view your score.";
   alert("Your exam has been submitted successfully.");
 }
@@ -1002,10 +1046,9 @@ async function renderAllForStartup(){
 
 /* initial demo data if empty (optional) */
 (async function seedIfEmpty(){
-  await loadDB(); // Check if there is existing data first
+  await loadDB(); 
   if (db.subjects.length || db.questions.length || db.students.length) return;
   
-  // small demo
   const s1 = uid(); const s2 = uid();
   db.subjects.push({ id: s1, name: "Mathematics", class: "JSS1", duration: 5, marksPerQuestion: 1 });
   db.subjects.push({ id: s2, name: "English Language", class: "JSS1", duration: 5, marksPerQuestion: 1 });
@@ -1019,7 +1062,6 @@ async function renderAllForStartup(){
   await saveDB();
 })();
 
-/* initial render */
 renderAllForStartup();
 
 /* expose some functions for inline handlers (used above) */
