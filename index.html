@@ -281,6 +281,14 @@
       </div>
     </div>
 
+    <div id="answerSheetCard" class="card hidden">
+      <div class="row" style="justify-content:space-between">
+        <h2 id="answerSheetHeader"></h2>
+        <button id="btnCloseAnswerSheet" class="muted">Close</button>
+      </div>
+      <div id="answerSheetContent"></div>
+    </div>
+
     <div id="studentCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2 id="studentHeader">Student Panel</h2>
@@ -792,7 +800,7 @@ function renderResults(){
     subids.forEach(subid => {
       const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
       if (sc) { 
-        row += `<td>${sc.score} / ${sc.totalMarks} <button class="small danger" onclick="resetScore('${sc.studentId}', '${sc.subjectId}')">Reset</button></td>`; 
+        row += `<td>${sc.score} / ${sc.totalMarks} <button class="small muted" onclick="showStudentAnswers('${sc.studentId}', '${sc.subjectId}')">View</button> <button class="small danger" onclick="resetScore('${sc.studentId}', '${sc.subjectId}')">Reset</button></td>`; 
         total += Number(sc.score); 
         maxTotal += Number(sc.totalMarks); 
       }
@@ -1011,7 +1019,8 @@ async function finalizeExam(isAuto=false){
     subjectId: examState.subjectId,
     subject: examState.subjectName,
     score,
-    totalMarks
+    totalMarks,
+    answers: examState.answers // <-- Now saves the answers
   });
   await saveDB();
 
@@ -1024,6 +1033,55 @@ async function finalizeExam(isAuto=false){
   document.getElementById("studentMsg").textContent = "Your exam has been submitted successfully. The administrator will view your score.";
   alert("Your exam has been submitted successfully.");
 }
+
+/* Show detailed answer sheet */
+function showStudentAnswers(studentId, subjectId) {
+  const scoreData = db.scores.find(s => s.studentId === studentId && s.subjectId === subjectId);
+  if (!scoreData) return alert("Score data not found.");
+
+  const student = db.students.find(s => s.id === studentId);
+  if (!student) return alert("Student not found.");
+
+  const questions = db.questions.filter(q => q.subjectId === subjectId);
+  const contentEl = document.getElementById("answerSheetContent");
+  contentEl.innerHTML = ""; // Clear previous content
+
+  let html = `
+    <p><strong>Student:</strong> ${escapeHtml(student.name)} (${escapeHtml(student.class)})</p>
+    <p><strong>Subject:</strong> ${escapeHtml(scoreData.subject)}</p>
+    <p><strong>Score:</strong> ${scoreData.score} / ${scoreData.totalMarks}</p>
+    <hr style="margin:20px 0"/>
+  `;
+
+  questions.forEach((q, index) => {
+    const studentAnswer = scoreData.answers[index];
+    const isCorrect = studentAnswer === q.correct;
+    const resultText = isCorrect ? '<span style="color:green;font-weight:bold;">Correct</span>' : `<span style="color:red;font-weight:bold;">Incorrect</span>`;
+    const studentSelection = studentAnswer ? `Your Answer: <strong>${studentAnswer}</strong>` : 'Unanswered';
+
+    html += `
+      <div style="margin-bottom: 20px;">
+        <p><strong>Q${index + 1}:</strong> ${escapeHtml(q.question)}</p>
+        <p>${studentSelection} (${resultText})</p>
+        <p>Correct Answer: <strong>${q.correct}</strong></p>
+        <p style="font-size:14px;color:#666;">A: ${escapeHtml(q.A)} | B: ${escapeHtml(q.B)} | C: ${escapeHtml(q.C)}</p>
+      </div>
+    `;
+  });
+
+  contentEl.innerHTML = html;
+  
+  // Show the new card and hide the admin dashboard
+  document.getElementById("adminCard").classList.add("hidden");
+  document.getElementById("answerSheetCard").classList.remove("hidden");
+  document.getElementById("answerSheetHeader").textContent = `Answer Sheet for ${escapeHtml(student.name)}`;
+}
+
+document.getElementById("btnCloseAnswerSheet").onclick = () => {
+  document.getElementById("answerSheetCard").classList.add("hidden");
+  document.getElementById("adminCard").classList.remove("hidden");
+};
+
 
 /* ---------------------------
    Render / Init helpers
@@ -1074,6 +1132,7 @@ window.deleteStudent = deleteStudent;
 window.examJump = examJump;
 window.studentSelect = studentSelect;
 window.resetScore = resetScore;
+window.showStudentAnswers = showStudentAnswers;
 </script>
 </body>
 </html>
