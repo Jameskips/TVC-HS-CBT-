@@ -134,6 +134,31 @@
         padding:20px;
         border-top:1px solid #e6e9ee;
     }
+
+    /* Print-specific styles */
+    @media print {
+        body {
+            background: none;
+            color: #000;
+            font-size: 12pt;
+        }
+        .wrap, .card {
+            box-shadow: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+        header, .accordion, #studentCard, #loginCard, .row button, .row select, #btnCloseAnswerSheet {
+            display: none !important;
+        }
+        #answerSheetCard {
+            display: block !important;
+        }
+        #answerSheetCard .row {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
   </style>
 </head>
 <body>
@@ -268,6 +293,7 @@
                 <label class="muted">Reset by subject:</label>
                 <select id="resetSubjectDropdown"><option value="" disabled selected>-- Select Subject --</option></select>
                 <button id="btnResetSubject" class="danger">Reset All</button>
+                <button id="btnViewAllAnswers" class="muted">View All Answers</button>
                 <button id="btnExportStudents" class="muted">Export Students CSV</button>
                 <button id="btnExportResults" class="muted">Export Results CSV</button>
               </div>
@@ -284,7 +310,10 @@
     <div id="answerSheetCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2 id="answerSheetHeader"></h2>
-        <button id="btnCloseAnswerSheet" class="muted">Close</button>
+        <div>
+            <button id="btnCloseAnswerSheet" class="muted">Close</button>
+            <button id="btnPrintAnswers" class="muted">Print All</button>
+        </div>
       </div>
       <div id="answerSheetContent"></div>
     </div>
@@ -1028,29 +1057,25 @@ async function finalizeExam(isAuto=false){
   examState = null;
   document.getElementById("examCard").classList.add("hidden");
   prepareStudentSubjectDropdown();
-  renderResults();
+  renderAllAdmin(); // Re-render admin view to show the new score
 
   document.getElementById("studentMsg").textContent = "Your exam has been submitted successfully. The administrator will view your score.";
   alert("Your exam has been submitted successfully.");
 }
 
-/* Show detailed answer sheet */
-function showStudentAnswers(studentId, subjectId) {
-  const scoreData = db.scores.find(s => s.studentId === studentId && s.subjectId === subjectId);
-  if (!scoreData) return alert("Score data not found.");
-
-  const student = db.students.find(s => s.id === studentId);
-  if (!student) return alert("Student not found.");
-
-  const questions = db.questions.filter(q => q.subjectId === subjectId);
-  const contentEl = document.getElementById("answerSheetContent");
-  contentEl.innerHTML = ""; // Clear previous content
+/* Show single answer sheet details as HTML */
+function renderSingleAnswerSheet(scoreData) {
+  const student = db.students.find(s => s.id === scoreData.studentId);
+  const questions = db.questions.filter(q => q.subjectId === scoreData.subjectId);
+  
+  if (!student || !questions.length) return '';
 
   let html = `
-    <p><strong>Student:</strong> ${escapeHtml(student.name)} (${escapeHtml(student.class)})</p>
-    <p><strong>Subject:</strong> ${escapeHtml(scoreData.subject)}</p>
-    <p><strong>Score:</strong> ${scoreData.score} / ${scoreData.totalMarks}</p>
-    <hr style="margin:20px 0"/>
+    <div class="card" style="margin-bottom: 20px;">
+      <h3 style="margin-top:0;">Student: ${escapeHtml(student.name)} (${escapeHtml(student.class)})</h3>
+      <p><strong>Subject:</strong> ${escapeHtml(scoreData.subject)}</p>
+      <p><strong>Score:</strong> ${scoreData.score} / ${scoreData.totalMarks}</p>
+      <hr style="margin:20px 0"/>
   `;
 
   questions.forEach((q, index) => {
@@ -1068,18 +1093,51 @@ function showStudentAnswers(studentId, subjectId) {
       </div>
     `;
   });
-
-  contentEl.innerHTML = html;
   
-  // Show the new card and hide the admin dashboard
+  html += `</div>`;
+  return html;
+}
+
+/* Show a single student's answers (from table button) */
+function showStudentAnswers(studentId, subjectId) {
+  const scoreData = db.scores.find(s => s.studentId === studentId && s.subjectId === subjectId);
+  if (!scoreData) return alert("Score data not found.");
+
+  document.getElementById("answerSheetContent").innerHTML = renderSingleAnswerSheet(scoreData);
+  document.getElementById("answerSheetHeader").textContent = `Answer Sheet for ${escapeHtml(db.students.find(s => s.id === studentId).name)}`;
   document.getElementById("adminCard").classList.add("hidden");
   document.getElementById("answerSheetCard").classList.remove("hidden");
-  document.getElementById("answerSheetHeader").textContent = `Answer Sheet for ${escapeHtml(student.name)}`;
 }
+
+/* New function: Show all students' answers for a subject (from subject dropdown button) */
+document.getElementById("btnViewAllAnswers").onclick = () => {
+    const subjectId = document.getElementById("resetSubjectDropdown").value;
+    if (!subjectId) return alert("Please select a subject first.");
+
+    const subjectName = db.subjects.find(s => s.id === subjectId).name;
+    const subjectScores = db.scores.filter(sc => sc.subjectId === subjectId);
+
+    if (subjectScores.length === 0) return alert("No results found for this subject.");
+
+    let allAnswersHtml = "";
+    subjectScores.forEach(score => {
+        allAnswersHtml += renderSingleAnswerSheet(score);
+    });
+
+    document.getElementById("answerSheetContent").innerHTML = allAnswersHtml;
+    document.getElementById("answerSheetHeader").textContent = `All Answers for ${escapeHtml(subjectName)}`;
+    document.getElementById("adminCard").classList.add("hidden");
+    document.getElementById("answerSheetCard").classList.remove("hidden");
+};
+
 
 document.getElementById("btnCloseAnswerSheet").onclick = () => {
   document.getElementById("answerSheetCard").classList.add("hidden");
   document.getElementById("adminCard").classList.remove("hidden");
+};
+
+document.getElementById("btnPrintAnswers").onclick = () => {
+    window.print();
 };
 
 
@@ -1132,7 +1190,8 @@ window.deleteStudent = deleteStudent;
 window.examJump = examJump;
 window.studentSelect = studentSelect;
 window.resetScore = resetScore;
-window.showStudentAnswers = showStudentAnswers;
+window.showStudentAnswers =showStudentAnswers;
+
 </script>
 </body>
 </html>
