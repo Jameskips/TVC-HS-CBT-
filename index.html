@@ -173,6 +173,10 @@
         <input id="loginPass" type="password" placeholder="Password" />
         <button id="btnLogin" class="primary">Login</button>
       </div>
+      <div class="row">
+          <input type="checkbox" id="showLoginPass" />
+          <label for="showLoginPass" class="muted">Show password</label>
+      </div>
       <p id="loginMsg" class="muted"></p>
     </div>
 
@@ -260,8 +264,12 @@
               <input id="stuUsername" placeholder="Username" />
               <input id="stuFullName" placeholder="Full name" />
               <input id="stuClass" placeholder="Class (e.g. JSS1)" />
-              <input id="stuPassword" placeholder="Password" />
+              <input id="stuPassword" type="password" placeholder="Password" />
               <button id="btnAddStudent" class="primary">Add Student</button>
+            </div>
+            <div class="row">
+                <input type="checkbox" id="showStuPass" />
+                <label for="showStuPass" class="muted">Show password</label>
             </div>
             <div class="row">
               <label class="muted">Filter by class:</label>
@@ -1141,6 +1149,18 @@ document.getElementById("btnPrintAnswers").onclick = () => {
 };
 
 
+/* Show/Hide password toggle logic */
+document.getElementById("showLoginPass").addEventListener("change", (e) => {
+    const passInput = document.getElementById("loginPass");
+    passInput.type = e.target.checked ? "text" : "password";
+});
+
+document.getElementById("showStuPass").addEventListener("change", (e) => {
+    const passInput = document.getElementById("stuPassword");
+    passInput.type = e.target.checked ? "text" : "password";
+});
+
+
 /* ---------------------------
    Render / Init helpers
    --------------------------- */
@@ -1190,7 +1210,7 @@ window.deleteStudent = deleteStudent;
 window.examJump = examJump;
 window.studentSelect = studentSelect;
 window.resetScore = resetScore;
-window.showStudentAnswers =showStudentAnswers;
+window.showStudentAnswers = showStudentAnswers;
 
 </script>
 </body>
