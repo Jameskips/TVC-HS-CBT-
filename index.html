@@ -2,150 +2,172 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — Enterprise Portal</title>
+  <title>TVC High School — Ultimate Enterprise CBT</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root { --primary: #0f172a; --accent: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #334155; --muted: #64748b; --success: #10b981; --danger: #ef4444; }
-    body { font-family: 'Inter', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #334155; --muted: #64748b; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+    body { font-family: 'Inter', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
     .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
     
-    /* HEADER & NAV */
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; }
-    .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-    .status-dot { height: 8px; width: 8px; background: var(--success); border-radius: 50%; }
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+    .logo { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+    .badge { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; background: #dcfce7; color: #166534; }
 
-    /* DASHBOARD CARDS */
-    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; height: fit-content; }
-    .card-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-    .card-title { font-weight: 700; color: var(--primary); font-size: 15px; }
+    /* LAYOUT */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #fff; display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--primary); }
     .card-body { padding: 20px; }
 
-    /* COUNT BADGE */
-    .count-badge { background: #eef2ff; color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid #c7d2fe; }
-
-    /* FORM STYLES */
-    .input-group { position: relative; margin-bottom: 12px; }
-    input, select { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.2s; }
+    /* FORM ELEMENTS */
+    .input-group { position: relative; margin-bottom: 15px; }
+    input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; box-sizing: border-box; transition: 0.2s; outline: none; }
     input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-    .pass-link { position: absolute; right: 12px; top: 10px; font-size: 11px; font-weight: 700; color: var(--accent); cursor: pointer; text-transform: uppercase; }
+    .toggle-btn { position: absolute; right: 12px; top: 12px; font-size: 11px; font-weight: 800; color: var(--accent); cursor: pointer; text-transform: uppercase; }
     
-    button { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; }
-    .btn-main { background: var(--primary); color: white; }
-    .btn-main:hover { background: #1e293b; }
-    .btn-ghost { background: #f1f5f9; color: var(--text); }
-    .btn-danger { color: var(--danger); background: #fef2f2; }
+    button { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
     .btn-danger:hover { background: var(--danger); color: white; }
+    .btn-success { background: var(--success); color: white; }
 
     /* TABLES */
     table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1f5f9; }
-    td { padding: 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
-    .scroll { max-height: 400px; overflow-y: auto; }
-    .hidden { display: none; }
+    th { text-align: left; padding: 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+    td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .scrollable { max-height: 350px; overflow-y: auto; }
 
-    /* FILTERS */
-    .filters { display: flex; gap: 10px; margin-bottom: 15px; }
-    .filter-input { flex: 2; }
-    .filter-select { flex: 1; }
+    /* MODALS */
+    .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
+    .modal-content { background:white; width:90%; max-width:650px; padding:30px; border-radius:16px; max-height:80vh; overflow-y:auto; }
+
+    .hidden { display: none; }
+    .count-chip { background: #eff6ff; color: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 12px; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <div class="logo"><div class="status-dot"></div> TVC HIGH SCHOOL <span style="font-weight:300; color:var(--muted)">| STAFF</span></div>
-    <div id="adminTag" class="hidden" style="font-size:12px; font-weight:bold; color:var(--accent)">ADMINISTRATOR LOGGED IN</div>
+    <div class="logo">TVC <span style="color:var(--accent)">Enterprise</span></div>
+    <div id="adminTag" class="badge hidden">ADMIN PANEL ACTIVE</div>
   </div>
 
-  <div id="authBox" style="max-width: 400px; margin: 60px auto;">
+  <div id="authBox" style="max-width: 420px; margin: 40px auto;">
     <div id="loginView" class="card">
-        <div class="card-header"><span class="card-title">Portal Access</span></div>
+        <div class="card-header">Portal Login</div>
         <div class="card-body">
-            <div class="input-group"><input id="lUser" placeholder="Username"></div>
-            <div class="input-group"><input id="lClass" placeholder="Class (e.g. JSS1)"></div>
+            <input id="lUser" placeholder="Username" style="margin-bottom:12px">
+            <input id="lClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:12px">
             <div class="input-group">
                 <input id="lPass" type="password" placeholder="Password">
-                <span class="pass-link" onclick="viewPass('lPass')">Show</span>
+                <span class="toggle-btn" onclick="togglePass('lPass')">Show</span>
             </div>
-            <button onclick="doLogin()" class="btn-main" style="width:100%">Sign In</button>
-            <p style="text-align:center; font-size:12px; margin-top:15px; color:var(--muted)">Students: <a href="#" onclick="toggleUI(true)" style="color:var(--accent)">Create Account</a></p>
+            <button onclick="doLogin()" class="btn-primary" style="width:100%">Sign In</button>
+            <p style="text-align:center; font-size:13px; margin-top:20px; color:var(--muted)">New? <a href="#" onclick="toggleAuth(true)">Register Student</a></p>
         </div>
     </div>
 
     <div id="regView" class="card hidden">
-        <div class="card-header"><span class="card-title">Registration</span></div>
+        <div class="card-header">Student Registration</div>
         <div class="card-body">
-            <input id="rName" placeholder="Full Name" style="margin-bottom:10px">
-            <input id="rUser" placeholder="Username" style="margin-bottom:10px">
-            <input id="rClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:10px">
+            <input id="rName" placeholder="Full Name" style="margin-bottom:12px">
+            <input id="rUser" placeholder="Username" style="margin-bottom:12px">
+            <input id="rClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:12px">
             <div class="input-group">
                 <input id="rPass" type="password" placeholder="Password">
-                <span class="pass-link" onclick="viewPass('rPass')">Show</span>
+                <span class="toggle-btn" onclick="togglePass('rPass')">Show</span>
             </div>
             <input id="rCode" type="password" placeholder="Access Code (TVC2026)" style="margin-bottom:15px">
-            <button onclick="doRegister()" class="btn-main" style="width:100%">Register</button>
-            <p style="text-align:center; font-size:12px; margin-top:10px"><a href="#" onclick="toggleUI(false)">Back to Login</a></p>
+            <button onclick="doRegister()" class="btn-primary" style="width:100%">Create Account</button>
+            <p style="text-align:center; font-size:13px; margin-top:15px"><a href="#" onclick="toggleAuth(false)">Back to Login</a></p>
         </div>
     </div>
   </div>
 
   <div id="adminPanel" class="hidden">
+    <div class="card">
+        <div class="card-header">
+            <span>Student Management</span>
+            <span id="stuCount" class="count-chip">0 Students</span>
+        </div>
+        <div class="card-body">
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input id="stuSearch" placeholder="Search by name..." onkeyup="runStuFilters()" style="flex:2">
+                <select id="classFilter" onchange="runStuFilters()" style="flex:1">
+                    <option value="">All Classes</option>
+                    <option value="JSS1">JSS1</option><option value="JSS2">JSS2</option><option value="JSS3">JSS3</option>
+                    <option value="SS1">SS1</option><option value="SS2">SS2</option><option value="SS3">SS3</option>
+                </select>
+            </div>
+            <div class="scrollable">
+                <table>
+                    <thead><tr><th>Name</th><th>Class</th><th>Username</th><th>Action</th></tr></thead>
+                    <tbody id="studentList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="grid">
         <div class="card">
-            <div class="card-header">
-                <span class="card-title">Student Management</span>
-                <span id="stuCount" class="count-badge">0 Students</span>
-            </div>
+            <div class="card-header">Create Subject</div>
             <div class="card-body">
-                <div class="filters">
-                    <input type="text" id="stuSearch" class="filter-input" placeholder="Search by name..." onkeyup="runFilters()">
-                    <select id="classFilter" class="filter-select" onchange="runFilters()">
-                        <option value="">All Classes</option>
-                        <option value="JSS1">JSS1</option>
-                        <option value="JSS2">JSS2</option>
-                        <option value="JSS3">JSS3</option>
-                        <option value="SS1">SS1</option>
-                        <option value="SS2">SS2</option>
-                        <option value="SS3">SS3</option>
-                    </select>
+                <input id="nSub" placeholder="Subject Name" style="margin-bottom:10px">
+                <input id="nCls" placeholder="Class" style="margin-bottom:10px">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input id="nDur" type="number" placeholder="Mins">
+                    <input id="nMrk" type="number" placeholder="Marks">
                 </div>
-                <div class="scroll">
-                    <table>
-                        <thead><tr><th>Name</th><th>Class</th><th>Username</th><th>Action</th></tr></thead>
-                        <tbody id="studentList"></tbody>
-                    </table>
-                </div>
+                <button onclick="addSubject()" class="btn-accent" style="width:100%">Save Subject</button>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header"><span class="card-title">System Actions</span></div>
+            <div class="card-header">Questions: Bulk & Copy</div>
             <div class="card-body">
-                <button onclick="location.reload()" class="btn-danger" style="width:100%">Sign Out Admin</button>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <p style="font-size:12px; font-weight:bold; color:var(--muted); margin-bottom:10px">ADD NEW SUBJECT</p>
-                <input id="nSub" placeholder="Subject Name" style="margin-bottom:8px">
-                <input id="nCls" placeholder="Class" style="margin-bottom:8px">
-                <div style="display:flex; gap:8px">
-                    <input id="nDur" type="number" placeholder="Mins">
-                    <input id="nMrk" type="number" placeholder="Marks">
-                </div>
-                <button onclick="addSubject()" class="btn-main" style="width:100%; margin-top:12px">Create Subject</button>
+                <select id="subSel" style="margin-bottom:10px"></select>
+                <textarea id="bulkData" placeholder="Format: Question, OptA, OptB, OptC, CorrectLetter" style="height:80px; margin-bottom:10px; font-family:monospace; font-size:12px;"></textarea>
+                <button onclick="processBulk()" class="btn-success" style="width:100%; margin-bottom:10px;">Process Bulk Upload</button>
+                <button onclick="openCopyModal()" class="btn-primary" style="width:100%">Copy From Other Bank</button>
             </div>
         </div>
     </div>
-    
-    <div class="card" style="margin-top:24px">
-        <div class="card-header"><span class="card-title">Global Subject Registry</span></div>
-        <div class="card-body scroll">
-            <table id="subTable">
-                <thead><tr><th>Subject</th><th>Target Class</th><th>Timer</th><th>Status</th><th>Action</th></tr></thead>
+
+    <div class="card">
+        <div class="card-header">Global Subject Registry</div>
+        <div class="card-body scrollable">
+            <table>
+                <thead><tr><th>Subject</th><th>Class</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="subList"></tbody>
             </table>
         </div>
     </div>
+
+    <button onclick="location.reload()" class="btn-danger" style="margin-top:20px">Logout Admin</button>
   </div>
+</div>
+
+<div id="previewModal" class="modal">
+    <div class="modal-content">
+        <h2 id="preTitle" style="margin-top:0"></h2>
+        <div id="preBody" class="scrollable" style="border-top:1px solid #eee; padding-top:15px;"></div>
+        <button onclick="closeModal('previewModal')" class="btn-danger" style="width:100%; margin-top:20px">Close Preview</button>
+    </div>
+</div>
+
+<div id="copyModal" class="modal">
+    <div class="modal-content">
+        <h3>Copy Question Bank</h3>
+        <label style="font-size:12px">From (Source):</label>
+        <select id="copyFrom" style="margin-bottom:15px"></select>
+        <label style="font-size:12px">To (Destination):</label>
+        <select id="copyTo" style="margin-bottom:20px"></select>
+        <button onclick="doCopyQuestions()" class="btn-accent" style="width:100%">Execute Copy</button>
+        <button onclick="closeModal('copyModal')" class="btn-danger" style="width:100%; margin-top:10px; background:none;">Cancel</button>
+    </div>
 </div>
 
 <script>
@@ -156,27 +178,29 @@ const URL = `https://api.jsonbin.io/v3/b/${BIN}`;
 let db = { students: [], subjects: [], questions: [], scores: [] };
 
 async function load() { 
-    const r = await fetch(`${URL}/latest`, { headers: {"X-Master-Key": KEY} }); 
-    const d = await r.json(); if(d.record) db = d.record; 
+    try {
+        const r = await fetch(`${URL}/latest`, { headers: {"X-Master-Key": KEY} }); 
+        const d = await r.json(); if(d.record) db = d.record; 
+    } catch(e) { console.error("Cloud Error"); }
 }
 async function sync() { await fetch(URL, { method: "PUT", headers: {"Content-Type":"application/json", "X-Master-Key": KEY}, body: JSON.stringify(db) }); }
 
-function toggleUI(reg) { document.getElementById('loginView').classList.toggle('hidden', reg); document.getElementById('regView').classList.toggle('hidden', !reg); }
-function viewPass(id) { const x = document.getElementById(id); x.type = x.type === "password" ? "text" : "password"; }
+function toggleAuth(reg) { document.getElementById('loginView').classList.toggle('hidden', reg); document.getElementById('regView').classList.toggle('hidden', !reg); }
+function togglePass(id) { const x = document.getElementById(id); x.type = x.type === "password" ? "text" : "password"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
+/* --- ACTIONS --- */
 async function doRegister() {
-    if(document.getElementById('rCode').value !== "TVC2026") return alert("Wrong Access Code");
+    if(document.getElementById('rCode').value !== "TVC2026") return alert("Wrong Code");
     await load();
     db.students.push({ 
-        id: "ID-"+Math.random().toString(36).substr(2,4).toUpperCase(),
+        id: "STU-"+Math.random().toString(36).substr(2,4).toUpperCase(),
         name: document.getElementById('rName').value, 
         username: document.getElementById('rUser').value, 
         class: document.getElementById('rClass').value.toUpperCase(), 
         password: document.getElementById('rPass').value 
     });
-    await sync(); 
-    alert("Student Registered Successfully");
-    toggleUI(false);
+    await sync(); alert("Student Registered!"); toggleAuth(false);
 }
 
 async function doLogin() {
@@ -189,29 +213,21 @@ async function doLogin() {
         renderAdmin();
     } else {
         const s = db.students.find(x => x.username === u && x.password === p && x.class === c);
-        if(s) alert("Welcome " + s.name); else alert("Invalid Credentials");
+        if(s) alert("Welcome student: " + s.name); else alert("Login failed.");
     }
 }
 
-function runFilters() {
-    const nameVal = document.getElementById('stuSearch').value.toLowerCase();
-    const classVal = document.getElementById('classFilter').value.toUpperCase();
+function runStuFilters() {
+    const n = document.getElementById('stuSearch').value.toLowerCase();
+    const c = document.getElementById('classFilter').value.toUpperCase();
     const rows = document.getElementById('studentList').getElementsByTagName('tr');
-    let visibleCount = 0;
-
-    for (let row of rows) {
-        const cells = row.getElementsByTagName('td');
-        const nameMatch = cells[0].innerText.toLowerCase().includes(nameVal);
-        const classMatch = classVal === "" || cells[1].innerText === classVal;
-        
-        if (nameMatch && classMatch) {
-            row.style.display = "";
-            visibleCount++;
-        } else {
-            row.style.display = "none";
-        }
+    let count = 0;
+    for(let r of rows) {
+        const match = r.innerText.toLowerCase().includes(n) && (c==="" || r.cells[1].innerText === c);
+        r.style.display = match ? "" : "none";
+        if(match) count++;
     }
-    document.getElementById('stuCount').innerText = `${visibleCount} Students`;
+    document.getElementById('stuCount').innerText = `${count} Students`;
 }
 
 function renderAdmin() {
@@ -220,14 +236,19 @@ function renderAdmin() {
     db.students.forEach(s => {
         sl.innerHTML += `<tr><td>${s.name}</td><td><b>${s.class}</b></td><td>${s.username}</td><td><button class="btn-danger" onclick="delStu('${s.id}')">Delete</button></td></tr>`;
     });
-    
-    // Update count after render
-    runFilters();
+    runStuFilters();
 
-    // Render Subject Table
+    // Render Subjects & Selectors
     const subL = document.getElementById('subList'); subL.innerHTML = "";
+    const sel = document.getElementById('subSel'); sel.innerHTML = "";
+    const cf = document.getElementById('copyFrom'); cf.innerHTML = "";
+    const ct = document.getElementById('copyTo'); ct.innerHTML = "";
+
     db.subjects.forEach(sb => {
-        subL.innerHTML += `<tr><td>${sb.name}</td><td>${sb.class}</td><td>${sb.duration}m</td><td><span style="color:${sb.released?'var(--success)':'var(--danger)'}">${sb.released?'Active':'Draft'}</span></td><td><button onclick="togRel('${sb.id}')" class="btn-ghost">Toggle</button></td></tr>`;
+        subL.innerHTML += `<tr><td>${sb.name}</td><td>${sb.class}</td><td><span style="color:${sb.released?'var(--success)':'var(--danger)'}">${sb.released?'Public':'Draft'}</span></td>
+        <td><button onclick="openPreview('${sb.id}')">View</button> <button onclick="togRel('${sb.id}')" style="background:#eee">Toggle</button> <button class="btn-danger" onclick="delSub('${sb.id}')">X</button></td></tr>`;
+        const opt = `<option value="${sb.id}">${sb.name} (${sb.class})</option>`;
+        sel.innerHTML += opt; cf.innerHTML += opt; ct.innerHTML += opt;
     });
 }
 
@@ -237,7 +258,41 @@ async function addSubject() {
     ['nSub','nCls','nDur','nMrk'].forEach(i => document.getElementById(i).value="");
 }
 
+async function processBulk() {
+    const sid = document.getElementById('subSel').value;
+    const raw = document.getElementById('bulkData').value;
+    if(!sid || !raw) return alert("Select subject and paste data");
+    const lines = raw.split("\n");
+    let c = 0;
+    lines.forEach(l => {
+        const p = l.split(",");
+        if(p.length >= 5) {
+            db.questions.push({ id: Date.now().toString(36)+c, subjectId: sid, question: p[0].trim(), A: p[1].trim(), B: p[2].trim(), C: p[3].trim(), correct: p[4].trim().toUpperCase() });
+            c++;
+        }
+    });
+    await sync(); document.getElementById('bulkData').value = ""; alert(`Imported ${c} questions!`);
+}
+
+function openPreview(sid) {
+    const s = db.subjects.find(x => x.id === sid), qs = db.questions.filter(q => q.subjectId === sid);
+    document.getElementById('preTitle').innerText = `${s.name} Preview`;
+    document.getElementById('preBody').innerHTML = qs.map((q,i) => `<div style="margin-bottom:15px"><b>Q${i+1}:</b> ${q.question}<br><small>A: ${q.A} | B: ${q.B} | C: ${q.C} | Correct: <b>${q.correct}</b></small></div>`).join("");
+    document.getElementById('previewModal').style.display = "flex";
+}
+
+function openCopyModal() { document.getElementById('copyModal').style.display = "flex"; }
+
+async function doCopyQuestions() {
+    const from = document.getElementById('copyFrom').value, to = document.getElementById('copyTo').value;
+    if(from === to) return alert("Choose different subjects");
+    const sourceQs = db.questions.filter(q => q.subjectId === from);
+    sourceQs.forEach(q => db.questions.push({ ...q, id: Date.now().toString(36)+Math.random(), subjectId: to }));
+    await sync(); alert(`Copied ${sourceQs.length} questions!`); closeModal('copyModal');
+}
+
 window.delStu = async (id) => { if(confirm("Delete Student?")) { db.students = db.students.filter(x => x.id !== id); await sync(); renderAdmin(); }};
+window.delSub = async (id) => { if(confirm("Delete Subject & Questions?")) { db.subjects = db.subjects.filter(x => x.id !== id); db.questions = db.questions.filter(q => q.subjectId !== id); await sync(); renderAdmin(); }};
 window.togRel = async (id) => { const s = db.subjects.find(x=>x.id===id); s.released = !s.released; await sync(); renderAdmin(); };
 
 load();
