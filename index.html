@@ -2,198 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — Unified Master CBT</title>
+  <title>TVC High School — Enterprise Portal</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root { --primary: #1a237e; --accent: #246bff; --bg: #f4f7fe; --text: #2c3e50; --danger: #e53935; --success: #2e7d32; --warning: #ffa000; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
-    .wrap { max-width: 1100px; margin: 20px auto; padding: 0 20px; }
+    :root { --primary: #0f172a; --accent: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #334155; --muted: #64748b; --success: #10b981; --danger: #ef4444; }
+    body { font-family: 'Inter', system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
     
-    /* UI CARDS */
-    .card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eef2f6; }
-    header { text-align: center; margin-bottom: 30px; }
-    header h1 { color: var(--primary); margin: 0; font-size: 32px; letter-spacing: -1px; }
+    /* HEADER & NAV */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-bottom: 25px; border-bottom: 1px solid #e2e8f0; }
+    .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .status-dot { height: 8px; width: 8px; background: var(--success); border-radius: 50%; }
 
-    /* FORM ELEMENTS */
-    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
-    input, select, textarea { padding: 12px; border-radius: 8px; border: 1px solid #dcdfe6; font-size: 14px; width: 100%; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    /* DASHBOARD CARDS */
+    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; height: fit-content; }
+    .card-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-weight: 700; color: var(--primary); font-size: 15px; }
+    .card-body { padding: 20px; }
+
+    /* COUNT BADGE */
+    .count-badge { background: #eef2ff; color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid #c7d2fe; }
+
+    /* FORM STYLES */
+    .input-group { position: relative; margin-bottom: 12px; }
+    input, select { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.2s; }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .pass-link { position: absolute; right: 12px; top: 10px; font-size: 11px; font-weight: 700; color: var(--accent); cursor: pointer; text-transform: uppercase; }
     
-    button { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
-    button.primary { background: var(--accent); color: white; }
-    button.danger { background: var(--danger); color: white; }
-    button.success { background: var(--success); color: white; }
-    button.warning { background: var(--warning); color: white; }
-    button.muted { background: #f0f2f5; color: #4b5563; }
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    .btn-main { background: var(--primary); color: white; }
+    .btn-main:hover { background: #1e293b; }
+    .btn-ghost { background: #f1f5f9; color: var(--text); }
+    .btn-danger { color: var(--danger); background: #fef2f2; }
+    .btn-danger:hover { background: var(--danger); color: white; }
 
-    /* TABLES & LISTS */
-    .filter-box { background: #fff; border: 2px solid #e0e6ed; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; }
+    /* TABLES */
     table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; background: #f8fafc; padding: 14px; border-bottom: 2px solid #edf2f7; color: #64748b; font-size: 12px; text-transform: uppercase; }
-    td { padding: 14px; border-bottom: 1px solid #edf2f7; font-size: 14px; }
-    .scroll-box { max-height: 300px; overflow-y: auto; border: 1px solid #edf2f7; border-radius: 8px; padding: 10px; background: #fafbfc; }
-
-    /* EXAM UI */
-    .exam-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-    .option-card { padding: 15px; border: 2px solid #edf2f7; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-    .option-card:hover { border-color: var(--accent); background: #f0f7ff; }
-    .option-card.selected { border-color: var(--accent); background: #eef5ff; font-weight: 600; }
-    .nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .nav-btn { height: 40px; border-radius: 6px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; cursor: pointer; background: white; }
-    .nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-    .nav-btn.filled { background: #e8f0fe; color: var(--accent); border-color: var(--accent); }
-
-    /* MODALS */
-    .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:2000; }
-    .modal-content { background:white; width:90%; max-width:700px; padding:30px; border-radius:15px; max-height:85vh; overflow-y:auto; position: relative; }
-
+    th { text-align: left; padding: 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f1f5f9; }
+    td { padding: 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+    .scroll { max-height: 400px; overflow-y: auto; }
     .hidden { display: none; }
-    @media (max-width: 768px) { .exam-grid { grid-template-columns: 1fr; } .row { flex-direction: column; } }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 10px; margin-bottom: 15px; }
+    .filter-input { flex: 2; }
+    .filter-select { flex: 1; }
   </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header>
-    <h1>TVC High School</h1>
-  </header>
+<div class="container">
+  <div class="header">
+    <div class="logo"><div class="status-dot"></div> TVC HIGH SCHOOL <span style="font-weight:300; color:var(--muted)">| STAFF</span></div>
+    <div id="adminTag" class="hidden" style="font-size:12px; font-weight:bold; color:var(--accent)">ADMINISTRATOR LOGGED IN</div>
+  </div>
 
-  <div id="authBox" class="card" style="max-width:400px; margin:auto;">
-    <div id="loginView">
-        <h3 style="margin-top:0">Portal Login</h3>
-        <input id="lUser" placeholder="Username" style="margin-bottom:12px">
-        <input id="lClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:12px">
-        <input id="lPass" type="password" placeholder="Password" style="margin-bottom:15px">
-        <button onclick="doLogin()" class="primary" style="width:100%">Enter Dashboard</button>
-        <p style="text-align:center; font-size:13px; margin-top:20px">New student? <a href="#" onclick="toggleAuth(true)">Register here</a></p>
+  <div id="authBox" style="max-width: 400px; margin: 60px auto;">
+    <div id="loginView" class="card">
+        <div class="card-header"><span class="card-title">Portal Access</span></div>
+        <div class="card-body">
+            <div class="input-group"><input id="lUser" placeholder="Username"></div>
+            <div class="input-group"><input id="lClass" placeholder="Class (e.g. JSS1)"></div>
+            <div class="input-group">
+                <input id="lPass" type="password" placeholder="Password">
+                <span class="pass-link" onclick="viewPass('lPass')">Show</span>
+            </div>
+            <button onclick="doLogin()" class="btn-main" style="width:100%">Sign In</button>
+            <p style="text-align:center; font-size:12px; margin-top:15px; color:var(--muted)">Students: <a href="#" onclick="toggleUI(true)" style="color:var(--accent)">Create Account</a></p>
+        </div>
     </div>
-    <div id="regView" class="hidden">
-        <h3 style="margin-top:0">Student Registration</h3>
-        <input id="rName" placeholder="Full Name" style="margin-bottom:10px">
-        <input id="rUser" placeholder="Username" style="margin-bottom:10px">
-        <input id="rClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:10px">
-        <input id="rPass" type="password" placeholder="Password" style="margin-bottom:10px">
-        <input id="rCode" type="password" placeholder="Access Code (TVC2026)" style="margin-bottom:15px">
-        <button onclick="doRegister()" class="primary" style="width:100%">Create Account</button>
-        <p style="text-align:center; font-size:13px; margin-top:15px"><a href="#" onclick="toggleAuth(false)">Back to Login</a></p>
+
+    <div id="regView" class="card hidden">
+        <div class="card-header"><span class="card-title">Registration</span></div>
+        <div class="card-body">
+            <input id="rName" placeholder="Full Name" style="margin-bottom:10px">
+            <input id="rUser" placeholder="Username" style="margin-bottom:10px">
+            <input id="rClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:10px">
+            <div class="input-group">
+                <input id="rPass" type="password" placeholder="Password">
+                <span class="pass-link" onclick="viewPass('rPass')">Show</span>
+            </div>
+            <input id="rCode" type="password" placeholder="Access Code (TVC2026)" style="margin-bottom:15px">
+            <button onclick="doRegister()" class="btn-main" style="width:100%">Register</button>
+            <p style="text-align:center; font-size:12px; margin-top:10px"><a href="#" onclick="toggleUI(false)">Back to Login</a></p>
+        </div>
     </div>
   </div>
 
   <div id="adminPanel" class="hidden">
-    <div class="row" style="justify-content:space-between; margin-bottom:20px;">
-        <h2 style="margin:0">Staff Administration</h2>
-        <button onclick="location.reload()" class="muted">Sign Out</button>
-    </div>
-
-    <div class="card">
-        <h3>Subject Management</h3>
-        <div class="row">
-            <input id="nSub" placeholder="Subject Name" style="flex:2">
-            <input id="nCls" placeholder="Class" style="flex:1">
-            <input id="nDur" type="number" placeholder="Mins" style="flex:0.5">
-            <input id="nMrk" type="number" placeholder="Marks" style="flex:0.5">
-            <button onclick="addSubject()" class="primary">Create</button>
-        </div>
-        <input type="text" class="filter-box" placeholder="Filter subjects by class or name..." onkeyup="filterTable('subList', this.value)">
-        <div class="scroll-box">
-            <table><thead><tr><th>Subject</th><th>Class</th><th>Mins</th><th>Status</th><th>Actions</th></tr></thead><tbody id="subList"></tbody></table>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="row" style="justify-content:space-between">
-            <h3>Question Bank</h3>
-            <div style="display:flex; gap:5px;">
-                <button onclick="openCopyModal()" class="warning">Copy Bank</button>
-                <button onclick="document.getElementById('bulkPanel').classList.toggle('hidden')" class="muted">Bulk Toggle</button>
+    <div class="grid">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Student Management</span>
+                <span id="stuCount" class="count-badge">0 Students</span>
+            </div>
+            <div class="card-body">
+                <div class="filters">
+                    <input type="text" id="stuSearch" class="filter-input" placeholder="Search by name..." onkeyup="runFilters()">
+                    <select id="classFilter" class="filter-select" onchange="runFilters()">
+                        <option value="">All Classes</option>
+                        <option value="JSS1">JSS1</option>
+                        <option value="JSS2">JSS2</option>
+                        <option value="JSS3">JSS3</option>
+                        <option value="SS1">SS1</option>
+                        <option value="SS2">SS2</option>
+                        <option value="SS3">SS3</option>
+                    </select>
+                </div>
+                <div class="scroll">
+                    <table>
+                        <thead><tr><th>Name</th><th>Class</th><th>Username</th><th>Action</th></tr></thead>
+                        <tbody id="studentList"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        
-        <select id="subSel" onchange="renderQList(this.value)" style="margin-bottom:15px; border: 2px solid var(--accent);"></select>
-        
-        <div id="bulkPanel" class="hidden" style="background:#fff9e6; padding:15px; border-radius:8px; margin-bottom:15px; border:1px dashed var(--warning)">
-            <p style="font-size:12px; margin-top:0"><b>Bulk Format:</b> Question, OptA, OptB, OptC, CorrectLetter (One per line)</p>
-            <textarea id="bulkData" placeholder="e.g. What is 2+2, 3, 4, 5, B" style="height:100px; margin-bottom:10px; font-family:monospace;"></textarea>
-            <button onclick="processBulk()" class="success" style="width:100%">Process Bulk Import</button>
-        </div>
 
-        <div class="row">
-            <textarea id="qTxt" placeholder="Type single question..." style="height:60px"></textarea>
+        <div class="card">
+            <div class="card-header"><span class="card-title">System Actions</span></div>
+            <div class="card-body">
+                <button onclick="location.reload()" class="btn-danger" style="width:100%">Sign Out Admin</button>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                <p style="font-size:12px; font-weight:bold; color:var(--muted); margin-bottom:10px">ADD NEW SUBJECT</p>
+                <input id="nSub" placeholder="Subject Name" style="margin-bottom:8px">
+                <input id="nCls" placeholder="Class" style="margin-bottom:8px">
+                <div style="display:flex; gap:8px">
+                    <input id="nDur" type="number" placeholder="Mins">
+                    <input id="nMrk" type="number" placeholder="Marks">
+                </div>
+                <button onclick="addSubject()" class="btn-main" style="width:100%; margin-top:12px">Create Subject</button>
+            </div>
         </div>
-        <div class="row">
-            <input id="oA" placeholder="Option A">
-            <input id="oB" placeholder="Option B">
-            <input id="oC" placeholder="Option C">
-            <select id="cor" style="width:80px"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
-            <button onclick="addQ()" class="primary">Save Single</button>
-        </div>
-        <input type="text" class="filter-box" placeholder="Search questions..." onkeyup="filterQList(this.value)">
-        <div id="qList" class="scroll-box"></div>
     </div>
-
-    <div class="card">
-        <h3>Exam Results</h3>
-        <input type="text" class="filter-box" placeholder="Search results by student, class or subject..." onkeyup="filterTable('resList', this.value)">
-        <div class="scroll-box">
-            <table><thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Strikes</th><th>Del</th></tr></thead><tbody id="resList"></tbody></table>
+    
+    <div class="card" style="margin-top:24px">
+        <div class="card-header"><span class="card-title">Global Subject Registry</span></div>
+        <div class="card-body scroll">
+            <table id="subTable">
+                <thead><tr><th>Subject</th><th>Target Class</th><th>Timer</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="subList"></tbody>
+            </table>
         </div>
     </div>
   </div>
-
-  <div id="studentPanel" class="hidden">
-    <div class="card">
-        <h2 id="welcome" style="margin-top:0"></h2>
-        <div class="row">
-            <select id="stuSubSel" style="flex:1"></select>
-            <button onclick="startExam()" class="primary">Launch Exam</button>
-            <button onclick="location.reload()" class="muted">Logout</button>
-        </div>
-    </div>
-
-    <div id="examView" class="hidden">
-        <div class="exam-grid">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <h3 id="exTitle" style="margin:0"></h3>
-                    <h3 id="timer" style="margin:0; color:var(--danger); font-family:monospace;">00:00</h3>
-                </div>
-                <div id="qBox"></div>
-                <div class="row" style="justify-content:space-between; margin-top:30px">
-                    <button onclick="move(-1)" class="muted">Previous</button>
-                    <button id="nextBtn" onclick="move(1)" class="primary">Next</button>
-                    <button id="finBtn" onclick="finish()" class="danger hidden">Final Submission</button>
-                </div>
-            </div>
-            <div class="card">
-                <h4 style="margin-top:0">Question Navigator</h4>
-                <div id="navGrid" class="nav-grid"></div>
-                <p style="font-size:12px; margin-top:20px; color:#666;">Do not exit full screen or switch tabs. This will trigger a security strike.</p>
-            </div>
-        </div>
-    </div>
-  </div>
-</div>
-
-<div id="previewModal" class="modal">
-    <div class="modal-content">
-        <h2 id="preTitle"></h2>
-        <div id="preBody" class="scroll-box" style="max-height:60vh"></div>
-        <button onclick="closeModal('previewModal')" class="danger" style="width:100%; margin-top:20px">Close Preview</button>
-    </div>
-</div>
-
-<div id="copyModal" class="modal">
-    <div class="modal-content">
-        <h3>Copy Question Bank</h3>
-        <p style="font-size:13px">This will copy all questions from the source subject to the destination.</p>
-        <label>From (Source):</label>
-        <select id="copyFrom" style="margin-bottom:15px"></select>
-        <label>To (Destination):</label>
-        <select id="copyTo" style="margin-bottom:20px"></select>
-        <button onclick="doCopyQuestions()" class="primary" style="width:100%">Perform Copy</button>
-        <button onclick="closeModal('copyModal')" class="muted" style="width:100%; margin-top:10px">Cancel</button>
-    </div>
 </div>
 
 <script>
@@ -201,172 +153,92 @@ const KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
 const BIN = "68bc605c43b1c97be9391c1d";
 const URL = `https://api.jsonbin.io/v3/b/${BIN}`;
 
-let db = { subjects: [], questions: [], students: [], scores: [] };
-let user = null, ex = null, timer = null;
+let db = { students: [], subjects: [], questions: [], scores: [] };
 
 async function load() { 
-    try {
-        const r = await fetch(`${URL}/latest`, { headers: {"X-Master-Key": KEY} });
-        const d = await r.json(); if(d.record) db = d.record;
-    } catch(e) { console.error("Database error", e); }
+    const r = await fetch(`${URL}/latest`, { headers: {"X-Master-Key": KEY} }); 
+    const d = await r.json(); if(d.record) db = d.record; 
 }
 async function sync() { await fetch(URL, { method: "PUT", headers: {"Content-Type":"application/json", "X-Master-Key": KEY}, body: JSON.stringify(db) }); }
 
-function toggleAuth(r) { document.getElementById('loginView').classList.toggle('hidden', r); document.getElementById('regView').classList.toggle('hidden', !r); }
-function clearFields(ids) { ids.forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; }); }
-
-/* --- ADMIN FUNCTIONS --- */
-async function addSubject() {
-    const s = { id: Date.now().toString(36), name: document.getElementById('nSub').value, class: document.getElementById('nCls').value.toUpperCase(), duration: document.getElementById('nDur').value, marks: document.getElementById('nMrk').value, released: false };
-    if(!s.name || !s.class) return alert("Fill all fields");
-    db.subjects.push(s); await sync(); renderAdmin(); clearFields(['nSub','nCls','nDur','nMrk']);
-}
-
-async function addQ() {
-    const sid = document.getElementById('subSel').value;
-    if(!sid) return alert("Select subject");
-    db.questions.push({ id: Date.now().toString(36), subjectId: sid, question: document.getElementById('qTxt').value, A: document.getElementById('oA').value, B: document.getElementById('oB').value, C: document.getElementById('oC').value, correct: document.getElementById('cor').value });
-    await sync(); renderQList(sid); clearFields(['qTxt','oA','oB','oC']);
-}
-
-async function processBulk() {
-    const sid = document.getElementById('subSel').value;
-    const raw = document.getElementById('bulkData').value;
-    if(!sid || !raw) return alert("Select subject and paste data");
-    const lines = raw.split("\n");
-    let count = 0;
-    lines.forEach(line => {
-        const p = line.split(",");
-        if(p.length >= 5) {
-            db.questions.push({ id: Date.now().toString(36)+count, subjectId: sid, question: p[0].trim(), A: p[1].trim(), B: p[2].trim(), C: p[3].trim(), correct: p[4].trim().toUpperCase() });
-            count++;
-        }
-    });
-    await sync(); renderQList(sid); clearFields(['bulkData']); alert(`Imported ${count} questions!`);
-}
-
-function renderAdmin() {
-    const sl = document.getElementById('subList'), ss = document.getElementById('subSel'), cf = document.getElementById('copyFrom'), ct = document.getElementById('copyTo');
-    sl.innerHTML = ""; ss.innerHTML = ""; cf.innerHTML = ""; ct.innerHTML = "";
-    db.subjects.forEach(s => {
-        sl.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.duration}m</td><td><button class="${s.released?'success':'muted'}" onclick="togRel('${s.id}')">${s.released?'Public':'Private'}</button></td><td><button class="primary" onclick="openPreview('${s.id}')">View</button> <button class="danger" onclick="delSub('${s.id}')">X</button></td></tr>`;
-        const opt = `<option value="${s.id}">${s.name} (${s.class})</option>`;
-        ss.innerHTML += opt; cf.innerHTML += opt; ct.innerHTML += opt;
-    });
-    renderRes();
-}
-
-function renderQList(sid) {
-    const l = document.getElementById('qList'); l.innerHTML = "";
-    db.questions.filter(q => q.subjectId === sid).forEach(q => {
-        l.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;"><span>${q.question.substring(0,80)}...</span><button onclick="delQ('${q.id}','${sid}')" class="danger">Delete</button></div>`;
-    });
-}
-
-function renderRes() {
-    const rl = document.getElementById('resList'); rl.innerHTML = "";
-    db.scores.forEach(s => {
-        const st = db.students.find(x => x.id === s.studentId);
-        if(st) rl.innerHTML += `<tr><td>${st.name}</td><td>${st.class}</td><td>${s.subName}</td><td>${s.score}/${s.total}</td><td>${s.strikes}</td><td><button onclick="delRes('${s.id}')" class="danger">X</button></td></tr>`;
-    });
-}
-
-/* --- STUDENT EXAM LOGIC --- */
-async function doLogin() {
-    const u = document.getElementById('lUser').value, p = document.getElementById('lPass').value, c = document.getElementById('lClass').value.toUpperCase();
-    await load();
-    if(u === "admin" && p === "admin") { document.getElementById('authBox').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); renderAdmin(); return; }
-    const s = db.students.find(x => x.username === u && x.password === p && x.class === c);
-    if(s) { user = s; document.getElementById('authBox').classList.add('hidden'); document.getElementById('studentPanel').classList.remove('hidden'); document.getElementById('welcome').innerText = `Welcome, ${s.name}`; renderStuPanel(); } 
-    else alert("Login Failed");
-}
+function toggleUI(reg) { document.getElementById('loginView').classList.toggle('hidden', reg); document.getElementById('regView').classList.toggle('hidden', !reg); }
+function viewPass(id) { const x = document.getElementById(id); x.type = x.type === "password" ? "text" : "password"; }
 
 async function doRegister() {
     if(document.getElementById('rCode').value !== "TVC2026") return alert("Wrong Access Code");
     await load();
-    db.students.push({ id: Date.now().toString(36), name: document.getElementById('rName').value, username: document.getElementById('rUser').value, class: document.getElementById('rClass').value.toUpperCase(), password: document.getElementById('rPass').value });
-    await sync(); alert("Success! Now login."); toggleAuth(false);
-}
-
-function renderStuPanel() {
-    const sel = document.getElementById('stuSubSel'); sel.innerHTML = "";
-    db.subjects.filter(s => s.class === user.class && s.released).forEach(s => {
-        const done = db.scores.find(sc => sc.studentId === user.id && sc.subjectId === s.id);
-        if(!done) sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    db.students.push({ 
+        id: "ID-"+Math.random().toString(36).substr(2,4).toUpperCase(),
+        name: document.getElementById('rName').value, 
+        username: document.getElementById('rUser').value, 
+        class: document.getElementById('rClass').value.toUpperCase(), 
+        password: document.getElementById('rPass').value 
     });
-    if(!sel.innerHTML) sel.innerHTML = "<option>No Exams Available</option>";
+    await sync(); 
+    alert("Student Registered Successfully");
+    toggleUI(false);
 }
 
-function startExam() {
-    const sid = document.getElementById('stuSubSel').value;
-    const sub = db.subjects.find(s => s.id === sid);
-    const qs = db.questions.filter(q => q.subjectId === sid).sort(() => 0.5 - Math.random());
-    if(!qs.length) return alert("No questions in this subject.");
-    ex = { sub, qs, ans: Array(qs.length).fill(null), idx: 0, time: sub.duration * 60, strikes: 0 };
-    document.getElementById('examView').classList.remove('hidden');
-    document.getElementById('exTitle').innerText = sub.name;
-    timer = setInterval(updateTimer, 1000);
-    drawQ();
+async function doLogin() {
+    const u = document.getElementById('lUser').value, p = document.getElementById('lPass').value, c = document.getElementById('lClass').value.toUpperCase();
+    await load();
+    if(u === "admin" && p === "admin") {
+        document.getElementById('authBox').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        document.getElementById('adminTag').classList.remove('hidden');
+        renderAdmin();
+    } else {
+        const s = db.students.find(x => x.username === u && x.password === p && x.class === c);
+        if(s) alert("Welcome " + s.name); else alert("Invalid Credentials");
+    }
 }
 
-function drawQ() {
-    const q = ex.qs[ex.idx];
-    document.getElementById('qBox').innerHTML = `<h4>Question ${ex.idx+1}:</h4><p style="font-size:18px">${q.question}</p>` + 
-        ['A','B','C'].map(o => `<div class="option-card ${ex.ans[ex.idx]===o?'selected':''}" onclick="pick('${o}')">${o}. ${q[o]}</div>`).join("");
-    document.getElementById('finBtn').classList.toggle('hidden', ex.idx !== ex.qs.length-1);
-    const g = document.getElementById('navGrid'); g.innerHTML = "";
-    ex.qs.forEach((_,i) => g.innerHTML += `<div class="nav-btn ${ex.idx===i?'active':''} ${ex.ans[i]?'filled':''}" onclick="ex.idx=${i};drawQ()">${i+1}</div>`);
+function runFilters() {
+    const nameVal = document.getElementById('stuSearch').value.toLowerCase();
+    const classVal = document.getElementById('classFilter').value.toUpperCase();
+    const rows = document.getElementById('studentList').getElementsByTagName('tr');
+    let visibleCount = 0;
+
+    for (let row of rows) {
+        const cells = row.getElementsByTagName('td');
+        const nameMatch = cells[0].innerText.toLowerCase().includes(nameVal);
+        const classMatch = classVal === "" || cells[1].innerText === classVal;
+        
+        if (nameMatch && classMatch) {
+            row.style.display = "";
+            visibleCount++;
+        } else {
+            row.style.display = "none";
+        }
+    }
+    document.getElementById('stuCount').innerText = `${visibleCount} Students`;
 }
 
-function pick(o) { ex.ans[ex.idx] = o; drawQ(); }
-function move(d) { if(ex.qs[ex.idx+d]) { ex.idx+=d; drawQ(); } }
+function renderAdmin() {
+    // Render Student Table
+    const sl = document.getElementById('studentList'); sl.innerHTML = "";
+    db.students.forEach(s => {
+        sl.innerHTML += `<tr><td>${s.name}</td><td><b>${s.class}</b></td><td>${s.username}</td><td><button class="btn-danger" onclick="delStu('${s.id}')">Delete</button></td></tr>`;
+    });
+    
+    // Update count after render
+    runFilters();
 
-function updateTimer() {
-    ex.time--;
-    const m = Math.floor(ex.time/60), s = ex.time%60;
-    document.getElementById('timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    if(ex.time <= 0) finish();
-}
-
-async function finish() {
-    clearInterval(timer);
-    let sc = 0; ex.qs.forEach((q,i) => { if(ex.ans[i] === q.correct) sc += Number(ex.sub.marks); });
-    db.scores.push({ id: Date.now().toString(36), studentId: user.id, subjectId: ex.sub.id, subName: ex.sub.name, score: sc, total: ex.qs.length * ex.sub.marks, strikes: ex.strikes });
-    await sync(); alert(`Exam Submitted! Score: ${sc}`); location.reload();
-}
-
-/* --- UTILS --- */
-function filterTable(id, val) {
-    const f = val.toLowerCase(), rows = document.getElementById(id).getElementsByTagName('tr');
-    for(let r of rows) r.style.display = r.innerText.toLowerCase().includes(f) ? "" : "none";
-}
-function filterQList(val) {
-    const f = val.toLowerCase(), items = document.getElementById('qList').children;
-    for(let i of items) i.style.display = i.innerText.toLowerCase().includes(f) ? "" : "none";
-}
-function openPreview(sid) {
-    const s = db.subjects.find(x => x.id === sid), qs = db.questions.filter(q => q.subjectId === sid);
-    document.getElementById('preTitle').innerText = `Preview: ${s.name}`;
-    document.getElementById('preBody').innerHTML = qs.map((q,i) => `<p><b>Q${i+1}:</b> ${q.question}<br><small>Ans: ${q.correct} | A: ${q.A} B: ${q.B} C: ${q.C}</small></p>`).join("");
-    document.getElementById('previewModal').style.display = "flex";
-}
-function openCopyModal() { document.getElementById('copyModal').style.display = "flex"; }
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
-
-async function doCopyQuestions() {
-    const from = document.getElementById('copyFrom').value, to = document.getElementById('copyTo').value;
-    if(from === to) return alert("Select different subjects");
-    const sourceQs = db.questions.filter(q => q.subjectId === from);
-    sourceQs.forEach(q => db.questions.push({ ...q, id: Date.now().toString(36)+Math.random(), subjectId: to }));
-    await sync(); alert(`Copied ${sourceQs.length} questions!`); closeModal('copyModal'); renderQList(to);
+    // Render Subject Table
+    const subL = document.getElementById('subList'); subL.innerHTML = "";
+    db.subjects.forEach(sb => {
+        subL.innerHTML += `<tr><td>${sb.name}</td><td>${sb.class}</td><td>${sb.duration}m</td><td><span style="color:${sb.released?'var(--success)':'var(--danger)'}">${sb.released?'Active':'Draft'}</span></td><td><button onclick="togRel('${sb.id}')" class="btn-ghost">Toggle</button></td></tr>`;
+    });
 }
 
+async function addSubject() {
+    db.subjects.push({ id: Date.now().toString(36), name: document.getElementById('nSub').value, class: document.getElementById('nCls').value.toUpperCase(), duration: document.getElementById('nDur').value, marks: document.getElementById('nMrk').value, released: false });
+    await sync(); renderAdmin();
+    ['nSub','nCls','nDur','nMrk'].forEach(i => document.getElementById(i).value="");
+}
+
+window.delStu = async (id) => { if(confirm("Delete Student?")) { db.students = db.students.filter(x => x.id !== id); await sync(); renderAdmin(); }};
 window.togRel = async (id) => { const s = db.subjects.find(x=>x.id===id); s.released = !s.released; await sync(); renderAdmin(); };
-window.delSub = async (id) => { if(confirm("Delete subject and questions?")) { db.subjects = db.subjects.filter(x=>x.id!==id); db.questions = db.questions.filter(q=>q.subjectId!==id); await sync(); renderAdmin(); }};
-window.delQ = async (id, sid) => { db.questions = db.questions.filter(q=>q.id!==id); await sync(); renderQList(sid); };
-window.delRes = async (id) => { if(confirm("Delete result?")) { db.scores = db.scores.filter(x=>x.id!==id); await sync(); renderRes(); }};
-
-document.addEventListener("visibilitychange", () => { if(ex && document.visibilityState==='hidden') { ex.strikes++; alert("Security Warning: Tab switching detected!"); if(ex.strikes >= 3) finish(); } });
 
 load();
 </script>
