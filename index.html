@@ -2,328 +2,295 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — Complete Unified CBT</title>
+  <title>TVC High School — CBT Master Dashboard</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    /* STYLES: Combined from both original versions */
-    body { font-family: Arial, sans-serif; margin: 0; color:#222; background: #c3e0ff; background: linear-gradient(135deg, #c3e0ff 0%, #d8f0ff 100%); background-attachment: fixed; min-height: 100vh; }
-    .wrap { max-width:1100px; margin: 18px auto; padding: 0 10px; }
-    header h1 { color:#1a237e; font-size:26px; text-align:center; margin-bottom: 20px; font-weight: bold; }
-    .card { background:#fff; border:1px solid #e6e9ee; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-    input, select, textarea, button { padding:12px; border-radius:10px; border:1px solid #dfe6ef; font-size:15px; font-family: inherit; }
-    button { cursor:pointer; font-weight: 600; border:none; transition: 0.2s; }
-    button.primary { background:#246bff; color:#fff; }
-    button.danger { background:#e53935; color:#fff; }
-    button.success { background:#2e7d32; color:#fff; }
-    button.muted { background:#f0f3f8; color:#222; }
-    .hidden { display:none; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { padding:12px; border:1px solid #eef2f6; text-align:left; }
-    th { background: #f8f9fa; color: #555; font-size: 14px; }
+    :root { --primary: #1a237e; --accent: #246bff; --bg: #f4f7fe; --text: #2c3e50; --danger: #e53935; --success: #2e7d32; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; color: var(--text); background: var(--bg); }
+    .wrap { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
     
+    /* PRINT STYLES */
+    @media print {
+        body * { visibility: hidden; }
+        #printArea, #printArea * { visibility: visible; }
+        #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 40px; }
+        .no-print { display: none !important; }
+    }
+
+    header { text-align: center; padding: 20px 0; border-bottom: 2px solid #e0e6ed; margin-bottom: 30px; }
+    header h1 { color: var(--primary); margin: 0; font-size: 28px; }
+
+    .card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eef2f6; }
+    .row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+    
+    input, select, textarea { padding: 12px; border-radius: 8px; border: 1px solid #dcdfe6; font-size: 15px; width: 100%; box-sizing: border-box; }
+    button { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    button.primary { background: var(--accent); color: white; }
+    button.danger { background: var(--danger); color: white; }
+    button.success { background: var(--success); color: white; }
+    button.muted { background: #f0f2f5; color: #4b5563; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th { text-align: left; background: #f8fafc; padding: 12px; border-bottom: 2px solid #edf2f7; }
+    td { padding: 12px; border-bottom: 1px solid #edf2f7; }
+
     /* EXAM INTERFACE */
-    .timer { font-weight:700; color:#e53935; font-size: 1.3em; }
-    .exam-option { padding:16px; border:1px solid #d9e2ef; border-radius:10px; cursor:pointer; margin-bottom:10px; transition: 0.2s; }
-    .exam-option:hover { background: #f9fbff; border-color: #246bff; }
-    .exam-option.selected { background:#e8f0ff; border-color: #246bff; box-shadow: 0 0 0 2px rgba(36, 107, 255, 0.2); }
-    .exam-option.correct-ans { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
-    .exam-option.wrong-ans { background: #ffebee; border-color: #ef5350; }
-    .qkeys { display:flex; gap:8px; flex-wrap:wrap; margin-top:20px; border-top: 1px solid #eee; padding-top: 20px; }
-    .qkey { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border:1px solid #d9e3f5; border-radius:8px; cursor:pointer; font-size:14px; font-weight: 600; }
-    .qkey.active { background:#246bff; color:#fff; }
-    .qkey.answered { background:#eaf3ff; border-color: #246bff; }
-    .qkey.correct { background:#4caf50; color:#fff; border:none; }
-    .qkey.wrong { background:#ef5350; color:#fff; border:none; }
-    
-    details summary { font-size: 18px; font-weight: bold; cursor: pointer; padding: 10px 0; color: #1a237e; }
-    .violation-tag { color: #e53935; font-weight: bold; }
-    .question-list-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .exam-header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 20px; border-radius: 12px 12px 0 0; }
+    .option-card { padding: 15px; border: 2px solid #edf2f7; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
+    .option-card.selected { border-color: var(--accent); background: #eef5ff; }
+    .grid-nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-top: 20px; }
+    .nav-btn { height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #dcdfe6; border-radius: 6px; cursor: pointer; }
+    .nav-btn.active { background: var(--accent); color: white; }
+    .nav-btn.answered { border-color: var(--accent); color: var(--accent); background: #f0f7ff; }
+
+    /* REPORT SLIP STYLING */
+    #printArea { background: white; border: 2px solid #222; border-radius: 0; display: none; }
+    .slip-head { text-align: center; border-bottom: 2px double #222; padding-bottom: 10px; margin-bottom: 20px; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-<div class="wrap">
+<div class="wrap no-print">
   <header><h1>TVC High School CBT</h1></header>
 
-  <div id="loginCard" class="card">
+  <div id="authBox" class="card" style="max-width: 400px; margin: 0 auto;">
     <div id="loginView">
-      <h2>Student Login</h2>
-      <div class="row">
-        <input id="loginUser" placeholder="Username" />
-        <input id="loginClass" placeholder="Class (e.g. JSS1)" />
-        <input id="loginPass" type="password" placeholder="Password" />
-        <button id="btnLogin" class="primary">Login</button>
-      </div>
-      <p>New student? <a href="#" onclick="toggleAuth(true)">Register Here</a></p>
+      <h3>Staff/Student Login</h3>
+      <input id="lUser" placeholder="Username" style="margin-bottom:12px">
+      <input id="lClass" placeholder="Class (e.g. JSS1)" style="margin-bottom:12px">
+      <input id="lPass" type="password" placeholder="Password" style="margin-bottom:20px">
+      <button onclick="doLogin()" class="primary" style="width:100%">Login to Portal</button>
+      <p style="text-align:center; font-size:13px; margin-top:10px"><a href="#" onclick="toggleAuth(true)">Register Student</a></p>
     </div>
-    <div id="registerView" class="hidden">
-      <h2>Student Registration</h2>
-      <div class="row">
-        <input id="regFullname" placeholder="Full Name" />
-        <input id="regUser" placeholder="Username" />
-        <input id="regClass" placeholder="Class" />
-        <input id="regPass" type="password" placeholder="Password" />
-        <input id="regCode" type="password" placeholder="School Access Code" />
-        <button id="btnDoRegister" class="primary">Create Account</button>
-      </div>
-      <p><a href="#" onclick="toggleAuth(false)">Back to Login</a></p>
+    <div id="regView" class="hidden">
+      <h3>Student Registration</h3>
+      <input id="rName" placeholder="Full Name" style="margin-bottom:12px">
+      <input id="rUser" placeholder="Username" style="margin-bottom:12px">
+      <input id="rClass" placeholder="Class" style="margin-bottom:12px">
+      <input id="rPass" type="password" placeholder="Password" style="margin-bottom:12px">
+      <input id="rCode" type="password" placeholder="Access Code" style="margin-bottom:15px">
+      <button onclick="doRegister()" class="primary" style="width:100%">Create Account</button>
+      <p style="text-align:center; font-size:13px; margin-top:10px"><a href="#" onclick="toggleAuth(false)">Back</a></p>
     </div>
   </div>
 
-  <div id="adminCard" class="card hidden">
-    <div class="row" style="justify-content:space-between">
-        <h2>Administrator Panel</h2>
-        <button onclick="logout()" class="muted">Logout</button>
+  <div id="adminPanel" class="hidden">
+    <div class="row" style="justify-content: space-between;">
+        <h2>Administration</h2>
+        <button onclick="location.reload()" class="muted">Logout</button>
     </div>
 
-    <details open>
-      <summary>1. Subjects & Release Control</summary>
-      <div class="row">
-        <input id="newSubName" placeholder="Subject Name" />
-        <input id="newSubClass" placeholder="Class" style="width:80px"/>
-        <input id="newSubDur" type="number" placeholder="Mins" style="width:70px"/>
-        <input id="newSubMarks" type="number" placeholder="Marks/Q" style="width:80px"/>
-        <button onclick="addSubject()" class="primary">Add Subject</button>
-      </div>
-      <table>
-        <thead><tr><th>Subject</th><th>Class</th><th>Mins</th><th>Review Status</th><th>Action</th></tr></thead>
-        <tbody id="subjectsTbody"></tbody>
-      </table>
-    </details>
+    <div class="card">
+        <h3>1. Manage Subjects</h3>
+        <div class="row">
+            <input id="nSub" placeholder="Subject" style="flex:2">
+            <input id="nCls" placeholder="Class" style="flex:1">
+            <input id="nDur" type="number" placeholder="Mins" style="flex:1">
+            <input id="nMrk" type="number" placeholder="Marks/Q" style="flex:1">
+            <button onclick="addSubject()" class="primary">Add</button>
+        </div>
+        <table id="subTable"><thead><tr><th>Subject</th><th>Class</th><th>Mins</th><th>Visibility</th><th>Action</th></tr></thead><tbody id="subList"></tbody></table>
+    </div>
 
-    <details>
-      <summary>2. Question Bank (Textarea Mode)</summary>
-      <div class="row">
-        <select id="adminSubSelect" onchange="renderQuestionsList(this.value)" style="flex-grow:1"></select>
-      </div>
-      <textarea id="qText" placeholder="Type your question here..." style="width:100%; height:80px; margin-bottom:10px"></textarea>
-      <div class="row">
-        <input id="optA" placeholder="Option A" style="flex-grow:1"/>
-        <input id="optB" placeholder="Option B" style="flex-grow:1"/>
-        <input id="optC" placeholder="Option C" style="flex-grow:1"/>
-        <select id="correctOpt"><option value="A">Correct: A</option><option value="B">Correct: B</option><option value="C">Correct: C</option></select>
-        <button onclick="addQuestion()" class="primary">Save</button>
-      </div>
-      <div id="questionsList" style="margin-top:15px; max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:10px;"></div>
-    </details>
+    <div class="card">
+        <h3>2. Question Bank</h3>
+        <select id="subSel" onchange="renderQList(this.value)" style="margin-bottom:15px"></select>
+        <textarea id="qTxt" placeholder="Type question here..." style="height:60px; margin-bottom:10px;"></textarea>
+        <div class="row">
+            <input id="oA" placeholder="Option A">
+            <input id="oB" placeholder="Option B">
+            <input id="oC" placeholder="Option C">
+            <select id="cor" style="width:80px"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+            <button onclick="addQ()" class="primary">Save</button>
+        </div>
+        <div id="qList" style="margin-top:15px; max-height:150px; overflow-y:auto; border:1px solid #eee;"></div>
+    </div>
 
-    <details>
-      <summary>3. Results, CSV & Reset</summary>
-      <div class="row">
-        <button onclick="exportCSV()" class="muted">Export All (CSV)</button>
-        <select id="resetSubSelect" style="flex-grow:1"></select>
-        <button onclick="resetScoresBySubject()" class="danger">Reset This Subject</button>
-      </div>
-      <table>
-        <thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Strikes</th><th>Action</th></tr></thead>
-        <tbody id="resultsTbody"></tbody>
-      </table>
-    </details>
+    <div class="card">
+        <h3>3. Examination Results</h3>
+        <input type="text" onkeyup="searchRes()" id="sKey" placeholder="Search by name or subject..." style="margin-bottom:15px;">
+        <table id="resTable"><thead><tr><th>Name</th><th>Subject</th><th>Score</th><th>Strikes</th><th>Print</th><th>Del</th></tr></thead><tbody id="resList"></tbody></table>
+    </div>
   </div>
 
-  <div id="studentCard" class="card hidden">
-    <h2 id="studentWelcome"></h2>
-    <div class="row">
-      <select id="studentSubSelect" style="flex-grow:1"></select>
-      <button id="btnStartExam" class="primary">Start Exam</button>
-      <button id="btnReviewLast" class="success hidden">View Corrections</button>
-      <button onclick="logout()" class="muted">Logout</button>
+  <div id="studentPanel" class="hidden">
+    <div class="card">
+        <h2 id="welcome"></h2>
+        <div class="row">
+            <select id="stuSubSel" style="flex:1"></select>
+            <button onclick="startExam()" class="primary">Start Exam</button>
+            <button onclick="location.reload()" class="muted">Logout</button>
+        </div>
     </div>
-
-    <div id="examCard" class="card hidden">
-      <div class="row" style="justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:10px">
-        <h3 id="examTitle" style="margin:0"></h3>
-        <div id="timerDisplay" class="timer">--:--</div>
-        <div id="reviewTag" class="hidden" style="color:green; font-weight:bold">REVIEW MODE</div>
-      </div>
-      <div id="qBox" style="margin-top:20px; min-height:150px"></div>
-      <div class="row" style="justify-content:space-between; margin-top:20px">
-        <button id="btnPrev" class="muted">Previous</button>
-        <button id="btnNext" class="primary">Next Question</button>
-        <button id="btnSubmit" class="danger hidden">Finish & Submit</button>
-        <button id="btnCloseReview" class="muted hidden" onclick="location.reload()">Exit Review</button>
-      </div>
-      <div id="qKeys" class="qkeys"></div>
+    <div id="examView" class="hidden">
+        <div class="exam-header"><div id="exTitle"></div><div id="timer">00:00</div></div>
+        <div class="card" style="border-radius:0 0 12px 12px">
+            <div id="qBox"></div>
+            <div class="row" style="justify-content:space-between; margin-top:20px">
+                <button onclick="move(-1)" class="muted">Back</button>
+                <button id="nextBtn" onclick="move(1)" class="primary">Next</button>
+                <button id="finBtn" onclick="finish()" class="danger hidden">Submit</button>
+            </div>
+            <div id="navGrid" class="grid-nav"></div>
+        </div>
     </div>
   </div>
 </div>
 
+<div id="printArea">
+    <div class="slip-head">
+        <h1 style="margin:0; color:#1a237e">TVC HIGH SCHOOL</h1>
+        <p style="margin:5px 0">Official CBT Examination Result Slip</p>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:30px">
+        <div>
+            <p><strong>Student Name:</strong> <span id="pName"></span></p>
+            <p><strong>Class:</strong> <span id="pClass"></span></p>
+        </div>
+        <div style="text-align:right">
+            <p><strong>Subject:</strong> <span id="pSub"></span></p>
+            <p><strong>Date:</strong> <span id="pDate"></span></p>
+        </div>
+    </div>
+    <div style="text-align:center; padding:30px; border:2px solid #eee; margin-bottom:20px">
+        <h2 style="margin:0; color:#555">FINAL SCORE</h2>
+        <h1 style="font-size:60px; margin:10px 0" id="pScore"></h1>
+        <p><strong>Remarks:</strong> <span id="pRemark"></span></p>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:50px">
+        <div style="border-top:1px solid #000; width:150px; text-align:center">Exam Officer</div>
+        <div style="border-top:1px solid #000; width:150px; text-align:center">Principal's Signature</div>
+    </div>
+</div>
+
 <script>
-/* GLOBAL STATE */
-const JSONBIN_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
-const JSONBIN_ID = "68bc605c43b1c97be9391c1d";
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
-const ACCESS_CODE = "TVC2026";
+const KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
+const BIN = "68bc605c43b1c97be9391c1d";
+const URL = `https://api.jsonbin.io/v3/b/${BIN}`;
 
 let db = { subjects: [], questions: [], students: [], scores: [] };
-let currentUser = null, examState = null, examTimer = null, isReview = false;
+let user = null, ex = null, timer = null;
 
-/* DATA SYNC */
-async function loadDB() {
-    const r = await fetch(`${JSONBIN_URL}/latest`, { headers: {"X-Master-Key": JSONBIN_KEY} });
-    const d = await r.json(); if(d.record) db = d.record;
+async function load() { const r = await fetch(`${URL}/latest`, { headers: {"X-Master-Key": KEY} }); const d = await r.json(); if(d.record) db = d.record; }
+async function sync() { await fetch(URL, { method: "PUT", headers: {"Content-Type":"application/json", "X-Master-Key": KEY}, body: JSON.stringify(db) }); }
+function toggleAuth(r) { document.getElementById('loginView').classList.toggle('hidden', r); document.getElementById('regView').classList.toggle('hidden', !r); }
+
+async function doRegister() {
+    if(document.getElementById('rCode').value !== "TVC2026") return alert("Wrong Access Code");
+    await load();
+    db.students.push({ id: Date.now().toString(36), name: document.getElementById('rName').value, username: document.getElementById('rUser').value, class: document.getElementById('rClass').value.toUpperCase(), password: document.getElementById('rPass').value });
+    await sync(); alert("Success!"); toggleAuth(false);
 }
-async function sync() { await fetch(JSONBIN_URL, { method: "PUT", headers: {"Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY}, body: JSON.stringify(db) }); }
 
-function toggleAuth(reg) { document.getElementById('loginView').classList.toggle('hidden', reg); document.getElementById('registerView').classList.toggle('hidden', !reg); }
-function logout() { location.reload(); }
-
-/* LOGIN & REG */
-document.getElementById('btnDoRegister').onclick = async () => {
-    if(document.getElementById('regCode').value !== ACCESS_CODE) return alert("Wrong Access Code");
-    await loadDB();
-    db.students.push({ id: Date.now().toString(36), name: document.getElementById('regFullname').value, username: document.getElementById('regUser').value, class: document.getElementById('regClass').value.toUpperCase(), password: document.getElementById('regPass').value });
-    await sync(); alert("Registration Success!"); toggleAuth(false);
-};
-
-document.getElementById('btnLogin').onclick = async () => {
-    const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value, c = document.getElementById('loginClass').value.toUpperCase();
-    await loadDB();
+async function doLogin() {
+    const u = document.getElementById('lUser').value, p = document.getElementById('lPass').value, c = document.getElementById('lClass').value.toUpperCase();
+    await load();
     if(u === "admin" && p === "admin") {
-        currentUser = { role: 'admin' }; document.getElementById('loginCard').classList.add('hidden'); document.getElementById('adminCard').classList.remove('hidden'); renderAdmin(); return;
+        user = { role: 'admin' }; document.getElementById('authBox').classList.add('hidden'); document.getElementById('adminPanel').classList.remove('hidden'); renderAdmin(); return;
     }
     const s = db.students.find(x => x.username === u && x.password === p && x.class === c);
     if(s) {
-        currentUser = s; document.getElementById('loginCard').classList.add('hidden'); document.getElementById('studentCard').classList.remove('hidden');
-        document.getElementById('studentWelcome').textContent = `Student: ${s.name}`; renderStudentPanel();
-    } else alert("Invalid Login Credentials");
-};
-
-/* ADMIN FUNCTIONS */
-async function addSubject() {
-    db.subjects.push({ id: Date.now().toString(36), name: document.getElementById('newSubName').value, class: document.getElementById('newSubClass').value.toUpperCase(), duration: document.getElementById('newSubDur').value, marksPerQuestion: document.getElementById('newSubMarks').value, released: false });
-    await sync(); renderAdmin();
+        user = s; document.getElementById('authBox').classList.add('hidden'); document.getElementById('studentPanel').classList.remove('hidden');
+        document.getElementById('welcome').textContent = `Student: ${s.name}`; renderStuPanel();
+    } else alert("Invalid Login");
 }
 
-async function addQuestion() {
-    const sid = document.getElementById('adminSubSelect').value;
-    db.questions.push({ id: Date.now().toString(36), subjectId: sid, question: document.getElementById('qText').value, A: document.getElementById('optA').value, B: document.getElementById('optB').value, C: document.getElementById('optC').value, correct: document.getElementById('correctOpt').value });
-    await sync(); renderQuestionsList(sid);
+/* ADMIN */
+async function addSubject() {
+    const n = document.getElementById('nSub'), c = document.getElementById('nCls'), d = document.getElementById('nDur'), m = document.getElementById('nMrk');
+    db.subjects.push({ id: Date.now().toString(36), name: n.value, class: c.value.toUpperCase(), duration: d.value, marks: m.value, released: false });
+    await sync(); renderAdmin(); [n,c,d,m].forEach(i=>i.value="");
+}
+
+async function addQ() {
+    const sid = document.getElementById('subSel').value, t = document.getElementById('qTxt'), a = document.getElementById('oA'), b = document.getElementById('oB'), c = document.getElementById('oC'), cor = document.getElementById('cor');
+    db.questions.push({ id: Date.now().toString(36), subjectId: sid, question: t.value, A: a.value, B: b.value, C: c.value, correct: cor.value });
+    await sync(); renderQList(sid); [t,a,b,c].forEach(i=>i.value="");
 }
 
 function renderAdmin() {
-    const subBody = document.getElementById('subjectsTbody'); subBody.innerHTML = "";
-    const adminSel = document.getElementById('adminSubSelect'); adminSel.innerHTML = "";
-    const resetSel = document.getElementById('resetSubSelect'); resetSel.innerHTML = "";
+    const sl = document.getElementById('subList'); sl.innerHTML = "";
+    const ss = document.getElementById('subSel'); ss.innerHTML = "";
     db.subjects.forEach(s => {
-        subBody.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.duration}m</td><td><button class="${s.released?'success':'muted'}" onclick="toggleRelease('${s.id}')">${s.released?'Released':'Hidden'}</button></td><td><button onclick="delSub('${s.id}')" class="danger">Del</button></td></tr>`;
-        adminSel.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
-        resetSel.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
+        sl.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.duration}m</td><td><button class="${s.released?'success':'muted'}" onclick="togRel('${s.id}')">${s.released?'Public':'Private'}</button></td><td><button onclick="delSub('${s.id}')" class="danger">X</button></td></tr>`;
+        ss.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
     });
-    const resBody = document.getElementById('resultsTbody'); resBody.innerHTML = "";
-    db.scores.forEach(sc => {
-        const st = db.students.find(x => x.id === sc.studentId);
-        if(st) resBody.innerHTML += `<tr><td>${st.name}</td><td>${st.class}</td><td>${sc.subjectName}</td><td>${sc.score}/${sc.total}</td><td class="${sc.violations>0?'violation-tag':''}">${sc.violations}</td><td><button onclick="delScore('${sc.id}')" class="danger">X</button></td></tr>`;
-    });
+    renderRes();
 }
 
-function renderQuestionsList(sid) {
-    const list = document.getElementById('questionsList'); list.innerHTML = "";
-    db.questions.filter(q => q.subjectId === sid).forEach(q => {
-        list.innerHTML += `<div class="question-list-item"><span>${q.question.substring(0, 60)}...</span><button onclick="delQ('${q.id}','${sid}')" class="danger">Delete</button></div>`;
-    });
-}
-
-window.toggleRelease = async (id) => { const s = db.subjects.find(x => x.id === id); s.released = !s.released; await sync(); renderAdmin(); };
-window.delSub = async (id) => { if(confirm("Delete subject?")) { db.subjects = db.subjects.filter(x => x.id !== id); await sync(); renderAdmin(); }};
-window.delQ = async (id, sid) => { db.questions = db.questions.filter(x => x.id !== id); await sync(); renderQuestionsList(sid); };
-window.delScore = async (id) => { if(confirm("Delete result?")) { db.scores = db.scores.filter(x => x.id !== id); await sync(); renderAdmin(); }};
-
-/* EXAM ENGINE & ANTI-CHEAT */
-function renderStudentPanel() {
-    const sel = document.getElementById('studentSubSelect'); sel.innerHTML = "";
-    db.subjects.filter(s => s.class === currentUser.class).forEach(s => {
-        const done = db.scores.find(sc => sc.studentId === currentUser.id && sc.subjectId === s.id);
-        sel.innerHTML += `<option value="${s.id}" ${done?'disabled':''}>${s.name} ${done?'(Done)':''}</option>`;
-        if(done && s.released) document.getElementById('btnReviewLast').classList.remove('hidden');
-    });
-}
-
-document.addEventListener("visibilitychange", () => { if(examState && !isReview && document.visibilityState==='hidden') strike(); });
-window.onblur = () => { if(examState && !isReview) strike(); };
-function strike() { examState.violations++; alert(`Strike ${examState.violations}! Tab switching is forbidden.`); if(examState.violations >= 3) finalizeExam(); }
-
-document.getElementById('btnStartExam').onclick = () => {
-    const sid = document.getElementById('studentSubSelect').value;
-    const sub = db.subjects.find(s => s.id === sid);
-    const qs = db.questions.filter(q => q.subjectId === sid);
-    if(!qs.length) return alert("No questions found.");
-    isReview = false; const shuffled = [...qs].sort(() => Math.random() - 0.5);
-    examState = { sub, qs: shuffled, answers: Array(shuffled.length).fill(null), idx: 0, time: sub.duration * 60, violations: 0 };
-    document.getElementById('examCard').classList.remove('hidden'); startClock(); renderQuestion();
-};
-
-function renderQuestion() {
-    const q = examState.qs[examState.idx];
-    let h = `<h3>${q.question}</h3>`;
-    ['A','B','C'].forEach(o => {
-        let cls = "exam-option";
-        if(isReview) {
-            if(o === q.correct) cls += " correct-ans";
-            else if(examState.answers[examState.idx] === o) cls += " wrong-ans";
-        } else if(examState.answers[examState.idx] === o) cls += " selected";
-        h += `<div class="${cls}" onclick="${isReview?'':'pick(\''+o+'\')'}">${o}. ${q[o]}</div>`;
-    });
-    document.getElementById('qBox').innerHTML = h;
-    document.getElementById('btnSubmit').classList.toggle('hidden', isReview || examState.idx !== examState.qs.length-1);
-    updateKeys();
-}
-
-window.pick = (o) => { examState.answers[examState.idx] = o; renderQuestion(); };
-
-function updateKeys() {
-    const k = document.getElementById('qKeys'); k.innerHTML = "";
-    examState.qs.forEach((q, i) => {
-        let cls = "qkey"; if(examState.idx === i) cls += " active";
-        if(isReview) cls += (examState.answers[i] === q.correct) ? " correct" : " wrong";
-        else if(examState.answers[i]) cls += " answered";
-        k.innerHTML += `<div class="${cls}" onclick="examState.idx=${i};renderQuestion()">${i+1}</div>`;
-    });
-}
-
-function startClock() {
-    examTimer = setInterval(() => {
-        examState.time--;
-        const m = Math.floor(examState.time/60), s = examState.time%60;
-        document.getElementById('timerDisplay').textContent = `${m}:${s<10?'0':''}${s}`;
-        if(examState.time <= 0) finalizeExam();
-    }, 1000);
-}
-
-async function finalizeExam() {
-    clearInterval(examTimer);
-    let score = 0; examState.qs.forEach((q, i) => { if(examState.answers[i] === q.correct) score += Number(examState.sub.marksPerQuestion); });
-    db.scores.push({ id: Date.now().toString(36), studentId: currentUser.id, subjectId: examState.sub.id, subjectName: examState.sub.name, score, total: examState.qs.length * examState.sub.marksPerQuestion, violations: examState.violations, answers: examState.answers, qs: examState.qs });
-    await sync(); alert("Exam Submitted."); location.reload();
-}
-
-/* REVIEW & DATA TOOLS */
-document.getElementById('btnReviewLast').onclick = () => {
-    const sid = document.getElementById('studentSubSelect').value;
-    const sc = db.scores.find(x => x.studentId === currentUser.id && x.subjectId === sid);
-    isReview = true; examState = { sub: {name: sc.subjectName}, qs: sc.qs, answers: sc.answers, idx: 0 };
-    document.getElementById('examCard').classList.remove('hidden'); document.getElementById('timerDisplay').classList.add('hidden'); document.getElementById('reviewTag').classList.remove('hidden'); document.getElementById('btnCloseReview').classList.remove('hidden'); renderQuestion();
-};
-
-document.getElementById('btnNext').onclick = () => { if(examState.idx < examState.qs.length-1) { examState.idx++; renderQuestion(); }};
-document.getElementById('btnPrev').onclick = () => { if(examState.idx > 0) { examState.idx--; renderQuestion(); }};
-
-function exportCSV() {
-    let csv = "Student,Class,Subject,Score,Total,Strikes\n";
+function renderRes() {
+    const rl = document.getElementById('resList'); rl.innerHTML = "";
     db.scores.forEach(s => {
         const st = db.students.find(x => x.id === s.studentId);
-        csv += `"${st?st.name:'-'}","${st?st.class:'-'}","${s.subjectName}",${s.score},${s.total},${s.violations}\n`;
+        if(st) rl.innerHTML += `<tr><td>${st.name}</td><td>${s.subName}</td><td>${s.score}/${s.total}</td><td>${s.strikes}</td><td><button onclick="printRes('${s.id}')" class="success">Print</button></td><td><button onclick="delRes('${s.id}')" class="danger">X</button></td></tr>`;
     });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); a.download = "CBT_Results.csv"; a.click();
 }
 
-async function resetScoresBySubject() {
-    const sid = document.getElementById('resetSubSelect').value;
-    if(confirm("Clear all results for this subject?")) { db.scores = db.scores.filter(s => s.subjectId !== sid); await sync(); renderAdmin(); }
+window.togRel = async (id) => { const s = db.subjects.find(x=>x.id===id); s.released = !s.released; await sync(); renderAdmin(); };
+window.delSub = async (id) => { if(confirm("Delete?")) { db.subjects = db.subjects.filter(x=>x.id!==id); await sync(); renderAdmin(); }};
+window.delRes = async (id) => { if(confirm("Delete result?")) { db.scores = db.scores.filter(x=>x.id!==id); await sync(); renderAdmin(); }};
+
+function printRes(id) {
+    const s = db.scores.find(x => x.id === id), st = db.students.find(x => x.id === s.studentId);
+    document.getElementById('pName').innerText = st.name;
+    document.getElementById('pClass').innerText = st.class;
+    document.getElementById('pSub').innerText = s.subName;
+    document.getElementById('pDate').innerText = new Date().toLocaleDateString();
+    document.getElementById('pScore').innerText = `${s.score} / ${s.total}`;
+    const perc = (s.score / s.total) * 100;
+    document.getElementById('pRemark').innerText = perc >= 50 ? "PASS" : "FAIL";
+    document.getElementById('printArea').style.display = 'block';
+    window.print();
+    document.getElementById('printArea').style.display = 'none';
 }
 
-loadDB();
+/* EXAM */
+function renderStuPanel() {
+    const sel = document.getElementById('stuSubSel'); sel.innerHTML = "";
+    db.subjects.filter(s => s.class === user.class).forEach(s => {
+        const done = db.scores.find(sc => sc.studentId === user.id && sc.subjectId === s.id);
+        sel.innerHTML += `<option value="${s.id}" ${done?'disabled':''}>${s.name} ${done?'(Done)':''}</option>`;
+    });
+}
+
+function startExam() {
+    const sid = document.getElementById('stuSubSel').value, sub = db.subjects.find(s=>s.id===sid), qs = db.questions.filter(q=>q.subjectId===sid);
+    if(!qs.length) return alert("No questions.");
+    const shuff = [...qs].sort(() => Math.random() - 0.5);
+    ex = { sub, qs: shuff, ans: Array(shuff.length).fill(null), idx: 0, time: sub.duration * 60, strikes: 0 };
+    document.getElementById('examView').classList.remove('hidden'); document.getElementById('exTitle').textContent = sub.name;
+    timer = setInterval(() => {
+        ex.time--; 
+        const m = Math.floor(ex.time/60), s = ex.time%60;
+        document.getElementById('timer').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        if(ex.time <= 0) finish();
+    }, 1000);
+    drawQ();
+}
+
+function drawQ() {
+    const q = ex.qs[ex.idx];
+    document.getElementById('qBox').innerHTML = `<p><strong>Question ${ex.idx+1}:</strong> ${q.question}</p>` + 
+    ['A','B','C'].map(o => `<div class="option-card ${ex.ans[ex.idx]===o?'selected':''}" onclick="pick('${o}')">${o}. ${q[o]}</div>`).join("");
+    document.getElementById('finBtn').classList.toggle('hidden', ex.idx !== ex.qs.length-1);
+    const g = document.getElementById('navGrid'); g.innerHTML = "";
+    ex.qs.forEach((_,i) => g.innerHTML += `<div class="nav-btn ${ex.idx===i?'active':''} ${ex.ans[i]?'answered':''}" onclick="ex.idx=${i};drawQ()">${i+1}</div>`);
+}
+
+window.pick = (o) => { ex.ans[ex.idx] = o; drawQ(); };
+window.move = (d) => { if(ex.qs[ex.idx+d]) { ex.idx += d; drawQ(); } };
+
+async function finish() {
+    clearInterval(timer);
+    let sc = 0; ex.qs.forEach((q,i) => { if(ex.ans[i]===q.correct) sc += Number(ex.sub.marks); });
+    db.scores.push({ id: Date.now().toString(36), studentId: user.id, subjectId: ex.sub.id, subName: ex.sub.name, score: sc, total: ex.qs.length * ex.sub.marks, strikes: ex.strikes, ans: ex.ans, qs: ex.qs });
+    await sync(); alert("Exam Finished!"); location.reload();
+}
+
+document.addEventListener("visibilitychange", () => { if(ex && document.visibilityState==='hidden') { ex.strikes++; alert("No tab switching!"); if(ex.strikes >= 3) finish(); } });
+
+load();
 </script>
 </body>
 </html>
