@@ -2,285 +2,324 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — CBT (Complete Edition)</title>
+  <title>TVC High School — Full CBT System (Admin Controlled)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { 
-      font-family: Arial, sans-serif; margin: 0; color:#222; background: #c3e0ff;
-      background: linear-gradient(135deg, #c3e0ff 0%, #d8f0ff 100%);
-      background-attachment: fixed; min-height: 100vh; display: flex; flex-direction: column;
-    }
-    .wrap { max-width:1100px; margin: 18px auto; flex-grow: 1; padding: 0 10px; }
-    header h1 { margin: 4px 0 18px; font-size:24px; color:#1a237e; font-weight: bold; }
-    .card { 
-      background:#fff; border:1px solid #e6e9ee; border-radius:16px; padding:20px; 
-      margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); 
-    }
+    /* Global Styles */
+    body { font-family: Arial, sans-serif; margin: 0; color:#222; background: #c3e0ff; background: linear-gradient(135deg, #c3e0ff 0%, #d8f0ff 100%); background-attachment: fixed; min-height: 100vh; }
+    .wrap { max-width:1100px; margin: 18px auto; padding: 0 10px; }
+    header h1 { color:#1a237e; font-size:24px; text-align:center; margin-bottom: 20px; }
+    .card { background:#fff; border:1px solid #e6e9ee; border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); }
     .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
-    input, select, textarea, button { font-family: inherit; font-size:15px; padding:12px; border-radius:10px; border:1px solid #dfe6ef; }
-    button { cursor:pointer; border:0; font-weight: 600; transition: 0.2s; }
+    input, select, textarea, button { padding:12px; border-radius:10px; border:1px solid #dfe6ef; font-size:15px; }
+    button { cursor:pointer; font-weight: 600; border:none; transition: 0.2s; }
     button.primary { background:#246bff; color:#fff; }
     button.danger { background:#e53935; color:#fff; }
-    button.muted { background:#f0f3f8; color:#222; }
     button.success { background:#2e7d32; color:#fff; }
+    button.muted { background:#f0f3f8; color:#222; }
     .hidden { display:none; }
-    .timer { font-weight:700; color:#e53935; }
-    .exam-option { padding:16px; border:1px solid #d9e2ef; border-radius:10px; cursor:pointer; margin-bottom:8px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { padding:12px; border:1px solid #eef2f6; text-align:left; }
+    th { background: #f8f9fa; }
+    
+    /* Exam UI */
+    .timer { font-weight:700; color:#e53935; font-size: 1.2em; }
+    .exam-option { padding:16px; border:1px solid #d9e2ef; border-radius:10px; cursor:pointer; margin-bottom:8px; transition: 0.2s; }
     .exam-option.selected { background:#e8f0ff; border-color: #246bff; }
-    .exam-option.correct-ans { background: #e8f5e9; border-color: #4caf50; border-width: 2px; }
-    .exam-option.wrong-ans { background: #ffebee; border-color: #ef5350; border-width: 2px; }
-    .qkeys { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .qkey { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border:1px solid #d9e3f5; border-radius:8px; cursor:pointer; }
+    .exam-option.correct-ans { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
+    .exam-option.wrong-ans { background: #ffebee; border-color: #ef5350; }
+    .qkeys { display:flex; gap:8px; flex-wrap:wrap; margin-top:15px; }
+    .qkey { width:35px; height:35px; display:flex; align-items:center; justify-content:center; border:1px solid #d9e3f5; border-radius:8px; cursor:pointer; font-size:13px; }
     .qkey.active { background:#246bff; color:#fff; }
-    .qkey.answered { background:#eaf3ff; border-color:#cfe3ff; }
+    .qkey.answered { background:#eaf3ff; }
     .qkey.correct { background:#4caf50; color:#fff; border:none; }
     .qkey.wrong { background:#ef5350; color:#fff; border:none; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { padding:12px; border:1px solid #eef2f6; text-align:left; }
-    .violation-tag { color: #e53935; font-weight: bold; }
+
+    details summary { font-size: 18px; font-weight: bold; cursor: pointer; padding: 10px 0; outline: none; }
     @media print { .no-print { display:none !important; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="no-print"><h1>TVC High School — CBT</h1></header>
 
-    <div id="loginCard" class="card no-print">
-      <div id="loginView">
-        <h2>Student Login</h2>
-        <div class="row">
-          <input id="loginUser" placeholder="Username" />
-          <input id="loginClass" placeholder="Class (e.g. JSS1)" />
-          <input id="loginPass" type="password" placeholder="Password" />
-          <button id="btnLogin" class="primary">Login</button>
-        </div>
-        <p class="muted">New student? <a href="#" id="linkToReg">Register here</a></p>
-      </div>
+<div class="wrap">
+  <header class="no-print"><h1>TVC High School CBT</h1></header>
 
-      <div id="registerView" class="hidden">
-        <h2>Register Account</h2>
-        <div class="row">
-          <input id="regFullName" placeholder="Full Name" />
-          <input id="regUser" placeholder="Username" />
-          <input id="regClass" placeholder="Class" />
-          <input id="regPass" type="password" placeholder="Password" />
-          <input id="regCode" type="password" placeholder="School Access Code" />
-          <button id="btnDoRegister" class="primary">Register</button>
-        </div>
-        <a href="#" id="linkToLog">Back to Login</a>
-      </div>
-    </div>
-
-    <div id="adminCard" class="card hidden no-print">
-      <h2>Admin Dashboard <button id="btnLogoutAdmin" class="muted" style="float:right">Logout</button></h2>
-      <table>
-        <thead>
-          <tr><th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Violations</th><th>Action</th></tr>
-        </thead>
-        <tbody id="resultsTbody"></tbody>
-      </table>
-    </div>
-
-    <div id="studentCard" class="card hidden no-print">
-      <h2 id="studentHeader"></h2>
+  <div id="loginCard" class="card no-print">
+    <div id="loginView">
+      <h2>Student Login</h2>
       <div class="row">
-        <select id="studentSubjectDropdown"></select>
-        <button id="btnStartExam" class="primary">Start Exam</button>
-        <button id="btnReviewLast" class="success hidden">Review Last Result</button>
-        <button id="btnLogoutStudent" class="muted">Logout</button>
+        <input id="loginUser" placeholder="Username" />
+        <input id="loginClass" placeholder="Class (e.g. JSS1)" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button id="btnLogin" class="primary">Login</button>
       </div>
+      <p>New student? <a href="#" onclick="toggleAuth(true)">Create Account</a></p>
+    </div>
 
-      <div id="examCard" class="card hidden">
-        <div class="row" style="justify-content:space-between">
-          <h3 id="examSubjectTitle"></h3>
-          <div id="timerContainer" class="timer">Time: <span id="examTimer">--:--</span></div>
-          <div id="reviewTitle" class="hidden" style="color:#2e7d32; font-weight:bold;">REVIEW MODE</div>
-        </div>
-        <div id="examQuestionBox"></div>
-        <div class="row">
-          <button id="btnPrevQ">Previous</button>
-          <button id="btnNextQ" class="primary">Next</button>
-          <button id="btnExitReview" class="muted hidden">Close Review</button>
-          <button id="btnSubmitExam" class="danger hidden">Submit</button>
-        </div>
-        <div id="questionKeys" class="qkeys"></div>
+    <div id="registerView" class="hidden">
+      <h2>Student Registration</h2>
+      <div class="row">
+        <input id="regFullname" placeholder="Full Name" />
+        <input id="regUser" placeholder="Username" />
+        <input id="regClass" placeholder="Class" />
+        <input id="regPass" type="password" placeholder="Password" />
+        <input id="regCode" type="password" placeholder="Access Code" />
+        <button id="btnDoRegister" class="primary">Register</button>
       </div>
+      <p><a href="#" onclick="toggleAuth(false)">Back to Login</a></p>
     </div>
   </div>
 
+  <div id="adminCard" class="card hidden no-print">
+    <div class="row" style="justify-content:space-between">
+        <h2>Admin Panel</h2>
+        <button onclick="logout()" class="muted">Logout</button>
+    </div>
+
+    <details open>
+      <summary>Manage Subjects & Results Release</summary>
+      <div class="row">
+        <input id="newSubName" placeholder="Subject Name" />
+        <input id="newSubClass" placeholder="Class" style="width:80px"/>
+        <input id="newSubDur" type="number" placeholder="Mins" style="width:70px"/>
+        <input id="newSubMarks" type="number" placeholder="Marks/Q" style="width:70px"/>
+        <button onclick="addSubject()" class="primary">Add</button>
+      </div>
+      <table>
+        <thead><tr><th>Subject</th><th>Class</th><th>Mins</th><th>Review Status</th><th>Action</th></tr></thead>
+        <tbody id="subjectsTbody"></tbody>
+      </table>
+    </details>
+
+    <details>
+      <summary>Manage Questions</summary>
+      <div class="row"><select id="adminSubSelect"></select></div>
+      <textarea id="qText" placeholder="Enter Question" style="width:100%; height:60px; margin-bottom:10px"></textarea>
+      <div class="row">
+        <input id="optA" placeholder="Option A" />
+        <input id="optB" placeholder="Option B" />
+        <input id="optC" placeholder="Option C" />
+        <select id="correctOpt"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select>
+        <button onclick="addQuestion()" class="primary">Add Question</button>
+      </div>
+    </details>
+
+    <details>
+      <summary>Results</summary>
+      <div class="row">
+        <button onclick="exportCSV()" class="muted">Export CSV</button>
+      </div>
+      <table>
+        <thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Violations</th></tr></thead>
+        <tbody id="resultsTbody"></tbody>
+      </table>
+    </details>
+  </div>
+
+  <div id="studentCard" class="card hidden no-print">
+    <h2 id="studentWelcome"></h2>
+    <div class="row">
+      <select id="studentSubSelect"></select>
+      <button id="btnStartExam" class="primary">Start Exam</button>
+      <button id="btnReviewLast" class="success hidden">Review Correct Answers</button>
+      <button onclick="logout()" class="muted">Logout</button>
+    </div>
+
+    <div id="examCard" class="card hidden">
+      <div class="row" style="justify-content:space-between">
+        <h3 id="examTitle"></h3>
+        <div id="examTimer" class="timer">--:--</div>
+        <div id="reviewTitle" class="hidden" style="color:green; font-weight:bold">REVIEW MODE</div>
+      </div>
+      <hr/>
+      <div id="qBox"></div>
+      <div class="row" style="justify-content:space-between; margin-top:20px">
+        <button id="btnPrev" class="muted">Previous</button>
+        <button id="btnNext" class="primary">Next</button>
+        <button id="btnSubmit" class="danger hidden">Submit Exam</button>
+        <button id="btnCloseReview" class="muted hidden" onclick="location.reload()">Close Review</button>
+      </div>
+      <div id="qKeys" class="qkeys"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-const JSONBIN_MASTER_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
-const JSONBIN_BIN_ID = "68bc605c43b1c97be9391c1d";
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-const REG_CODE = "TVC2026";
+const JSONBIN_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
+const JSONBIN_ID = "68bc605c43b1c97be9391c1d";
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+const SCHOOL_CODE = "TVC2026";
 
 let db = { subjects: [], questions: [], students: [], scores: [] };
-let currentUser = null, examState = null, examInterval = null, violationCount = 0;
-let isReviewMode = false;
+let currentUser = null, examState = null, examInt = null, violations = 0, isReview = false;
 
-async function loadDB(){
-  const resp = await fetch(`${JSONBIN_URL}/latest`, { headers: { "X-Master-Key": JSONBIN_MASTER_KEY } });
-  const data = await resp.json();
-  if (data.record) db = data.record;
+async function loadDB() {
+    const r = await fetch(`${JSONBIN_URL}/latest`, { headers: {"X-Master-Key": JSONBIN_KEY} });
+    const d = await r.json(); if(d.record) db = d.record;
 }
-async function saveDB(){
-  await fetch(JSONBIN_URL, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_MASTER_KEY },
-    body: JSON.stringify(db)
-  });
+async function sync() {
+    await fetch(JSONBIN_URL, {
+        method: "PUT", headers: {"Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY},
+        body: JSON.stringify(db)
+    });
 }
 
-/* Anti-Cheat */
-document.addEventListener("visibilitychange", () => { if (examState && !isReviewMode && document.visibilityState === 'hidden') handleViolation("Tab Switched"); });
-window.onblur = () => { if (examState && !isReviewMode) handleViolation("Lost Focus"); };
-function handleViolation(reason) {
-    violationCount++; examState.violations = violationCount;
-    alert(`SECURITY ALERT #${violationCount}\nIncident logged.`);
-    if (violationCount >= 3) finalizeExam();
+function toggleAuth(isReg) {
+    document.getElementById('loginView').classList.toggle('hidden', isReg);
+    document.getElementById('registerView').classList.toggle('hidden', !isReg);
 }
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-/* Auth */
-document.getElementById("linkToReg").onclick = () => { document.getElementById("loginView").classList.add("hidden"); document.getElementById("registerView").classList.remove("hidden"); };
-document.getElementById("linkToLog").onclick = () => { document.getElementById("registerView").classList.add("hidden"); document.getElementById("loginView").classList.remove("hidden"); };
-document.getElementById("btnDoRegister").onclick = async () => {
-    const user = document.getElementById("regUser").value.trim();
-    if(document.getElementById("regCode").value.trim() !== REG_CODE) return alert("Wrong school code.");
+document.getElementById('btnDoRegister').onclick = async () => {
+    const user = document.getElementById('regUser').value.trim();
+    if(document.getElementById('regCode').value !== SCHOOL_CODE) return alert("Wrong Code");
     await loadDB();
-    db.students.push({ id: Date.now().toString(36), username: user, name: document.getElementById("regFullName").value, class: document.getElementById("regClass").value.toUpperCase(), password: document.getElementById("regPass").value });
-    await saveDB(); alert("Success!"); document.getElementById("linkToLog").click();
+    db.students.push({ id: Date.now().toString(36), name: document.getElementById('regFullname').value, username: user, class: document.getElementById('regClass').value.toUpperCase(), password: document.getElementById('regPass').value });
+    await sync(); alert("Done!"); toggleAuth(false);
 };
 
-document.getElementById("btnLogin").onclick = async () => {
-  const user = document.getElementById("loginUser").value.trim(), pass = document.getElementById("loginPass").value.trim();
-  await loadDB();
-  if(user === "admin" && pass === "admin") {
-    currentUser = { role: "admin" }; document.getElementById("loginCard").classList.add("hidden"); document.getElementById("adminCard").classList.remove("hidden"); renderResults(); return;
-  }
-  const s = db.students.find(x => x.username === user && x.password === pass);
-  if (s) {
-    currentUser = s; document.getElementById("loginCard").classList.add("hidden"); document.getElementById("studentCard").classList.remove("hidden");
-    document.getElementById("studentHeader").textContent = `Student: ${s.name}`;
-    refreshStudentSubs();
-  } else alert("Invalid Login.");
+document.getElementById('btnLogin').onclick = async () => {
+    const u = document.getElementById('loginUser').value.trim(), p = document.getElementById('loginPass').value.trim(), c = document.getElementById('loginClass').value.trim().toUpperCase();
+    await loadDB();
+    if(u === "admin" && p === "admin") {
+        currentUser = { role: 'admin' }; document.getElementById('loginCard').classList.add('hidden'); document.getElementById('adminCard').classList.remove('hidden'); renderAdmin(); return;
+    }
+    const s = db.students.find(x => x.username === u && x.password === p && x.class === c);
+    if(s) {
+        currentUser = s; document.getElementById('loginCard').classList.add('hidden'); document.getElementById('studentCard').classList.remove('hidden');
+        document.getElementById('studentWelcome').textContent = `Welcome, ${s.name}`; renderStudentPanel();
+    } else alert("Invalid Login");
 };
 
-/* Exam & Review */
-function refreshStudentSubs() {
-  const sel = document.getElementById("studentSubjectDropdown"); sel.innerHTML = "";
-  db.subjects.filter(x => x.class === currentUser.class).forEach(sub => {
-    const score = db.scores.find(sc => sc.studentId === currentUser.id && sc.subjectId === sub.id);
-    sel.innerHTML += `<option value="${sub.id}" ${score?'disabled':''}>${sub.name} ${score?'(Done)':''}</option>`;
-    if(score) document.getElementById("btnReviewLast").classList.remove("hidden");
-  });
+function logout() { location.reload(); }
+
+/* ADMIN */
+async function addSubject() {
+    db.subjects.push({ id: Date.now().toString(36), name: document.getElementById('newSubName').value, class: document.getElementById('newSubClass').value.toUpperCase(), duration: document.getElementById('newSubDur').value, marksPerQuestion: document.getElementById('newSubMarks').value, resultsReleased: false });
+    await sync(); renderAdmin();
 }
 
-document.getElementById("btnReviewLast").onclick = () => {
-  const subId = document.getElementById("studentSubjectDropdown").value;
-  const scoreData = db.scores.find(sc => sc.studentId === currentUser.id && sc.subjectId === subId);
-  if(!scoreData) return alert("Please select a completed subject from the dropdown to review.");
-  
-  isReviewMode = true;
-  examState = { sub: {name: scoreData.subject}, qs: scoreData.shuffledQs, answers: scoreData.answers, index: 0 };
-  document.getElementById("examCard").classList.remove("hidden");
-  document.getElementById("timerContainer").classList.add("hidden");
-  document.getElementById("reviewTitle").classList.remove("hidden");
-  document.getElementById("btnExitReview").classList.remove("hidden");
-  document.getElementById("btnNextQ").classList.remove("hidden");
-  renderQ();
-};
+async function addQuestion() {
+    db.questions.push({ id: Date.now().toString(36), subjectId: document.getElementById('adminSubSelect').value, question: document.getElementById('qText').value, A: document.getElementById('optA').value, B: document.getElementById('optB').value, C: document.getElementById('optC').value, correct: document.getElementById('correctOpt').value });
+    await sync(); alert("Added");
+}
 
-document.getElementById("btnExitReview").onclick = () => location.reload();
+window.toggleRelease = async (id) => {
+    const s = db.subjects.find(x => x.id === id);
+    s.resultsReleased = !s.resultsReleased;
+    await sync(); renderAdmin();
+}
 
-document.getElementById("btnStartExam").onclick = () => {
-  const subId = document.getElementById("studentSubjectDropdown").value;
-  const sub = db.subjects.find(x => x.id === subId);
-  const rawQs = db.questions.filter(x => x.subjectId === subId);
-  if(!rawQs.length) return alert("No questions.");
-  
-  isReviewMode = false;
-  const shuffledQs = shuffleArray([...rawQs]);
-  violationCount = 0;
-  examState = { sub, qs: shuffledQs, answers: Array(shuffledQs.length).fill(null), index: 0, timeLeft: sub.duration * 60, violations: 0 };
-  document.getElementById("examCard").classList.remove("hidden");
-  startTimer(); renderQ();
+function renderAdmin() {
+    const subBody = document.getElementById('subjectsTbody'); subBody.innerHTML = "";
+    const adminSel = document.getElementById('adminSubSelect'); adminSel.innerHTML = "";
+    db.subjects.forEach(s => {
+        subBody.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.duration}</td><td><button class="${s.resultsReleased?'success':'muted'}" onclick="toggleRelease('${s.id}')">${s.resultsReleased?'Released':'Hidden'}</button></td><td><button onclick="delSub('${s.id}')" class="danger">X</button></td></tr>`;
+        adminSel.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
+    });
+    const resBody = document.getElementById('resultsTbody'); resBody.innerHTML = "";
+    db.scores.forEach(sc => {
+        const st = db.students.find(x => x.id === sc.studentId);
+        if(st) resBody.innerHTML += `<tr><td>${st.name}</td><td>${st.class}</td><td>${sc.subjectName}</td><td>${sc.score}/${sc.total}</td><td>${sc.violations||0}</td></tr>`;
+    });
+}
+
+window.delSub = async (id) => { db.subjects = db.subjects.filter(s => s.id !== id); await sync(); renderAdmin(); };
+
+/* STUDENT */
+function renderStudentPanel() {
+    const sel = document.getElementById('studentSubSelect'); sel.innerHTML = "";
+    db.subjects.filter(s => s.class === currentUser.class).forEach(s => {
+        const done = db.scores.find(sc => sc.studentId === currentUser.id && sc.subjectId === s.id);
+        sel.innerHTML += `<option value="${s.id}" ${done?'disabled':''}>${s.name} ${done?'(Done)':''}</option>`;
+        if(done && s.resultsReleased) document.getElementById('btnReviewLast').classList.remove('hidden');
+        else if (done) document.getElementById('btnReviewLast').classList.add('hidden');
+    });
+}
+
+document.addEventListener("visibilitychange", () => { if(examState && !isReview && document.visibilityState==='hidden') triggerViolate(); });
+window.onblur = () => { if(examState && !isReview) triggerViolate(); };
+function triggerViolate() { violations++; examState.violations = violations; alert(`Strike ${violations}! Switching tabs is forbidden.`); if(violations >= 3) finishExam(); }
+
+document.getElementById('btnStartExam').onclick = () => {
+    const sid = document.getElementById('studentSubSelect').value;
+    const sub = db.subjects.find(s => s.id === sid);
+    const qs = db.questions.filter(q => q.subjectId === sid);
+    if(!qs.length) return alert("No questions.");
+    isReview = false; violations = 0; const shuffled = [...qs].sort(() => Math.random() - 0.5);
+    examState = { sub, qs: shuffled, ans: Array(shuffled.length).fill(null), idx: 0, time: sub.duration * 60 };
+    document.getElementById('examCard').classList.remove('hidden');
+    document.getElementById('examTitle').textContent = sub.name; startTimer(); renderQ();
 };
 
 function renderQ() {
-  const q = examState.qs[examState.index];
-  const userAns = examState.answers[examState.index];
-  
-  let html = `<h3>${q.question}</h3>`;
-  ['A', 'B', 'C'].forEach(opt => {
-    let cls = "exam-option";
-    if (!isReviewMode) {
-        if(userAns === opt) cls += " selected";
-    } else {
-        if(opt === q.correct) cls += " correct-ans";
-        else if(userAns === opt && userAns !== q.correct) cls += " wrong-ans";
-    }
-    html += `<div class="${cls}" onclick="${isReviewMode?'':'setA(\''+opt+'\')'}">${opt}. ${q[opt]}</div>`;
-  });
-  
-  document.getElementById("examQuestionBox").innerHTML = html;
-  document.getElementById("btnSubmitExam").classList.toggle("hidden", isReviewMode || examState.index !== examState.qs.length - 1);
-  renderKeys();
+    const q = examState.qs[examState.idx];
+    const box = document.getElementById('qBox');
+    let h = `<h4>Q${examState.idx+1}</h4><p>${q.question}</p>`;
+    ['A','B','C'].forEach(o => {
+        let cls = "exam-option";
+        if(isReview) {
+            if(o === q.correct) cls += " correct-ans";
+            else if(examState.ans[examState.idx] === o) cls += " wrong-ans";
+        } else if(examState.ans[examState.idx] === o) cls += " selected";
+        h += `<div class="${cls}" onclick="${isReview?'':'pick(\''+o+'\')'}">${o}. ${q[o]}</div>`;
+    });
+    box.innerHTML = h;
+    document.getElementById('btnSubmit').classList.toggle('hidden', isReview || examState.idx !== examState.qs.length-1);
+    renderKeys();
 }
 
-window.setA = (a) => { examState.answers[examState.index] = a; renderQ(); };
+window.pick = (o) => { examState.ans[examState.idx] = o; renderQ(); };
 
 function renderKeys() {
-  const k = document.getElementById("questionKeys"); k.innerHTML = "";
-  examState.qs.forEach((q, i) => {
-    let c = examState.index === i ? 'active' : '';
-    if(isReviewMode) {
-        c += (examState.answers[i] === q.correct) ? ' correct' : ' wrong';
-    } else if (examState.answers[i]) {
-        c += ' answered';
-    }
-    k.innerHTML += `<div class="qkey ${c}" onclick="examState.index=${i};renderQ()">${i+1}</div>`;
-  });
+    const k = document.getElementById('qKeys'); k.innerHTML = "";
+    examState.qs.forEach((q, i) => {
+        let cls = "qkey"; if(examState.idx === i) cls += " active";
+        if(isReview) cls += (examState.ans[i] === q.correct) ? " correct" : " wrong";
+        else if(examState.ans[i]) cls += " answered";
+        k.innerHTML += `<div class="${cls}" onclick="examState.idx=${i};renderQ()">${i+1}</div>`;
+    });
 }
 
 function startTimer() {
-  examInterval = setInterval(() => {
-    examState.timeLeft--;
-    const m = Math.floor(examState.timeLeft/60), s = examState.timeLeft%60;
-    document.getElementById("examTimer").textContent = `${m}:${s<10?'0':''}${s}`;
-    if(examState.timeLeft <= 0) finalizeExam();
-  }, 1000);
+    examInt = setInterval(() => {
+        examState.time--;
+        const m = Math.floor(examState.time/60), s = examState.time%60;
+        document.getElementById('examTimer').textContent = `${m}:${s<10?'0':''}${s}`;
+        if(examState.time <= 0) finishExam();
+    }, 1000);
 }
 
-async function finalizeExam() {
-  clearInterval(examInterval);
-  let score = 0;
-  examState.qs.forEach((q, i) => { if(examState.answers[i] === q.correct) score += Number(examState.sub.marksPerQuestion); });
-  db.scores.push({ 
-    studentId: currentUser.id, subjectId: examState.sub.id, subject: examState.sub.name, 
-    score, totalMarks: examState.qs.length * examState.sub.marksPerQuestion, 
-    violations: examState.violations || 0,
-    answers: examState.answers,
-    shuffledQs: examState.qs // Save order for review
-  });
-  await saveDB(); alert("Submitted!"); location.reload();
+document.getElementById('btnSubmit').onclick = async () => { if(confirm("Submit?")) finishExam(); };
+
+async function finishExam() {
+    clearInterval(examInt);
+    let score = 0; examState.qs.forEach((q, i) => { if(examState.ans[i] === q.correct) score += Number(examState.sub.marksPerQuestion); });
+    db.scores.push({ id: Date.now().toString(36), studentId: currentUser.id, subjectId: examState.sub.id, subjectName: examState.sub.name, score, total: examState.qs.length * examState.sub.marksPerQuestion, violations: examState.violations || 0, ans: examState.ans, qs: examState.qs });
+    await sync(); alert("Success"); location.reload();
 }
 
-function renderResults() {
-  const tbody = document.getElementById("resultsTbody"); tbody.innerHTML = "";
-  db.scores.forEach(s => {
-    const st = db.students.find(x => x.id === s.studentId);
-    if(!st) return;
-    tbody.innerHTML += `<tr><td>${st.name}</td><td>${st.class}</td><td>${s.subject}</td><td>${s.score}/${s.totalMarks}</td><td>${s.violations||0}</td><td><button onclick="alert('Viewed by Admin')">View</button></td></tr>`;
-  });
+document.getElementById('btnReviewLast').onclick = () => {
+    const sid = document.getElementById('studentSubSelect').value;
+    const sc = db.scores.find(x => x.studentId === currentUser.id && x.subjectId === sid);
+    isReview = true; examState = { sub: {name: sc.subjectName}, qs: sc.qs, ans: sc.ans, idx: 0 };
+    document.getElementById('examCard').classList.remove('hidden'); document.getElementById('examTimer').classList.add('hidden'); document.getElementById('reviewTitle').classList.remove('hidden'); document.getElementById('btnCloseReview').classList.remove('hidden');
+    renderQ();
+};
+
+document.getElementById('btnNext').onclick = () => { if(examState.idx < examState.qs.length-1) { examState.idx++; renderQ(); }};
+document.getElementById('btnPrev').onclick = () => { if(examState.idx > 0) { examState.idx--; renderQ(); }};
+
+function exportCSV() {
+    let csv = "Name,Class,Subject,Score,Total,Violations\n";
+    db.scores.forEach(s => {
+        const st = db.students.find(x => x.id === s.studentId);
+        csv += `${st?st.name:''},${st?st.class:''},${s.subjectName},${s.score},${s.total},${s.violations}\n`;
+    });
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download="Results.csv"; a.click();
 }
+
 loadDB();
 </script>
 </body>
