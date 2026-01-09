@@ -491,31 +491,39 @@ document.getElementById("btnLogoutStudent").onclick = () => {
   document.getElementById("loginCard").classList.remove("hidden");
 };
 
-  document.getElementById("btnRegister").onclick = async () => {
+  <script>
+document.getElementById("btnRegister").onclick = async () => {
+  await loadDB();
+
   const username = prompt("Choose a username:");
   const name = prompt("Full name:");
   const cls = prompt("Class (e.g. JSS1):");
   const pwd = prompt("Password:");
 
-  if (!username || !name || !cls || !pwd)
-    return alert("All fields are required");
+  if (!username || !name || !cls || !pwd) {
+    alert("All fields are required");
+    return;
+  }
 
-  if (db.students.some(s => s.username === username))
-    return alert("Username already exists");
+  if (db.students.some(s => s.username === username)) {
+    alert("Username already exists");
+    return;
+  }
 
-  const hash = await hashPassword(pwd);
-
-  db.students.push({
+  const student = {
     id: uid(),
-    username,
-    name,
-    class: cls,
-    password: hash
-  });
+    username: username.trim(),
+    name: name.trim(),
+    class: cls.trim(),
+    password: pwd.trim()
+  };
 
   db.students.push(student);
-await saveDB();   // 🔥 THIS IS THE MISSING LINE
-alert("Registration successful");
+  await saveDB();
+
+  alert("Registration successful. You can now login.");
+};
+</script>
   
 /* Save/Clear local */
 document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
