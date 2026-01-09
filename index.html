@@ -1,512 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TVC School Portal | Complete System</title>
-    <style>
-        /* --- 1. CORE STYLES (Professional & Clean) --- */
-        :root { --main: #0f172a; --blue: #2563eb; --bg: #f1f5f9; --white: #ffffff; --text: #334155; --danger: #ef4444; --success: #10b981; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        
-        /* --- 2. LAYOUT --- */
-        .sidebar { width: 250px; background: var(--main); color: white; display: flex; flex-direction: column; padding: 20px; transition: 0.3s; }
-        .sidebar h2 { font-size: 20px; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 15px; }
-        .nav-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; color: #cbd5e1; }
-        .nav-item:hover, .nav-item.active { background: var(--blue); color: white; }
-        .nav-item.logout { margin-top: auto; background: #334155; text-align: center; }
-
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
-        
-        /* --- 3. COMPONENTS --- */
-        .card { background: var(--white); padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .hidden { display: none !important; }
-        .full-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 100; display:flex; justify-content:center; align-items:center; }
-
-        /* --- 4. FORMS & INPUTS --- */
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .input-wrap { position: relative; }
-        .eye-icon { position: absolute; right: 12px; top: 12px; cursor: pointer; font-size: 12px; font-weight: bold; color: var(--blue); }
-        
-        button { width: 100%; padding: 12px; background: var(--blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        button:hover { opacity: 0.9; }
-        button.red { background: var(--danger); }
-        button.green { background: var(--success); }
-        button.small { width: auto; padding: 6px 12px; font-size: 12px; }
-
-        /* --- 5. TABLES --- */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background: #f8fafc; color: var(--text); font-weight: 700; }
-        
-        /* --- 6. EXAM UI --- */
-        .exam-timer { font-size: 24px; font-weight: bold; color: var(--danger); text-align: right; }
-        .option-box { padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition:0.2s; }
-        .option-box:hover { border-color: var(--blue); }
-        .option-box.selected { background: #eff6ff; border-color: var(--blue); }
-    </style>
+<meta charset="UTF-8">
+<title>TVC High School CBT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial;background:#eef3ff;margin:0}
+.card{background:#fff;margin:20px;padding:20px;border-radius:12px}
+.hidden{display:none}
+button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer}
+.primary{background:#246bff;color:#fff}
+.danger{background:#e53935;color:#fff}
+.timer{color:red;font-weight:bold}
+.exam-option{border:1px solid #ccc;padding:12px;margin:8px 0;border-radius:8px;cursor:pointer}
+.exam-option.selected{background:#dbe7ff}
+</style>
 </head>
 <body>
 
-    <div id="authScreen" class="full-screen">
-        <div class="card" style="width: 400px;">
-            <h2 style="text-align:center; color:var(--main)">TVC Portal Access</h2>
-            
-            <div id="loginForm">
-                <input type="text" id="lUser" placeholder="Username">
-                <input type="text" id="lClass" placeholder="Class (e.g. JSS1)">
-                <div class="input-wrap">
-                    <input type="password" id="lPass" placeholder="Password">
-                    <span class="eye-icon" onclick="togglePass('lPass')">SHOW</span>
-                </div>
-                <button onclick="login()">Sign In</button>
-                <p style="text-align:center; font-size:13px; margin-top:15px">
-                    New Student? <a href="#" onclick="switchAuth(true)" style="color:var(--blue)">Register Here</a>
-                </p>
-            </div>
+<div class="card" id="loginCard">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+  <button class="primary" onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
+  <p id="loginMsg"></p>
+</div>
 
-            <div id="regForm" class="hidden">
-                <input type="text" id="rName" placeholder="Full Name">
-                <input type="text" id="rUser" placeholder="Username">
-                <select id="rClass">
-                    <option value="">Select Class</option>
-                    <option value="JSS1">JSS1</option><option value="JSS2">JSS2</option><option value="JSS3">JSS3</option>
-                    <option value="SS1">SS1</option><option value="SS2">SS2</option><option value="SS3">SS3</option>
-                </select>
-                <div class="input-wrap">
-                    <input type="password" id="rPass" placeholder="Create Password">
-                    <span class="eye-icon" onclick="togglePass('rPass')">SHOW</span>
-                </div>
-                <input type="password" id="rCode" placeholder="School Code (TVC2026)">
-                <button onclick="register()" class="green">Create Account</button>
-                <p style="text-align:center; font-size:13px; margin-top:15px">
-                    <a href="#" onclick="switchAuth(false)" style="color:var(--blue)">Back to Login</a>
-                </p>
-            </div>
-        </div>
-    </div>
+<div class="card hidden" id="studentCard">
+  <h3 id="studentName"></h3>
+  <select id="subjectSelect"></select>
+  <button class="primary" onclick="startExam()">Start Exam</button>
+  <button onclick="logout()">Logout</button>
 
-    <div id="adminPanel" class="hidden" style="display:flex; width:100%;">
-        <div class="sidebar">
-            <h2>TVC Admin</h2>
-            <div class="nav-item active" onclick="nav('admin-stu')">Students</div>
-            <div class="nav-item" onclick="nav('admin-sub')">Subjects & Questions</div>
-            <div class="nav-item" onclick="nav('admin-res')">Results</div>
-            <div class="nav-item logout" onclick="location.reload()">Logout</div>
-        </div>
-        <div class="main-content">
-            
-            <div id="admin-stu">
-                <div class="card">
-                    <h3>Student Database</h3>
-                    <div style="display:flex; gap:10px;">
-                        <input id="stuSearch" placeholder="Search Name..." onkeyup="renderStudents()">
-                        <select id="stuFilter" onchange="renderStudents()">
-                            <option value="">All Classes</option>
-                            <option value="JSS1">JSS1</option><option value="JSS2">JSS2</option><option value="JSS3">JSS3</option>
-                            <option value="SS1">SS1</option><option value="SS2">SS2</option><option value="SS3">SS3</option>
-                        </select>
-                    </div>
-                    <table class="card">
-                        <thead><tr><th>Name</th><th>Class</th><th>Username</th><th>Action</th></tr></thead>
-                        <tbody id="studentTable"></tbody>
-                    </table>
-                </div>
-            </div>
+  <div id="examCard" class="hidden">
+    <h3 id="examTitle"></h3>
+    Time: <span class="timer" id="timer"></span>
+    <div id="questionBox"></div>
+    <button onclick="prevQ()">Prev</button>
+    <button onclick="nextQ()">Next</button>
+    <button class="danger" onclick="submitExam()">Submit</button>
+  </div>
+</div>
 
-            <div id="admin-sub" class="hidden">
-                <div class="card">
-                    <h3>Add New Subject</h3>
-                    <div style="display:flex; gap:10px;">
-                        <input id="nSub" placeholder="Subject Name">
-                        <select id="nCls">
-                            <option value="JSS1">JSS1</option><option value="JSS2">JSS2</option><option value="JSS3">JSS3</option>
-                            <option value="SS1">SS1</option><option value="SS2">SS2</option><option value="SS3">SS3</option>
-                        </select>
-                        <input id="nDur" type="number" placeholder="Mins">
-                        <button onclick="addSubject()" class="small">Add</button>
-                    </div>
-                </div>
+<script type="module">
+/* 🔥 const firebaseConfig = {
+  apiKey: "AIzaSyAXeQ5pOc0HUrSYK8TTABuPN0Ae02eWwYM",
+  authDomain: "tvc-cbt.firebaseapp.com",
+  projectId: "tvc-cbt",
+  storageBucket: "tvc-cbt.firebasestorage.app",
+  messagingSenderId: "527990577172",
+  appId: "1:527990577172:web:0828402d6ffb1c50ef2f01"
+}; 🔥 */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-                <div class="card">
-                    <h3>Upload Questions</h3>
-                    <select id="targetSub"></select>
-                    <textarea id="bulkData" placeholder="Format: Question, OptA, OptB, OptC, CorrectAnswer" style="height:80px;"></textarea>
-                    <button onclick="addQuestions()" class="green">Upload Questions</button>
-                </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAXeQ5pOc0HUrSYK8TTABuPN0Ae02eWwYM",
+  authDomain: "tvc-cbt.firebaseapp.com",
+  projectId: "tvc-cbt",
+};
+/* 🔥 END CONFIG 🔥 */
 
-                <div class="card">
-                    <h3>Subject List</h3>
-                    <table>
-                        <thead><tr><th>Subject</th><th>Class</th><th>Status</th><th>Action</th></tr></thead>
-                        <tbody id="subjectTable"></tbody>
-                    </table>
-                </div>
-            </div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-            <div id="admin-res" class="hidden">
-                <div class="card">
-                    <h3>Student Results</h3>
-                    <table>
-                        <thead><tr><th>Student</th><th>Subject</th><th>Score</th><th>Strikes</th></tr></thead>
-                        <tbody id="resultTable"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+let questions=[], answers=[], index=0, timerInt, timeLeft=0;
 
-    <div id="studentPanel" class="hidden" style="width:100%;">
-        <div style="background:var(--white); padding:15px 30px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0;">
-            <h3 style="margin:0; color:var(--main)" id="stuWelcome">Welcome</h3>
-            <button onclick="location.reload()" class="red small">Logout</button>
-        </div>
+/* AUTH */
+window.login = async () => {
+  try{
+    const res = await signInWithEmailAndPassword(auth,email.value,password.value);
+    studentName.innerText = res.user.email;
+    loginCard.classList.add("hidden");
+    studentCard.classList.remove("hidden");
+    loadSubjects();
+  }catch(e){ loginMsg.innerText=e.message }
+};
 
-        <div class="main-content">
-            <div id="stu-dashboard">
-                <div class="card">
-                    <h3>Available Exams</h3>
-                    <div id="examList"></div>
-                </div>
-            </div>
+window.register = async () => {
+  try{
+    await createUserWithEmailAndPassword(auth,email.value,password.value);
+    alert("Registered. Login now.");
+  }catch(e){ alert(e.message) }
+};
 
-            <div id="stu-exam" class="hidden">
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <h3 id="examTitle">Mathematics</h3>
-                        <div id="examTimer" class="exam-timer">00:00</div>
-                    </div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                    
-                    <div id="questionBox" style="font-size:18px; font-weight:500; margin-bottom:20px;"></div>
-                    <div id="optionsBox"></div>
+window.logout = ()=>location.reload();
 
-                    <div style="display:flex; justify-content:space-between; margin-top:30px;">
-                        <button onclick="navQuestion(-1)" style="width:100px; background:#64748b">Previous</button>
-                        <button onclick="navQuestion(1)" style="width:100px;">Next</button>
-                    </div>
-                    <button onclick="submitExam()" class="red" style="margin-top:20px;">Submit Exam</button>
-                </div>
-            </div>
-        </div>
-    </div>
+/* LOAD SUBJECTS */
+async function loadSubjects(){
+  subjectSelect.innerHTML="";
+  const snap = await getDocs(collection(db,"subjects"));
+  snap.forEach(d=>{
+    const o=document.createElement("option");
+    o.value=d.id;o.text=d.data().name;
+    subjectSelect.appendChild(o);
+  });
+}
 
-<script>
-    // --- 1. CONFIGURATION ---
-    const API_KEY = "$2a$10$fWok9ba27BiXeCpOUIUYaOKx8SDCAhODlzlPkZ.6pyu3xjClAGuhy";
-    const BIN_ID = "68bc605c43b1c97be9391c1d";
-    const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+/* EXAM */
+window.startExam = async ()=>{
+  const sid=subjectSelect.value;
+  const q=query(collection(db,"questions"),where("subjectId","==",sid));
+  const snap=await getDocs(q);
+  questions=[];answers=[];index=0;
+  snap.forEach(d=>questions.push(d.data()));
+  questions.sort(()=>Math.random()-0.5);
+  timeLeft=questions.length*60;
+  examCard.classList.remove("hidden");
+  renderQ(); startTimer(); enterFullscreen();
+};
 
-    let db = { students: [], subjects: [], questions: [], results: [] };
-    let currentUser = null;
-    let currentExam = null;
-    let timerInterval = null;
+function renderQ(){
+  const q=questions[index];
+  questionBox.innerHTML=`
+  <h4>${q.question}</h4>
+  ${["A","B","C"].map(o=>`
+    <div class="exam-option ${answers[index]==o?"selected":""}"
+    onclick="answers[${index}]='${o}';renderQ()">
+    ${o}. ${q[o]}</div>`).join("")}`;
+}
 
-    // --- 2. DATABASE FUNCTIONS ---
-    async function loadData() {
-        try {
-            const res = await fetch(URL + "/latest", { headers: { "X-Master-Key": API_KEY } });
-            const data = await res.json();
-            if (data.record) db = data.record;
-            // Initialize arrays if they don't exist
-            if(!db.students) db.students = [];
-            if(!db.subjects) db.subjects = [];
-            if(!db.questions) db.questions = [];
-            if(!db.results) db.results = [];
-        } catch (e) { alert("Connection Error"); console.error(e); }
-    }
+window.nextQ=()=>{if(index<questions.length-1){index++;renderQ()}};
+window.prevQ=()=>{if(index>0){index--;renderQ()}};
 
-    async function saveData() {
-        await fetch(URL, { 
-            method: "PUT", 
-            headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY }, 
-            body: JSON.stringify(db) 
-        });
-    }
+function startTimer(){
+  timerInt=setInterval(()=>{
+    timeLeft--;
+    timer.innerText=Math.floor(timeLeft/60)+":"+String(timeLeft%60).padStart(2,"0");
+    if(timeLeft<=0)submitExam();
+  },1000);
+}
 
-    // --- 3. UI HELPERS ---
-    function togglePass(id) {
-        const x = document.getElementById(id);
-        x.type = x.type === "password" ? "text" : "password";
-    }
-    function switchAuth(isReg) {
-        document.getElementById('loginForm').classList.toggle('hidden', isReg);
-        document.getElementById('regForm').classList.toggle('hidden', !isReg);
-    }
-    function nav(id) {
-        ['admin-stu', 'admin-sub', 'admin-res'].forEach(d => document.getElementById(d).classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
+window.submitExam = async ()=>{
+  clearInterval(timerInt);
+  let score=0;
+  questions.forEach((q,i)=>{ if(answers[i]==q.correct) score++; });
+  await addDoc(collection(db,"results"),{
+    uid:auth.currentUser.uid,
+    score, total:questions.length,
+    date:new Date()
+  });
+  alert("Submitted!");
+  location.reload();
+};
 
-    // --- 4. AUTHENTICATION LOGIC ---
-    async function register() {
-        if(document.getElementById('rCode').value !== "TVC2026") return alert("Invalid School Code");
-        
-        const student = {
-            id: Date.now().toString(),
-            name: document.getElementById('rName').value,
-            username: document.getElementById('rUser').value,
-            class: document.getElementById('rClass').value,
-            password: document.getElementById('rPass').value
-        };
+function enterFullscreen(){
+  document.documentElement.requestFullscreen?.();
+}
 
-        if(!student.name || !student.username || !student.class) return alert("All fields required");
-
-        await loadData();
-        db.students.push(student);
-        await saveData();
-        
-        alert("Registration Successful!");
-        switchAuth(false);
-    }
-
-    async function login() {
-        const u = document.getElementById('lUser').value;
-        const p = document.getElementById('lPass').value;
-        const c = document.getElementById('lClass').value;
-
-        await loadData();
-
-        // Admin Check
-        if(u === "admin" && p === "admin") {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('adminPanel').classList.remove('hidden');
-            renderAdmin();
-            return;
-        }
-
-        // Student Check
-        const found = db.students.find(s => s.username === u && s.password === p && s.class === c);
-        if(found) {
-            currentUser = found;
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('studentPanel').classList.remove('hidden');
-            document.getElementById('stuWelcome').innerText = "Student: " + found.name;
-            renderStudentDashboard();
-        } else {
-            alert("Invalid Login Details");
-        }
-    }
-
-    // --- 5. ADMIN LOGIC ---
-    function renderAdmin() {
-        renderStudents();
-        renderSubjects();
-        renderResults();
-    }
-
-    function renderStudents() {
-        const tbody = document.getElementById('studentTable');
-        tbody.innerHTML = "";
-        const search = document.getElementById('stuSearch').value.toLowerCase();
-        const filter = document.getElementById('stuFilter').value;
-
-        db.students.forEach(s => {
-            if(s.name.toLowerCase().includes(search) && (filter === "" || s.class === filter)) {
-                tbody.innerHTML += `<tr>
-                    <td>${s.name}</td>
-                    <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px;">${s.class}</span></td>
-                    <td>${s.username}</td>
-                    <td><button onclick="delStudent('${s.id}')" class="red small">Delete</button></td>
-                </tr>`;
-            }
-        });
-    }
-
-    async function delStudent(id) {
-        if(confirm("Delete this student?")) {
-            db.students = db.students.filter(s => s.id !== id);
-            await saveData();
-            renderStudents();
-        }
-    }
-
-    async function addSubject() {
-        const sub = {
-            id: Date.now().toString(),
-            name: document.getElementById('nSub').value,
-            class: document.getElementById('nCls').value,
-            duration: parseInt(document.getElementById('nDur').value),
-            released: false
-        };
-        db.subjects.push(sub);
-        await saveData();
-        renderSubjects();
-        alert("Subject Created");
-    }
-
-    function renderSubjects() {
-        const tb = document.getElementById('subjectTable');
-        const sel = document.getElementById('targetSub');
-        tb.innerHTML = ""; sel.innerHTML = "";
-
-        db.subjects.forEach(s => {
-            sel.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
-            tb.innerHTML += `<tr>
-                <td>${s.name}</td>
-                <td>${s.class}</td>
-                <td style="color:${s.released?'green':'red'}">${s.released?'Active':'Draft'}</td>
-                <td>
-                    <button onclick="toggleRel('${s.id}')" class="small">Toggle</button>
-                    <button onclick="delSubject('${s.id}')" class="red small">X</button>
-                </td>
-            </tr>`;
-        });
-    }
-
-    async function toggleRel(id) {
-        const s = db.subjects.find(x => x.id === id);
-        s.released = !s.released;
-        await saveData();
-        renderSubjects();
-    }
-
-    async function addQuestions() {
-        const subId = document.getElementById('targetSub').value;
-        const raw = document.getElementById('bulkData').value;
-        const lines = raw.split('\n');
-        
-        let count = 0;
-        lines.forEach(line => {
-            const p = line.split(',');
-            if(p.length >= 5) {
-                db.questions.push({
-                    id: Math.random().toString(36),
-                    subId: subId,
-                    q: p[0].trim(),
-                    a: p[1].trim(), b: p[2].trim(), c: p[3].trim(),
-                    correct: p[4].trim().toUpperCase()
-                });
-                count++;
-            }
-        });
-        await saveData();
-        alert(`Uploaded ${count} questions`);
-        document.getElementById('bulkData').value = "";
-    }
-
-    function renderResults() {
-        const tb = document.getElementById('resultTable');
-        tb.innerHTML = "";
-        db.results.forEach(r => {
-            const sName = db.students.find(s => s.id === r.stuId)?.name || "Deleted";
-            const subName = db.subjects.find(sub => sub.id === r.subId)?.name || "Deleted";
-            tb.innerHTML += `<tr><td>${sName}</td><td>${subName}</td><td>${r.score}</td><td>${r.strikes}</td></tr>`;
-        });
-    }
-
-    // --- 6. STUDENT LOGIC ---
-    function renderStudentDashboard() {
-        const list = document.getElementById('examList');
-        list.innerHTML = "";
-        
-        db.subjects.forEach(sub => {
-            // Check: Same Class? Released? Already Taken?
-            const taken = db.results.find(r => r.stuId === currentUser.id && r.subId === sub.id);
-            if(sub.class === currentUser.class && sub.released && !taken) {
-                list.innerHTML += `
-                <div class="card" style="border-left:5px solid var(--blue)">
-                    <h4>${sub.name}</h4>
-                    <p>${sub.duration} Minutes</p>
-                    <button onclick="startExam('${sub.id}')">Start Exam</button>
-                </div>`;
-            }
-        });
-
-        if(list.innerHTML === "") list.innerHTML = "<p>No exams available right now.</p>";
-    }
-
-    function startExam(subId) {
-        const sub = db.subjects.find(s => s.id === subId);
-        const qs = db.questions.filter(q => q.subId === subId);
-
-        if(qs.length === 0) return alert("No questions in this exam yet.");
-
-        currentExam = {
-            sub: sub,
-            qs: qs,
-            answers: {},
-            currentIdx: 0,
-            timeLeft: sub.duration * 60,
-            strikes: 0
-        };
-
-        document.getElementById('stu-dashboard').classList.add('hidden');
-        document.getElementById('stu-exam').classList.remove('hidden');
-        document.getElementById('examTitle').innerText = sub.name;
-        
-        renderQuestion();
-        
-        timerInterval = setInterval(() => {
-            currentExam.timeLeft--;
-            const m = Math.floor(currentExam.timeLeft / 60);
-            const s = currentExam.timeLeft % 60;
-            document.getElementById('examTimer').innerText = `${m}:${s<10?'0'+s:s}`;
-            if(currentExam.timeLeft <= 0) submitExam();
-        }, 1000);
-    }
-
-    function renderQuestion() {
-        const q = currentExam.qs[currentExam.currentIdx];
-        document.getElementById('questionBox').innerText = `Q${currentExam.currentIdx+1}: ${q.q}`;
-        
-        const sel = currentExam.answers[currentExam.currentIdx];
-        
-        let html = "";
-        ['a','b','c'].forEach(opt => {
-            const isSel = sel === opt.toUpperCase();
-            html += `<div class="option-box ${isSel?'selected':''}" onclick="selectAns('${opt.toUpperCase()}')">
-                ${opt.toUpperCase()}. ${q[opt]}
-            </div>`;
-        });
-        document.getElementById('optionsBox').innerHTML = html;
-    }
-
-    function selectAns(val) {
-        currentExam.answers[currentExam.currentIdx] = val;
-        renderQuestion();
-    }
-
-    function navQuestion(dir) {
-        const newIdx = currentExam.currentIdx + dir;
-        if(newIdx >= 0 && newIdx < currentExam.qs.length) {
-            currentExam.currentIdx = newIdx;
-            renderQuestion();
-        }
-    }
-
-    async function submitExam() {
-        clearInterval(timerInterval);
-        let score = 0;
-        currentExam.qs.forEach((q, idx) => {
-            if(currentExam.answers[idx] === q.correct) score += 5; // 5 marks per question
-        });
-
-        db.results.push({
-            id: Date.now().toString(),
-            stuId: currentUser.id,
-            subId: currentExam.sub.id,
-            score: score,
-            strikes: currentExam.strikes
-        });
-
-        await saveData();
-        alert("Exam Submitted! Your Score: " + score);
-        location.reload();
-    }
-
-    // Anti-Cheat
-    document.addEventListener('visibilitychange', () => {
-        if(currentExam && document.visibilityState === 'hidden') {
-            currentExam.strikes++;
-            alert("WARNING: Do not leave the exam tab!");
-            if(currentExam.strikes >= 3) submitExam();
-        }
-    });
-
-    // Start
-    loadData();
-
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden)return;
+  alert("Do not leave exam!");
+});
 </script>
 </body>
 </html>
+
+
