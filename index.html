@@ -557,17 +557,11 @@ document.getElementById("btnLogoutStudent").onclick = () => {
 /* ---------------------------
    Registration Logic
    --------------------------- */
-document.addEventListener("DOMContentLoaded", async () => {
-  // Load data and populate dropdowns when the page starts
-  await loadDB();
-  populateClassDropdown(document.getElementById("regClass"));
-  populateClassDropdown(document.getElementById("loginClass"));
 
-  // Show the registration card when the button is clicked
-  document.getElementById("btnShowRegister").onclick = () => {
-    document.getElementById("loginCard").classList.add("hidden");
-    document.getElementById("registerCard").classList.remove("hidden");
-  }; 
+// 1. Show Register Screen
+document.getElementById("btnShowRegister").onclick = async () => {
+    await loadDB();
+    populateClassDropdown(document.getElementById("regClass"));
     document.getElementById("loginCard").classList.add("hidden");
     document.getElementById("registerCard").classList.remove("hidden");
 };
@@ -1347,7 +1341,7 @@ window.deleteStudent = deleteStudent;
 window.examJump = examJump;
 window.studentSelect = studentSelect;
 window.resetScore = resetScore;
-window.showStudentAnswers = showStudentAnswers
+window.showStudentAnswers = showStudentAnswers;
 
 </script>
 </body>
