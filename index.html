@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — CBT (Complete)</title>
+  <title>TVC High School — CBT (Fixed)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body { 
@@ -170,38 +170,39 @@
       <div class="row">
         <input id="loginUser" placeholder="Username (admin or student)" />
         <select id="loginClass">
-  <option value="" disabled selected>-- Select Class --</option>
-</select>
+            <option value="" disabled selected>-- Select Class --</option>
+        </select>
         <input id="loginPass" type="password" placeholder="Password" />
         <button id="btnLogin" class="primary">Login</button>
       </div>
 
       <div id="registerCard" class="card hidden">
-  <h2>Student Registration</h2>
+          <h2>Student Registration</h2>
 
-  <div class="row">
-    <input id="regUsername" placeholder="Username" />
-    <input id="regFullName" placeholder="Full Name" />
-  </div>
+          <div class="row">
+            <input id="regUsername" placeholder="Username" />
+            <input id="regFullName" placeholder="Full Name" />
+          </div>
 
-  <div class="row">
-    <select id="regClass">
-      <option value="" disabled selected>-- Select Class --</option>
-    </select>
-    <input id="regPassword" type="password" placeholder="Password" />
-  </div>
+          <div class="row">
+            <select id="regClass">
+              <option value="" disabled selected>-- Select Class --</option>
+            </select>
+            <input id="regPassword" type="password" placeholder="Password" />
+          </div>
 
-  <div class="row">
-    <button id="btnSubmitRegister" class="primary">Register</button>
-    <button id="btnCancelRegister" class="muted">Cancel</button>
-  </div>
+          <div class="row">
+            <button id="btnSubmitRegister" class="primary">Register</button>
+            <button id="btnCancelRegister" class="muted">Cancel</button>
+          </div>
 
-  <p id="registerMsg" class="muted"></p>
-</div>
+          <p id="registerMsg" class="muted"></p>
+      </div>
+      
       <p class="muted">
-  New student?
-  <button id="btnShowRegister" class="small muted">Register</button>
-</p>
+          New student?
+          <button id="btnShowRegister" class="small muted">Register</button>
+      </p>
       <div class="row">
           <input type="checkbox" id="showLoginPass" />
           <label for="showLoginPass" class="muted">Show password</label>
@@ -397,7 +398,6 @@
   </div>
 
 <script>
-<script>
 /* ---------------------------
    Persistence & DB
    --------------------------- */
@@ -442,7 +442,7 @@ async function loadDB(){
     }
   } catch(e){
     console.error("loadDB error", e);
-    alert("Failed to load data online. Check console for details.");
+    // Don't alert here, it might just be network delay, just log it.
   }
 }
 
@@ -460,9 +460,15 @@ function downloadCSV(content, filename){ const blob=new Blob([content], {type:"t
    Helper: Populate Class Dropdowns
    --------------------------- */
 function populateClassDropdown(selectEl) {
+  if (!db || !db.subjects) return;
   // Extract unique classes from subjects
   const classes = [...new Set(db.subjects.map(s => s.class))].sort();
-  selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
+  // Keep the first option (disabled "Select Class")
+  const firstOpt = selectEl.firstElementChild; 
+  selectEl.innerHTML = "";
+  if(firstOpt) selectEl.appendChild(firstOpt);
+  else selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
+  
   classes.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -492,7 +498,7 @@ let currentUser = null;
 document.getElementById("btnLogin").onclick = async () => {
   const username = document.getElementById("loginUser").value.trim();
   const password = document.getElementById("loginPass").value.trim();
-  const cls = document.getElementById("loginClass").value.trim();
+  const cls = document.getElementById("loginClass").value;
 
   // Ensure fresh data
   await loadDB(); 
@@ -505,6 +511,12 @@ document.getElementById("btnLogin").onclick = async () => {
     renderAllAdmin();
     document.getElementById("loginMsg").textContent = "";
     return;
+  }
+  
+  // Validation for student
+  if (!cls) {
+      document.getElementById("loginMsg").textContent = "Please select your class.";
+      return;
   }
 
   // Student Check
@@ -870,6 +882,7 @@ function refreshClassFilters(){
   filters.forEach(id => {
     const sel = document.getElementById(id);
     const curr = sel.value || "";
+    // Preserve default "Select" option
     sel.innerHTML = `<option value="" disabled selected>-- Select a Class --</option>`;
     sel.innerHTML += `<option value="all">All Classes</option>`;
     classes.forEach(c => {
