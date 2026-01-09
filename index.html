@@ -464,7 +464,11 @@ document.getElementById("btnLogin").onclick = async () => {
     return;
   }
 
-  const student = db.students.find(s => s.username === username && s.password === password && s.class === cls);
+  const student = db.students.find(s =>
+  s.username === username &&
+  s.password === password &&
+  s.class.toLowerCase() === cls.toLowerCase()
+);
   if (!student) {
     document.getElementById("loginMsg").textContent = "Invalid username, password, or class.";
     return;
