@@ -491,7 +491,6 @@ document.getElementById("btnLogoutStudent").onclick = () => {
   document.getElementById("loginCard").classList.remove("hidden");
 };
 
-  <script>
 document.getElementById("btnRegister").onclick = async () => {
   await loadDB();
 
@@ -522,8 +521,7 @@ document.getElementById("btnRegister").onclick = async () => {
   await saveDB();
 
   alert("Registration successful. You can now login.");
-};
-</script>
+};               
   
 /* Save/Clear local */
 document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
