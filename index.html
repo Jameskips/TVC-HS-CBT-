@@ -397,6 +397,7 @@
   </div>
 
 <script>
+<script>
 /* ---------------------------
    Persistence & DB
    --------------------------- */
@@ -455,6 +456,21 @@ function uid(){ return Date.now().toString(36) + Math.floor(Math.random()*9999).
 function escapeHtml(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" })[m]); }
 function downloadCSV(content, filename){ const blob=new Blob([content], {type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
+/* ---------------------------
+   Helper: Populate Class Dropdowns
+   --------------------------- */
+function populateClassDropdown(selectEl) {
+  // Extract unique classes from subjects
+  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+  selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
+  classes.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    selectEl.appendChild(opt);
+  });
+}
+
 /* Accordion Logic */
 document.querySelectorAll('.accordion details').forEach(details => {
   details.addEventListener('toggle', () => {
@@ -469,7 +485,7 @@ document.querySelectorAll('.accordion details').forEach(details => {
 });
 
 /* ---------------------------
-   Login / Logout
+   Login / Logout Logic
    --------------------------- */
 let currentUser = null;
 
@@ -478,8 +494,10 @@ document.getElementById("btnLogin").onclick = async () => {
   const password = document.getElementById("loginPass").value.trim();
   const cls = document.getElementById("loginClass").value.trim();
 
+  // Ensure fresh data
   await loadDB(); 
   
+  // Admin Check
   if (username === "admin" && password === "admin") {
     currentUser = { role: "admin", username: "admin" };
     document.getElementById("loginCard").classList.add("hidden");
@@ -489,16 +507,19 @@ document.getElementById("btnLogin").onclick = async () => {
     return;
   }
 
+  // Student Check
   const student = db.students.find(s =>
-  s.username === username &&
-  s.password === password &&
-  s.class.toLowerCase() === cls.toLowerCase()
-);
+    s.username === username &&
+    s.password === password &&
+    s.class.toLowerCase() === cls.toLowerCase()
+  );
+
   if (!student) {
     document.getElementById("loginMsg").textContent = "Invalid username, password, or class.";
     return;
   }
 
+  // Login Success
   currentUser = { role: "student", ...student };
   document.getElementById("loginCard").classList.add("hidden");
   document.getElementById("studentCard").classList.remove("hidden");
@@ -512,6 +533,7 @@ document.getElementById("btnLogoutAdmin").onclick = () => {
   document.getElementById("adminCard").classList.add("hidden");
   document.getElementById("loginCard").classList.remove("hidden");
 };
+
 document.getElementById("btnLogoutStudent").onclick = () => {
   currentUser = null;
   stopExamTimer();
@@ -520,25 +542,25 @@ document.getElementById("btnLogoutStudent").onclick = () => {
   document.getElementById("loginCard").classList.remove("hidden");
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+/* ---------------------------
+   Registration Logic
+   --------------------------- */
 
-  document.getElementById("btnShowRegister").onclick = () => {
-    ...
-  };
-
-});
-  await loadDB();
-  populateClassDropdown(document.getElementById("regClass"));
-
-  document.getElementById("loginCard").classList.add("hidden");
-  document.getElementById("registerCard").classList.remove("hidden");
+// 1. Show Register Screen
+document.getElementById("btnShowRegister").onclick = async () => {
+    await loadDB();
+    populateClassDropdown(document.getElementById("regClass"));
+    document.getElementById("loginCard").classList.add("hidden");
+    document.getElementById("registerCard").classList.remove("hidden");
 };
 
+// 2. Cancel Registration
 document.getElementById("btnCancelRegister").onclick = () => {
   document.getElementById("registerCard").classList.add("hidden");
   document.getElementById("loginCard").classList.remove("hidden");
 };
 
+// 3. Submit Registration
 document.getElementById("btnSubmitRegister").onclick = async () => {
   await loadDB();
 
@@ -569,59 +591,19 @@ document.getElementById("btnSubmitRegister").onclick = async () => {
 
   alert("Registration successful. You can now login.");
 
-  document.getElementById("registerCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
-
+  // Reset fields
   document.getElementById("regUsername").value = "";
   document.getElementById("regFullName").value = "";
   document.getElementById("regClass").value = "";
   document.getElementById("regPassword").value = "";
   document.getElementById("registerMsg").textContent = "";
+
+  // Return to login
+  document.getElementById("registerCard").classList.add("hidden");
+  document.getElementById("loginCard").classList.remove("hidden");
 };
   
-document.getElementById("btnRegister").onclick = async () => {
-  await loadDB();
-
-  function populateClassDropdown(selectEl) {
-  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
-  selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
-  classes.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    selectEl.appendChild(opt);
-  });
-}
-  const username = prompt("Choose a username:");
-  const name = prompt("Full name:");
-  const cls = prompt("Class (e.g. JSS1):");
-  const pwd = prompt("Password:");
-
-  if (!username || !name || !cls || !pwd) {
-    alert("All fields are required");
-    return;
-  }
-
-  if (db.students.some(s => s.username === username)) {
-    alert("Username already exists");
-    return;
-  }
-
-  const student = {
-    id: uid(),
-    username: username.trim(),
-    name: name.trim(),
-    class: cls.trim(),
-    password: pwd.trim()
-  };
-
-  db.students.push(student);
-  await saveDB();
-
-  alert("Registration successful. You can now login.");
-};               
-  
-/* Save/Clear local */
+/* Save/Clear local buttons */
 document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
 document.getElementById("btnClearLS").onclick = () => {
   if (!confirm("Clear all saved data? This will clear the online data and cannot be undone.")) return;
@@ -700,7 +682,7 @@ async function deleteSubject(id){
 }
 
 /* ---------------------------
-   Admin: Questions (A/B/C only). Keep subject selected after add.
+   Admin: Questions (A/B/C only)
    --------------------------- */
 function refreshQuestionAddSubjects(){
   const sel = document.getElementById("questionSubjectSelect");
@@ -1251,7 +1233,7 @@ function showStudentAnswers(studentId, subjectId) {
   document.getElementById("answerSheetCard").classList.remove("hidden");
 }
 
-/* New function: Show all students' answers for a subject (from subject dropdown button) */
+/* Show all students' answers for a subject (from subject dropdown button) */
 document.getElementById("btnViewAllAnswers").onclick = () => {
     const subjectId = document.getElementById("resetSubjectDropdown").value;
     if (!subjectId) return alert("Please select a subject first.");
@@ -1282,8 +1264,9 @@ document.getElementById("btnPrintAnswers").onclick = () => {
     window.print();
 };
 
-
-/* Show/Hide password toggle logic */
+/* ---------------------------
+   Toggle Password Visibility (Fixed)
+   --------------------------- */
 document.getElementById("showLoginPass").addEventListener("change", (e) => {
     const passInput = document.getElementById("loginPass");
     passInput.type = e.target.checked ? "text" : "password";
@@ -1293,7 +1276,6 @@ document.getElementById("showStuPass").addEventListener("change", (e) => {
     const passInput = document.getElementById("stuPassword");
     passInput.type = e.target.checked ? "text" : "password";
 });
-
 
 /* ---------------------------
    Render / Init helpers
@@ -1308,8 +1290,12 @@ function renderAllAdmin(){
   renderStudents();
   renderResults();
 }
+
 async function renderAllForStartup(){
   await loadDB();
+  // Populate the login dropdown immediately after loading DB
+  populateClassDropdown(document.getElementById("loginClass"));
+  
   renderAllAdmin();
   prepareStudentSubjectDropdown();
 }
@@ -1332,9 +1318,7 @@ async function renderAllForStartup(){
   await saveDB();
 })();
 
-renderAllForStartup();
-
-/* expose some functions for inline handlers (used above) */
+/* Expose global functions for inline HTML handlers */
 window.editSubject = editSubject;
 window.deleteSubject = deleteSubject;
 window.editQuestion = editQuestion;
@@ -1346,14 +1330,9 @@ window.studentSelect = studentSelect;
 window.resetScore = resetScore;
 window.showStudentAnswers = showStudentAnswers;
 
-  /* ===========================
-   STEP 5: Populate login class dropdown
-   =========================== */
-(async () => {
-  await loadDB();
-  populateClassDropdown(document.getElementById("loginClass"));
-})();
-  
+/* Start the app */
+renderAllForStartup();
+
 </script>
 </body>
 </html>
