@@ -513,9 +513,9 @@ document.getElementById("btnLogoutStudent").onclick = () => {
     password: hash
   });
 
-  await saveDB();
-  alert("Registration successful. You can now log in.");
-};
+  db.students.push(student);
+await saveDB();   // 🔥 THIS IS THE MISSING LINE
+alert("Registration successful");
   
 /* Save/Clear local */
 document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
