@@ -4,132 +4,259 @@
 <meta charset="UTF-8">
 <title>TVC High School CBT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{font-family:Arial;background:#eef3ff;margin:0}
-.card{background:#fff;margin:20px;padding:20px;border-radius:12px}
+body{font-family:Arial;background:#eef2ff;margin:0}
+.card{background:#fff;margin:16px;padding:16px;border-radius:12px}
 .hidden{display:none}
-button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer}
-.primary{background:#246bff;color:#fff}
-.danger{background:#e53935;color:#fff}
+button{padding:8px 14px;border:0;border-radius:6px;cursor:pointer}
+.primary{background:#2563eb;color:#fff}
+.danger{background:#dc2626;color:#fff}
+input,select{padding:8px;width:100%;margin:6px 0}
+.exam-option{border:1px solid #ccc;padding:10px;margin:6px 0;border-radius:6px;cursor:pointer}
+.exam-option.selected{background:#dbeafe}
 .timer{color:red;font-weight:bold}
-.exam-option{border:1px solid #ccc;padding:12px;margin:8px 0;border-radius:8px;cursor:pointer}
-.exam-option.selected{background:#dbe7ff}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{border:1px solid #ccc;padding:6px}
 </style>
 </head>
+
 <body>
 
+<!-- LOGIN -->
 <div class="card" id="loginCard">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
-  <button class="primary" onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
-  <p id="loginMsg"></p>
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button class="primary" onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+<p id="msg"></p>
 </div>
 
-<div class="card hidden" id="studentCard">
-  <h3 id="studentName"></h3>
-  <select id="subjectSelect"></select>
-  <button class="primary" onclick="startExam()">Start Exam</button>
-  <button onclick="logout()">Logout</button>
+<!-- ADMIN DASHBOARD -->
+<div class="card hidden" id="adminCard">
+<h2>Admin Dashboard</h2>
+<button onclick="logout()">Logout</button>
 
-  <div id="examCard" class="hidden">
-    <h3 id="examTitle"></h3>
-    Time: <span class="timer" id="timer"></span>
-    <div id="questionBox"></div>
-    <button onclick="prevQ()">Prev</button>
-    <button onclick="nextQ()">Next</button>
-    <button class="danger" onclick="submitExam()">Submit</button>
-  </div>
+<h3>Add Subject</h3>
+<input id="subName" placeholder="Subject name">
+<button onclick="addSubject()">Add Subject</button>
+
+<h3>Add Question</h3>
+<select id="qSubject"></select>
+<input id="qText" placeholder="Question">
+<input id="qA" placeholder="Option A">
+<input id="qB" placeholder="Option B">
+<input id="qC" placeholder="Option C">
+<select id="qCorrect">
+  <option>A</option><option>B</option><option>C</option>
+</select>
+<button onclick="addQuestion()">Add Question</button>
+
+<h3>Manage Questions</h3>
+<select id="manageSubject" onchange="loadQuestions()"></select>
+
+<table id="questionTable">
+<tr><th>Question</th><th>Correct</th><th>Actions</th></tr>
+</table>
+
+<h3>Results</h3>
+<table id="resultTable">
+<tr><th>User</th><th>Score</th><th>Date</th></tr>
+</table>
+</div>
+
+<!-- STUDENT DASHBOARD -->
+<div class="card hidden" id="studentCard">
+<h3 id="studentEmail"></h3>
+<select id="subjectSelect"></select>
+<button class="primary" onclick="startExam()">Start Exam</button>
+<button onclick="logout()">Logout</button>
+
+<div id="examCard" class="hidden">
+<h3 id="examTitle"></h3>
+Time: <span class="timer" id="timer"></span>
+<div id="questionBox"></div>
+<button onclick="prevQ()">Prev</button>
+<button onclick="nextQ()">Next</button>
+<button class="danger" onclick="submitExam()">Submit</button>
+</div>
 </div>
 
 <script type="module">
-/* 🔥 const firebaseConfig = {
-  apiKey: "AIzaSyAXeQ5pOc0HUrSYK8TTABuPN0Ae02eWwYM",
-  authDomain: "tvc-cbt.firebaseapp.com",
-  projectId: "tvc-cbt",
-  storageBucket: "tvc-cbt.firebasestorage.app",
-  messagingSenderId: "527990577172",
-  appId: "1:527990577172:web:0828402d6ffb1c50ef2f01"
-}; 🔥 */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore, collection, addDoc, getDocs, doc, getDoc,
+  updateDoc, deleteDoc, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* 🔥 PASTE YOUR FIREBASE CONFIG HERE */
 const firebaseConfig = {
-  apiKey: "AIzaSyAXeQ5pOc0HUrSYK8TTABuPN0Ae02eWwYM",
-  authDomain: "tvc-cbt.firebaseapp.com",
-  projectId: "tvc-cbt",
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  projectId: "PASTE_HERE"
 };
-/* 🔥 END CONFIG 🔥 */
+/* 🔥 END CONFIG */
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let questions=[], answers=[], index=0, timerInt, timeLeft=0;
+let questions=[],answers=[],idx=0,timeLeft=0,timerInt;
 
 /* AUTH */
-window.login = async () => {
+window.login = async ()=>{
   try{
     const res = await signInWithEmailAndPassword(auth,email.value,password.value);
-    studentName.innerText = res.user.email;
+    const snap = await getDoc(doc(db,"users",res.user.uid));
     loginCard.classList.add("hidden");
-    studentCard.classList.remove("hidden");
-    loadSubjects();
-  }catch(e){ loginMsg.innerText=e.message }
+
+    if(snap.exists() && snap.data().role==="admin"){
+      adminCard.classList.remove("hidden");
+      loadAdmin();
+    }else{
+      studentCard.classList.remove("hidden");
+      studentEmail.innerText=res.user.email;
+      loadSubjects();
+    }
+  }catch(e){msg.innerText=e.message}
 };
 
-window.register = async () => {
-  try{
-    await createUserWithEmailAndPassword(auth,email.value,password.value);
-    alert("Registered. Login now.");
-  }catch(e){ alert(e.message) }
+window.register = async ()=>{
+  const res = await createUserWithEmailAndPassword(auth,email.value,password.value);
+  await addDoc(collection(db,"users"),{ role:"student" });
+  alert("Registered. Login now.");
 };
 
 window.logout = ()=>location.reload();
 
-/* LOAD SUBJECTS */
+/* ADMIN */
+async function loadAdmin(){
+  qSubject.innerHTML="";
+  manageSubject.innerHTML="";
+  questionTable.innerHTML=`<tr><th>Question</th><th>Correct</th><th>Actions</th></tr>`;
+
+  const subs = await getDocs(collection(db,"subjects"));
+  subs.forEach(d=>{
+    const o=document.createElement("option");
+    o.value=d.id;o.text=d.data().name;
+    qSubject.appendChild(o);
+    manageSubject.appendChild(o.cloneNode(true));
+  });
+
+  loadQuestions();
+
+  resultTable.innerHTML=`<tr><th>User</th><th>Score</th><th>Date</th></tr>`;
+  const results = await getDocs(collection(db,"results"));
+  results.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.data().uid}</td>
+    <td>${r.data().score}/${r.data().total}</td>
+    <td>${r.data().date.toDate()}</td>`;
+    resultTable.appendChild(tr);
+  });
+}
+
+window.addSubject = async ()=>{
+  await addDoc(collection(db,"subjects"),{name:subName.value});
+  alert("Subject added");
+  loadAdmin();
+};
+
+window.addQuestion = async ()=>{
+  await addDoc(collection(db,"questions"),{
+    subjectId:qSubject.value,
+    question:qText.value,
+    A:qA.value,B:qB.value,C:qC.value,
+    correct:qCorrect.value
+  });
+  alert("Question added");
+  loadQuestions();
+};
+
+window.loadQuestions = async ()=>{
+  questionTable.innerHTML=`<tr><th>Question</th><th>Correct</th><th>Actions</th></tr>`;
+  const snap = await getDocs(query(
+    collection(db,"questions"),
+    where("subjectId","==",manageSubject.value)
+  ));
+  snap.forEach(d=>{
+    const q=d.data();
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${q.question}</td>
+      <td>${q.correct}</td>
+      <td>
+        <button onclick="editQuestion('${d.id}')">Edit</button>
+        <button class="danger" onclick="deleteQuestion('${d.id}')">Delete</button>
+      </td>`;
+    questionTable.appendChild(tr);
+  });
+};
+
+window.editQuestion = async id=>{
+  const ref=doc(db,"questions",id);
+  const snap=await getDoc(ref);
+  if(!snap.exists())return;
+  const q=snap.data();
+
+  const question=prompt("Question",q.question);
+  const A=prompt("Option A",q.A);
+  const B=prompt("Option B",q.B);
+  const C=prompt("Option C",q.C);
+  const correct=prompt("Correct (A/B/C)",q.correct);
+
+  if(!question||!A||!B||!C||!correct)return;
+  await updateDoc(ref,{question,A,B,C,correct});
+  loadQuestions();
+};
+
+window.deleteQuestion = async id=>{
+  if(!confirm("Delete question?"))return;
+  await deleteDoc(doc(db,"questions",id));
+  loadQuestions();
+};
+
+/* STUDENT */
 async function loadSubjects(){
   subjectSelect.innerHTML="";
-  const snap = await getDocs(collection(db,"subjects"));
-  snap.forEach(d=>{
+  const subs=await getDocs(collection(db,"subjects"));
+  subs.forEach(d=>{
     const o=document.createElement("option");
     o.value=d.id;o.text=d.data().name;
     subjectSelect.appendChild(o);
   });
 }
 
-/* EXAM */
 window.startExam = async ()=>{
-  const sid=subjectSelect.value;
-  const q=query(collection(db,"questions"),where("subjectId","==",sid));
-  const snap=await getDocs(q);
-  questions=[];answers=[];index=0;
+  const snap=await getDocs(query(
+    collection(db,"questions"),
+    where("subjectId","==",subjectSelect.value)
+  ));
+  questions=[];answers=[];idx=0;
   snap.forEach(d=>questions.push(d.data()));
   questions.sort(()=>Math.random()-0.5);
   timeLeft=questions.length*60;
   examCard.classList.remove("hidden");
-  renderQ(); startTimer(); enterFullscreen();
+  renderQ();startTimer();enterFullscreen();
 };
 
 function renderQ(){
-  const q=questions[index];
-  questionBox.innerHTML=`
-  <h4>${q.question}</h4>
+  const q=questions[idx];
+  questionBox.innerHTML=`<h4>${q.question}</h4>
   ${["A","B","C"].map(o=>`
-    <div class="exam-option ${answers[index]==o?"selected":""}"
-    onclick="answers[${index}]='${o}';renderQ()">
-    ${o}. ${q[o]}</div>`).join("")}`;
+  <div class="exam-option ${answers[idx]==o?"selected":""}"
+  onclick="answers[${idx}]='${o}';renderQ()">${o}. ${q[o]}</div>`).join("")}`;
 }
 
-window.nextQ=()=>{if(index<questions.length-1){index++;renderQ()}};
-window.prevQ=()=>{if(index>0){index--;renderQ()}};
+window.nextQ=()=>idx<questions.length-1&&(idx++,renderQ());
+window.prevQ=()=>idx>0&&(idx--,renderQ());
 
 function startTimer(){
   timerInt=setInterval(()=>{
     timeLeft--;
-    timer.innerText=Math.floor(timeLeft/60)+":"+String(timeLeft%60).padStart(2,"0");
+    timer.innerText=timeLeft;
     if(timeLeft<=0)submitExam();
   },1000);
 }
@@ -137,26 +264,18 @@ function startTimer(){
 window.submitExam = async ()=>{
   clearInterval(timerInt);
   let score=0;
-  questions.forEach((q,i)=>{ if(answers[i]==q.correct) score++; });
+  questions.forEach((q,i)=>answers[i]==q.correct&&score++);
   await addDoc(collection(db,"results"),{
     uid:auth.currentUser.uid,
-    score, total:questions.length,
+    score,total:questions.length,
     date:new Date()
   });
-  alert("Submitted!");
+  alert("Exam submitted");
   location.reload();
 };
 
-function enterFullscreen(){
-  document.documentElement.requestFullscreen?.();
-}
-
-document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden)return;
-  alert("Do not leave exam!");
-});
+function enterFullscreen(){document.documentElement.requestFullscreen?.();}
+document.addEventListener("visibilitychange",()=>document.hidden&&alert("Do not leave exam"));
 </script>
 </body>
 </html>
-
-
