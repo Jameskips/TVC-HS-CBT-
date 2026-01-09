@@ -169,13 +169,38 @@
       <h2>Login</h2>
       <div class="row">
         <input id="loginUser" placeholder="Username (admin or student)" />
-        <input id="loginClass" placeholder="Class (for students, e.g. JSS1)" />
+        <select id="loginClass">
+  <option value="" disabled selected>-- Select Class --</option>
+</select>
         <input id="loginPass" type="password" placeholder="Password" />
         <button id="btnLogin" class="primary">Login</button>
       </div>
+
+      <div id="registerCard" class="card hidden">
+  <h2>Student Registration</h2>
+
+  <div class="row">
+    <input id="regUsername" placeholder="Username" />
+    <input id="regFullName" placeholder="Full Name" />
+  </div>
+
+  <div class="row">
+    <select id="regClass">
+      <option value="" disabled selected>-- Select Class --</option>
+    </select>
+    <input id="regPassword" type="password" placeholder="Password" />
+  </div>
+
+  <div class="row">
+    <button id="btnSubmitRegister" class="primary">Register</button>
+    <button id="btnCancelRegister" class="muted">Cancel</button>
+  </div>
+
+  <p id="registerMsg" class="muted"></p>
+</div>
       <p class="muted">
   New student?
-  <button id="btnRegister" class="small muted">Register</button>
+  <button id="btnShowRegister" class="small muted">Register</button>
 </p>
       <div class="row">
           <input type="checkbox" id="showLoginPass" />
@@ -495,9 +520,72 @@ document.getElementById("btnLogoutStudent").onclick = () => {
   document.getElementById("loginCard").classList.remove("hidden");
 };
 
+  document.getElementById("btnShowRegister").onclick = async () => {
+  await loadDB();
+  populateClassDropdown(document.getElementById("regClass"));
+
+  document.getElementById("loginCard").classList.add("hidden");
+  document.getElementById("registerCard").classList.remove("hidden");
+};
+
+document.getElementById("btnCancelRegister").onclick = () => {
+  document.getElementById("registerCard").classList.add("hidden");
+  document.getElementById("loginCard").classList.remove("hidden");
+};
+
+document.getElementById("btnSubmitRegister").onclick = async () => {
+  await loadDB();
+
+  const username = document.getElementById("regUsername").value.trim();
+  const name = document.getElementById("regFullName").value.trim();
+  const cls = document.getElementById("regClass").value;
+  const pwd = document.getElementById("regPassword").value.trim();
+
+  if (!username || !name || !cls || !pwd) {
+    document.getElementById("registerMsg").textContent = "All fields are required.";
+    return;
+  }
+
+  if (db.students.some(s => s.username === username)) {
+    document.getElementById("registerMsg").textContent = "Username already exists.";
+    return;
+  }
+
+  db.students.push({
+    id: uid(),
+    username,
+    name,
+    class: cls,
+    password: pwd
+  });
+
+  await saveDB();
+
+  alert("Registration successful. You can now login.");
+
+  document.getElementById("registerCard").classList.add("hidden");
+  document.getElementById("loginCard").classList.remove("hidden");
+
+  document.getElementById("regUsername").value = "";
+  document.getElementById("regFullName").value = "";
+  document.getElementById("regClass").value = "";
+  document.getElementById("regPassword").value = "";
+  document.getElementById("registerMsg").textContent = "";
+};
+  
 document.getElementById("btnRegister").onclick = async () => {
   await loadDB();
 
+  function populateClassDropdown(selectEl) {
+  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+  selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
+  classes.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    selectEl.appendChild(opt);
+  });
+}
   const username = prompt("Choose a username:");
   const name = prompt("Full name:");
   const cls = prompt("Class (e.g. JSS1):");
@@ -1252,6 +1340,14 @@ window.studentSelect = studentSelect;
 window.resetScore = resetScore;
 window.showStudentAnswers = showStudentAnswers;
 
+  /* ===========================
+   STEP 5: Populate login class dropdown
+   =========================== */
+(async () => {
+  await loadDB();
+  populateClassDropdown(document.getElementById("loginClass"));
+})();
+  
 </script>
 </body>
 </html>
