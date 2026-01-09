@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TVC High School — CBT (Fixed)</title>
+  <title>TVC High School — CBT (Complete)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body { 
@@ -137,27 +137,11 @@
 
     /* Print-specific styles */
     @media print {
-        body {
-            background: none;
-            color: #000;
-            font-size: 12pt;
-        }
-        .wrap, .card {
-            box-shadow: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-        header, .accordion, #studentCard, #loginCard, .row button, .row select, #btnCloseAnswerSheet {
-            display: none !important;
-        }
-        #answerSheetCard {
-            display: block !important;
-        }
-        #answerSheetCard .row {
-            display: flex;
-            justify-content: space-between;
-        }
+        body { background: none; color: #000; font-size: 12pt; }
+        .wrap, .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+        header, .accordion, #studentCard, #loginCard, .row button, .row select, #btnCloseAnswerSheet { display: none !important; }
+        #answerSheetCard { display: block !important; }
+        #answerSheetCard .row { display: flex; justify-content: space-between; }
     }
   </style>
 </head>
@@ -166,46 +150,36 @@
     <header><h1>The Valued Child (TVC) High School — CBT</h1></header>
 
     <div id="loginCard" class="card">
-      <h2>Login</h2>
-      <div class="row">
-        <input id="loginUser" placeholder="Username (admin or student)" />
-        <select id="loginClass">
-            <option value="" disabled selected>-- Select Class --</option>
-        </select>
-        <input id="loginPass" type="password" placeholder="Password" />
-        <button id="btnLogin" class="primary">Login</button>
-      </div>
-
-      <div id="registerCard" class="card hidden">
-          <h2>Student Registration</h2>
-
-          <div class="row">
-            <input id="regUsername" placeholder="Username" />
-            <input id="regFullName" placeholder="Full Name" />
-          </div>
-
-          <div class="row">
-            <select id="regClass">
-              <option value="" disabled selected>-- Select Class --</option>
-            </select>
-            <input id="regPassword" type="password" placeholder="Password" />
-          </div>
-
-          <div class="row">
-            <button id="btnSubmitRegister" class="primary">Register</button>
-            <button id="btnCancelRegister" class="muted">Cancel</button>
-          </div>
-
-          <p id="registerMsg" class="muted"></p>
-      </div>
-      
-      <p class="muted">
-          New student?
-          <button id="btnShowRegister" class="small muted">Register</button>
-      </p>
-      <div class="row">
+      <div id="loginForm">
+        <h2>Login</h2>
+        <div class="row">
+          <input id="loginUser" placeholder="Username" />
+          <input id="loginClass" placeholder="Class (e.g. JSS1)" />
+          <input id="loginPass" type="password" placeholder="Password" />
+          <button id="btnLogin" class="primary">Login</button>
+        </div>
+        <div class="row">
           <input type="checkbox" id="showLoginPass" />
           <label for="showLoginPass" class="muted">Show password</label>
+          <span style="margin: 0 10px; color:#ccc">|</span>
+          <a href="#" onclick="toggleAuth(event, 'reg')" style="color:#246bff; text-decoration:none; font-weight:600;">Create Account</a>
+        </div>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <h2>Student Registration</h2>
+        <div class="row">
+          <input id="regFullName" placeholder="Full Name" />
+          <input id="regUser" placeholder="Choose Username" />
+          <select id="regClassSelect">
+             <option value="" disabled selected>Select Your Class</option>
+          </select>
+          <input id="regPass" type="password" placeholder="Create Password" />
+          <button id="btnRegister" class="primary">Register</button>
+        </div>
+        <div class="row">
+           <a href="#" onclick="toggleAuth(event, 'login')" style="color:#246bff; text-decoration:none; font-weight:600;">Already have an account? Login</a>
+        </div>
       </div>
       <p id="loginMsg" class="muted"></p>
     </div>
@@ -418,11 +392,9 @@ async function saveDB(){
       body: JSON.stringify(db)
     });
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-    const data = await response.json();
-    console.log("Data saved to JSONBin:", data);
   } catch(e){
     console.error("saveDB error", e);
-    alert("Failed to save data online. Check console for details.");
+    alert("Failed to save data online.");
   }
 }
 
@@ -430,25 +402,22 @@ async function loadDB(){
   try {
     const response = await fetch(`${JSONBIN_URL}/latest`, {
       method: "GET",
-      headers: {
-        "X-Master-Key": JSONBIN_MASTER_KEY
-      }
+      headers: { "X-Master-Key": JSONBIN_MASTER_KEY }
     });
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const data = await response.json();
     if (data.record) {
       db = data.record;
-      console.log("Data loaded from JSONBin.");
     }
   } catch(e){
     console.error("loadDB error", e);
-    // Don't alert here, it might just be network delay, just log it.
   }
 }
 
 async function commit(){
   await saveDB();
   renderAllAdmin();
+  refreshRegClassList();
 }
 
 /* Utility */
@@ -456,88 +425,84 @@ function uid(){ return Date.now().toString(36) + Math.floor(Math.random()*9999).
 function escapeHtml(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" })[m]); }
 function downloadCSV(content, filename){ const blob=new Blob([content], {type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-/* ---------------------------
-   Helper: Populate Class Dropdowns
-   --------------------------- */
-function populateClassDropdown(selectEl) {
-  if (!db || !db.subjects) return;
-  // Extract unique classes from subjects
-  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
-  // Keep the first option (disabled "Select Class")
-  const firstOpt = selectEl.firstElementChild; 
-  selectEl.innerHTML = "";
-  if(firstOpt) selectEl.appendChild(firstOpt);
-  else selectEl.innerHTML = `<option value="" disabled selected>-- Select Class --</option>`;
-  
-  classes.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    selectEl.appendChild(opt);
-  });
-}
-
 /* Accordion Logic */
 document.querySelectorAll('.accordion details').forEach(details => {
   details.addEventListener('toggle', () => {
     if (details.open) {
       document.querySelectorAll('.accordion details').forEach(otherDetails => {
-        if (otherDetails !== details && otherDetails.open) {
-          otherDetails.open = false;
-        }
+        if (otherDetails !== details && otherDetails.open) otherDetails.open = false;
       });
     }
   });
 });
 
 /* ---------------------------
-   Login / Logout Logic
+   Auth Logic (Login & Self-Reg)
    --------------------------- */
 let currentUser = null;
+
+function toggleAuth(e, type) {
+  if(e) e.preventDefault();
+  document.getElementById("loginForm").classList.toggle("hidden", type === 'reg');
+  document.getElementById("registerForm").classList.toggle("hidden", type === 'login');
+  document.getElementById("loginMsg").textContent = "";
+  if(type === 'reg') refreshRegClassList();
+}
+
+function refreshRegClassList() {
+    const sel = document.getElementById("regClassSelect");
+    const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+    sel.innerHTML = `<option value="" disabled selected>Select Your Class</option>`;
+    classes.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c; opt.text = c;
+        sel.appendChild(opt);
+    });
+}
+
+document.getElementById("btnRegister").onclick = async () => {
+  const name = document.getElementById("regFullName").value.trim();
+  const user = document.getElementById("regUser").value.trim();
+  const cls = document.getElementById("regClassSelect").value;
+  const pass = document.getElementById("regPass").value.trim();
+
+  if(!name || !user || !cls || !pass) return alert("Please fill all registration fields.");
+  if(db.students.some(s => s.username.toLowerCase() === user.toLowerCase())) return alert("Username already taken.");
+
+  db.students.push({ id: uid(), username: user, name: name, class: cls, password: pass });
+  await commit();
+  alert("Registration successful! You can now login.");
+  toggleAuth(null, 'login');
+  document.getElementById("loginUser").value = user;
+  document.getElementById("loginClass").value = cls;
+};
 
 document.getElementById("btnLogin").onclick = async () => {
   const username = document.getElementById("loginUser").value.trim();
   const password = document.getElementById("loginPass").value.trim();
-  const cls = document.getElementById("loginClass").value;
+  const cls = document.getElementById("loginClass").value.trim();
 
-  // Ensure fresh data
   await loadDB(); 
   
-  // Admin Check
   if (username === "admin" && password === "admin") {
     currentUser = { role: "admin", username: "admin" };
     document.getElementById("loginCard").classList.add("hidden");
     document.getElementById("adminCard").classList.remove("hidden");
     renderAllAdmin();
-    document.getElementById("loginMsg").textContent = "";
     return;
   }
-  
-  // Validation for student
-  if (!cls) {
-      document.getElementById("loginMsg").textContent = "Please select your class.";
-      return;
-  }
 
-  // Student Check
-  const student = db.students.find(s =>
-    s.username === username &&
-    s.password === password &&
-    s.class.toLowerCase() === cls.toLowerCase()
-  );
-
+  const student = db.students.find(s => s.username === username && s.password === password && s.class === cls);
   if (!student) {
     document.getElementById("loginMsg").textContent = "Invalid username, password, or class.";
     return;
   }
 
-  // Login Success
   currentUser = { role: "student", ...student };
   document.getElementById("loginCard").classList.add("hidden");
   document.getElementById("studentCard").classList.remove("hidden");
   document.getElementById("studentHeader").textContent = `Student Panel — ${student.name} (${student.class})`;
   prepareStudentSubjectDropdown();
-  document.getElementById("loginMsg").textContent = "";
 };
 
 document.getElementById("btnLogoutAdmin").onclick = () => {
@@ -545,7 +510,6 @@ document.getElementById("btnLogoutAdmin").onclick = () => {
   document.getElementById("adminCard").classList.add("hidden");
   document.getElementById("loginCard").classList.remove("hidden");
 };
-
 document.getElementById("btnLogoutStudent").onclick = () => {
   currentUser = null;
   stopExamTimer();
@@ -555,89 +519,17 @@ document.getElementById("btnLogoutStudent").onclick = () => {
 };
 
 /* ---------------------------
-   Registration Logic
-   --------------------------- */
-
-// 1. Show Register Screen
-document.getElementById("btnShowRegister").onclick = async () => {
-    await loadDB();
-    populateClassDropdown(document.getElementById("regClass"));
-    document.getElementById("loginCard").classList.add("hidden");
-    document.getElementById("registerCard").classList.remove("hidden");
-};
-
-// 2. Cancel Registration
-document.getElementById("btnCancelRegister").onclick = () => {
-  document.getElementById("registerCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
-};
-
-// 3. Submit Registration
-document.getElementById("btnSubmitRegister").onclick = async () => {
-  await loadDB();
-
-  const username = document.getElementById("regUsername").value.trim();
-  const name = document.getElementById("regFullName").value.trim();
-  const cls = document.getElementById("regClass").value;
-  const pwd = document.getElementById("regPassword").value.trim();
-
-  if (!username || !name || !cls || !pwd) {
-    document.getElementById("registerMsg").textContent = "All fields are required.";
-    return;
-  }
-
-  if (db.students.some(s => s.username === username)) {
-    document.getElementById("registerMsg").textContent = "Username already exists.";
-    return;
-  }
-
-  db.students.push({
-    id: uid(),
-    username,
-    name,
-    class: cls,
-    password: pwd
-  });
-
-  await saveDB();
-
-  alert("Registration successful. You can now login.");
-
-  // Reset fields
-  document.getElementById("regUsername").value = "";
-  document.getElementById("regFullName").value = "";
-  document.getElementById("regClass").value = "";
-  document.getElementById("regPassword").value = "";
-  document.getElementById("registerMsg").textContent = "";
-
-  // Return to login
-  document.getElementById("registerCard").classList.add("hidden");
-  document.getElementById("loginCard").classList.remove("hidden");
-};
-  
-/* Save/Clear local buttons */
-document.getElementById("btnSaveLS").onclick = () => { alert("This button is now disabled. Data is saved online."); };
-document.getElementById("btnClearLS").onclick = () => {
-  if (!confirm("Clear all saved data? This will clear the online data and cannot be undone.")) return;
-  db = { subjects:[], questions:[], students:[], scores:[] };
-  commit(); // This will save the empty DB online
-  alert("Cleared.");
-};
-
-/* ---------------------------
-   Admin: Subjects (duration & marks per question)
+   Admin Logic (Existing)
    --------------------------- */
 document.getElementById("btnAddSubject").onclick = () => {
   const name = document.getElementById("newSubjectInput").value.trim();
   const cls = document.getElementById("newSubjectClassInput").value.trim();
   const dur = parseInt(document.getElementById("newSubjectDuration").value, 10);
   const marks = parseFloat(document.getElementById("newSubjectMarks").value);
-  if (!name || !cls || !dur || isNaN(marks) || marks <= 0) return alert("Please enter subject, class, duration (mins) and marks per question.");
+  if (!name || !cls || !dur || isNaN(marks)) return alert("Fill all subject fields.");
   db.subjects.push({ id: uid(), name, class: cls, duration: dur, marksPerQuestion: marks });
   document.getElementById("newSubjectInput").value = "";
   document.getElementById("newSubjectClassInput").value = "";
-  document.getElementById("newSubjectDuration").value = "";
-  document.getElementById("newSubjectMarks").value = "";
   commit();
 };
 
@@ -647,16 +539,9 @@ function renderSubjects(){
   const tbody = document.getElementById("subjectsTbody");
   tbody.innerHTML = "";
   const filterClass = document.getElementById("subjectClassFilter").value;
-  if (!filterClass) { 
-    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a class to view subjects.</td></tr>";
-    return;
-  }
-  const filteredSubjects = db.subjects.filter(s => filterClass === "all" || s.class === filterClass);
-  if (!filteredSubjects.length) {
-    tbody.innerHTML = "<tr><td colspan='5' class='muted'>No subjects found for this class.</td></tr>";
-    return;
-  }
-  filteredSubjects.forEach(s => {
+  if (!filterClass) return;
+  const filtered = db.subjects.filter(s => filterClass === "all" || s.class === filterClass);
+  filtered.forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
         <td>${escapeHtml(s.name)}</td>
@@ -673,29 +558,23 @@ function renderSubjects(){
 
 async function editSubject(id){
   const s = db.subjects.find(x => x.id == id);
-  if (!s) return alert("Subject not found");
+  if (!s) return;
   const name = prompt("Subject name:", s.name);
   const cls = prompt("Class:", s.class);
-  const durRaw = prompt("Duration (mins):", s.duration);
-  const marksRaw = prompt("Marks per question:", s.marksPerQuestion);
-  if (name !== null && name.trim()) s.name = name.trim();
-  if (cls !== null && cls.trim()) s.class = cls.trim();
-  const dur = parseInt(durRaw,10); if (!isNaN(dur) && dur > 0) s.duration = dur;
-  const marks = parseFloat(marksRaw); if (!isNaN(marks) && marks > 0) s.marksPerQuestion = marks;
+  if (name) s.name = name.trim();
+  if (cls) s.class = cls.trim();
   await commit();
 }
 
 async function deleteSubject(id){
-  if (!confirm("Delete subject and all its questions and scores?")) return;
+  if (!confirm("Delete subject and all related data?")) return;
   db.questions = db.questions.filter(q => q.subjectId != id);
   db.scores = db.scores.filter(sc => sc.subjectId != id);
   db.subjects = db.subjects.filter(s => s.id != id);
   await commit();
 }
 
-/* ---------------------------
-   Admin: Questions (A/B/C only)
-   --------------------------- */
+/* Questions Management */
 function refreshQuestionAddSubjects(){
   const sel = document.getElementById("questionSubjectSelect");
   const prev = sel.value;
@@ -703,7 +582,7 @@ function refreshQuestionAddSubjects(){
   db.subjects.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s.id;
-    opt.text = `${s.name} (${s.class}) — ${s.duration}m, ${s.marksPerQuestion} mark(s)`;
+    opt.text = `${s.name} (${s.class})`;
     sel.appendChild(opt);
   });
   if (prev) sel.value = prev;
@@ -716,8 +595,7 @@ document.getElementById("btnAddQuestion").onclick = () => {
   const B = document.getElementById("optionB").value.trim();
   const C = document.getElementById("optionC").value.trim();
   const correct = document.getElementById("correctOption").value;
-  if (!subjectId || !text || !A || !B || !C) return alert("Fill question and options A, B, C.");
-  if (!["A","B","C"].includes(correct)) return alert("Correct must be A, B, or C.");
+  if (!subjectId || !text || !A || !B || !C) return alert("Fill all question fields.");
   db.questions.push({ id: uid(), subjectId, question: text, A, B, C, correct });
   document.getElementById("questionText").value = "";
   document.getElementById("optionA").value = "";
@@ -735,48 +613,27 @@ document.getElementById("questionFilterSubjectSelect").onchange = () => renderQu
 function refreshQuestionFilterSubjects() {
     const classFilter = document.getElementById("questionClassFilter").value;
     const subjectFilter = document.getElementById("questionFilterSubjectSelect");
-    const prev = subjectFilter.value;
     subjectFilter.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option>`;
     if (classFilter) {
-      const filteredSubjects = db.subjects.filter(s => classFilter === "all" || s.class === classFilter);
-      filteredSubjects.forEach(s => {
+      db.subjects.filter(s => classFilter === "all" || s.class === classFilter).forEach(s => {
           const opt = document.createElement("option");
-          opt.value = s.id;
-          opt.text = `${s.name} (${s.class})`;
+          opt.value = s.id; opt.text = s.name;
           subjectFilter.appendChild(opt);
       });
-      if (prev) subjectFilter.value = prev;
     }
 }
 
 function renderQuestions(){
   const tbody = document.getElementById("questionsTbody");
   tbody.innerHTML = "";
-  const subjectIdFilter = document.getElementById("questionFilterSubjectSelect").value;
-  const classIdFilter = document.getElementById("questionClassFilter").value;
-  
-  if (!classIdFilter) {
-    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a class.</td></tr>";
-    return;
-  }
-  if (!subjectIdFilter) {
-    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a subject.</td></tr>";
-    return;
-  }
-
-  const filteredQuestions = db.questions.filter(q => subjectIdFilter === "all" || q.subjectId === subjectIdFilter);
-  if (!filteredQuestions.length) {
-    tbody.innerHTML = "<tr><td colspan='5' class='muted'>No questions found for this subject.</td></tr>";
-    return;
-  }
-  let i = 1;
-  filteredQuestions.forEach(q => {
-    const subj = db.subjects.find(s => s.id == q.subjectId);
+  const subId = document.getElementById("questionFilterSubjectSelect").value;
+  if (!subId) return;
+  const filtered = db.questions.filter(q => subId === "all" || q.subjectId === subId);
+  filtered.forEach((q, i) => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
-        <td>${i++}</td>
+        <td>${i+1}</td>
         <td>${escapeHtml(q.question)}</td>
-        <td>${subj ? escapeHtml(subj.name + " (" + subj.class + ")") : "-"}</td>
         <td>${q.correct}</td>
         <td>
           <button class="small" onclick="editQuestion('${q.id}')">Edit</button>
@@ -788,17 +645,8 @@ function renderQuestions(){
 
 async function editQuestion(id){
   const q = db.questions.find(x => x.id == id);
-  if (!q) return alert("Question not found");
   const text = prompt("Question text:", q.question);
-  const A = prompt("Option A:", q.A);
-  const B = prompt("Option B:", q.B);
-  const C = prompt("Option C:", q.C);
-  const correct = prompt("Correct (A/B/C):", q.correct);
-  if (text !== null && text.trim()) q.question = text.trim();
-  if (A !== null) q.A = A;
-  if (B !== null) q.B = B;
-  if (C !== null) q.C = C;
-  if (correct !== null && ["A","B","C"].includes(correct.toUpperCase())) q.correct = correct.toUpperCase();
+  if (text) q.question = text;
   await commit();
 }
 
@@ -808,239 +656,54 @@ async function deleteQuestion(id){
   await commit();
 }
 
-/* ---------------------------
-   Admin: Students
-   --------------------------- */
+/* Student Management */
 document.getElementById("btnAddStudent").onclick = () => {
-  const username = document.getElementById("stuUsername").value.trim();
+  const user = document.getElementById("stuUsername").value.trim();
   const name = document.getElementById("stuFullName").value.trim();
   const cls = document.getElementById("stuClass").value.trim();
   const pwd = document.getElementById("stuPassword").value.trim();
-  if (!username || !name || !cls || !pwd) return alert("Fill all student fields");
-  if (db.students.some(s => s.username === username)) return alert("Username already exists");
-  db.students.push({ id: uid(), username, name, class: cls, password: pwd });
-  document.getElementById("stuUsername").value = "";
-  document.getElementById("stuFullName").value = "";
-  document.getElementById("stuClass").value = "";
-  document.getElementById("stuPassword").value = "";
+  if (!user || !name || !cls || !pwd) return alert("Fill all student fields.");
+  db.students.push({ id: uid(), username: user, name, class: cls, password: pwd });
   commit();
 };
+
 document.getElementById("studentClassFilter").onchange = () => renderStudents();
 
 function renderStudents(){
   const tbody = document.getElementById("studentsTbody");
   tbody.innerHTML = "";
-  const filterClass = document.getElementById("studentClassFilter").value;
-  if (!filterClass) {
-    tbody.innerHTML = "<tr><td colspan='4' class='muted'>Please select a class to view students.</td></tr>";
-    return;
-  }
-  const filteredStudents = db.students.filter(s => filterClass === "all" || s.class === filterClass);
-  if (!filteredStudents.length) {
-    tbody.innerHTML = "<tr><td colspan='4' class='muted'>No students found for this class.</td></tr>";
-    return;
-  }
-  filteredStudents.forEach(s => {
+  const cls = document.getElementById("studentClassFilter").value;
+  if (!cls) return;
+  db.students.filter(s => cls === "all" || s.class === cls).forEach(s => {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
         <td>${escapeHtml(s.username)}</td>
         <td>${escapeHtml(s.name)}</td>
-        <td>${escapeHtml(s.class)}</td>
+        <td>${s.class}</td>
         <td>
-          <button class="small" onclick="editStudent('${s.id}')">Edit</button>
           <button class="small danger" onclick="deleteStudent('${s.id}')">Delete</button>
         </td>
       </tr>`);
   });
 }
 
-async function editStudent(id){
-  const s = db.students.find(x => x.id == id);
-  if (!s) return alert("Student not found");
-  const name = prompt("Full name:", s.name);
-  const cls = prompt("Class:", s.class);
-  const pwd = prompt("Password (leave blank to keep):", "");
-  if (name !== null && name.trim()) s.name = name.trim();
-  if (cls !== null && cls.trim()) s.class = cls.trim();
-  if (pwd !== null && pwd.trim()) s.password = pwd;
-  await commit();
-}
-
 async function deleteStudent(id){
-  if (!confirm("Delete student and their scores?")) return;
+  if (!confirm("Delete student?")) return;
   db.students = db.students.filter(s => s.id != id);
-  db.scores = db.scores.filter(sc => sc.studentId != id);
   await commit();
 }
 
 /* ---------------------------
-   Admin: Results (render & export)
+   Exam Engine
    --------------------------- */
-function refreshClassFilters(){
-  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
-  const filters = ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter", "studentClassFilter"];
-  filters.forEach(id => {
-    const sel = document.getElementById(id);
-    const curr = sel.value || "";
-    // Preserve default "Select" option
-    sel.innerHTML = `<option value="" disabled selected>-- Select a Class --</option>`;
-    sel.innerHTML += `<option value="all">All Classes</option>`;
-    classes.forEach(c => {
-      const opt = document.createElement("option"); opt.value = c; opt.text = c;
-      if (c === curr) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  });
-}
-document.getElementById("adminStudentClassFilter").onchange = renderResults;
+let examState = null; 
+let examInterval = null;
 
-function refreshResetSubjectDropdown() {
-  const dropdown = document.getElementById("resetSubjectDropdown");
-  const prev = dropdown.value;
-  dropdown.innerHTML = `<option value="" disabled selected>-- Select Subject --</option>`;
-  db.subjects.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s.id;
-    opt.text = `${s.name} (${s.class})`;
-    dropdown.appendChild(opt);
-  });
-  if (prev) dropdown.value = prev;
-}
-
-document.getElementById("btnResetSubject").onclick = async () => {
-  const subjectId = document.getElementById("resetSubjectDropdown").value;
-  if (!subjectId) return alert("Please select a subject to reset.");
-  const subject = db.subjects.find(s => s.id === subjectId);
-  if (!subject) return alert("Subject not found.");
-  if (!confirm(`Are you sure you want to reset ALL exam results for ${subject.name} (${subject.class})? This cannot be undone.`)) return;
-
-  const initialScoreCount = db.scores.length;
-  db.scores = db.scores.filter(sc => sc.subjectId !== subjectId);
-  const scoresRemoved = initialScoreCount - db.scores.length;
-  await commit();
-  alert(`${scoresRemoved} exam result(s) for ${subject.name} have been reset.`);
-};
-
-function renderResults(){
-  const thead = document.getElementById("resultsThead");
-  const tbody = document.getElementById("resultsTbody");
-  thead.innerHTML = ""; tbody.innerHTML = "";
-  const filter = document.getElementById("adminStudentClassFilter").value;
-  
-  if (!filter) {
-    thead.innerHTML = "<tr><th>Please select a class to view results.</th></tr>";
-    return;
-  }
-
-  const filtered = db.scores.filter(sc => {
-    if (filter === "all") return true;
-    const st = db.students.find(s => s.id == sc.studentId);
-    return st && st.class === filter;
-  });
-
-  if (!filtered.length){ 
-    thead.innerHTML = `<tr><th>No results found for ${filter === "all" ? "any class" : filter}.</th></tr>`; 
-    return; 
-  }
-
-  // Build maps
-  const studentsMap = {}, subjectsMap = {};
-  filtered.forEach(sc => {
-    const st = db.students.find(s => s.id == sc.studentId);
-    if (st) studentsMap[st.id] = { name: st.name, class: st.class };
-    subjectsMap[sc.subjectId] = sc.subject;
-  });
-  const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
-
-  // Header
-  let head = "<tr><th>Student</th><th>Class</th>";
-  subids.forEach(id => head += `<th>${escapeHtml(subjectsMap[id])}</th>`);
-  head += "<th>Total</th><th>Percentage</th></tr>";
-  thead.innerHTML = head;
-
-  // Rows
-  sids.forEach(sid => {
-    const st = studentsMap[sid];
-    let row = `<tr><td>${escapeHtml(st.name)}</td><td>${escapeHtml(st.class)}</td>`;
-    let total = 0, maxTotal = 0;
-    subids.forEach(subid => {
-      const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
-      if (sc) { 
-        row += `<td>${sc.score} / ${sc.totalMarks} <button class="small muted" onclick="showStudentAnswers('${sc.studentId}', '${sc.subjectId}')">View</button> <button class="small danger" onclick="resetScore('${sc.studentId}', '${sc.subjectId}')">Reset</button></td>`; 
-        total += Number(sc.score); 
-        maxTotal += Number(sc.totalMarks); 
-      }
-      else row += `<td>N/A</td>`;
-    });
-    const pct = maxTotal ? (total / maxTotal * 100) : 0;
-    row += `<td>${total}</td><td>${pct.toFixed(2)}%</td></tr>`;
-    tbody.insertAdjacentHTML("beforeend", row);
-  });
-}
-
-async function resetScore(studentId, subjectId) {
-  if (!confirm("Are you sure you want to reset this student's result for this subject?")) return;
-  db.scores = db.scores.filter(sc => !(sc.studentId === studentId && sc.subjectId === subjectId));
-  await commit();
-  alert("Result has been reset. The student can now re-take the exam.");
-}
-
-document.getElementById("btnExportStudents").onclick = () => {
-  if (!db.students.length) return alert("No students");
-  let csv = "username,fullName,class\n";
-  db.students.forEach(s => csv += `${s.username},"${s.name}",${s.class}\n`);
-  downloadCSV(csv, "students_all.csv");
-};
-
-document.getElementById("btnExportResults").onclick = () => {
-  const filter = document.getElementById("adminStudentClassFilter").value;
-  if (!filter) return alert("Please select a class filter first.");
-
-  const filtered = db.scores.filter(sc => {
-    if (filter === "all") return true;
-    const st = db.students.find(s => s.id == sc.studentId);
-    return st && st.class === filter;
-  });
-
-  if (!filtered.length) return alert("No results for this filter");
-  // Build maps
-  const studentsMap = {}, subjectsMap = {};
-  filtered.forEach(sc => {
-    const st = db.students.find(s => s.id == sc.studentId);
-    if (st) studentsMap[st.id] = { name: st.name, class: st.class };
-    subjectsMap[sc.subjectId] = sc.subject;
-  });
-  const sids = Object.keys(studentsMap), subids = Object.keys(subjectsMap);
-  let csv = "Student,Class";
-  subids.forEach(id => csv += `,${subjectsMap[id]}`);
-  csv += ",Total,Percentage\n";
-
-  sids.forEach(sid => {
-    const st = studentsMap[sid];
-    let total = 0, maxTotal = 0;
-    let line = `"${st.name}",${st.class}`;
-    subids.forEach(subid => {
-      const sc = filtered.find(x => x.studentId == sid && x.subjectId == subid);
-      if (sc) { line += `,${sc.score}/${sc.totalMarks}`; total += Number(sc.score); maxTotal += Number(sc.totalMarks); }
-      else line += ",N/A";
-    });
-    const pct = maxTotal ? (total / maxTotal * 100) : 0;
-    line += `,${total},${pct.toFixed(2)}%\n`;
-    csv += line;
-  });
-
-  downloadCSV(csv, filter === "all" ? "results_all.csv" : `results_${filter}.csv`);
-};
-
-/* ---------------------------
-   Student: subject dropdown + exam
-   --------------------------- */
 function prepareStudentSubjectDropdown(){
   const sel = document.getElementById("studentSubjectDropdown");
   sel.innerHTML = `<option value="">-- Select subject --</option>`;
   if (!currentUser) return;
-  const subs = db.subjects.filter(s => s.class === currentUser.class);
-  subs.forEach(s => {
+  db.subjects.filter(s => s.class === currentUser.class).forEach(s => {
     const done = db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == s.id);
     const opt = document.createElement("option");
     opt.value = s.id;
@@ -1050,85 +713,57 @@ function prepareStudentSubjectDropdown(){
   });
 }
 
-/* Exam state */
-let examState = null; 
-let examInterval = null;
-
 document.getElementById("btnStartExam").onclick = () => {
   const sid = document.getElementById("studentSubjectDropdown").value;
-  if (!sid) return alert("Select a subject first.");
-  if (db.scores.some(sc => sc.studentId == currentUser.id && sc.subjectId == sid)) return alert("You already completed this subject.");
-  document.getElementById("studentMsg").textContent = ""; 
+  if (!sid) return alert("Select a subject.");
   startExam(sid);
 };
 
 function startExam(subjectId){
   const subj = db.subjects.find(s => s.id == subjectId);
-  if (!subj) return alert("Subject not found");
   const questions = db.questions.filter(q => q.subjectId == subjectId);
-  if (!questions.length) return alert("No questions for this subject yet.");
+  if (!questions.length) return alert("No questions available.");
 
   examState = {
-    subjectId,
-    subjectName: subj.name,
-    subjectClass: subj.class,
-    durationSec: subj.duration * 60,
-    index: 0,
-    questions,
-    answers: Array(questions.length).fill(null),
+    subjectId, subjectName: subj.name, durationSec: subj.duration * 60,
+    index: 0, questions, answers: Array(questions.length).fill(null),
     totalMarks: questions.length * (Number(subj.marksPerQuestion) || 1)
   };
 
-  // UI
   document.getElementById("examCard").classList.remove("hidden");
-  document.getElementById("examSubjectTitle").textContent = `${subj.name} — ${subj.class}`;
+  document.getElementById("examSubjectTitle").textContent = subj.name;
   renderExamQuestion();
-  renderExamKeys();
   startExamTimer();
-  document.getElementById("examMsg").textContent = "";
 }
 
 function renderExamQuestion(){
-  if (!examState) return;
   const i = examState.index;
   const q = examState.questions[i];
   const a = examState.answers[i];
   const box = document.getElementById("examQuestionBox");
   box.innerHTML = `
     <div class="muted">Question ${i+1} of ${examState.questions.length}</div>
-    <h3 style="margin:8px 0">${escapeHtml(q.question)}</h3>
+    <h3>${escapeHtml(q.question)}</h3>
     <div style="display:grid;gap:10px">
-      <div id="optA" class="exam-option ${a==="A"?"selected":""}" onclick="studentSelect('A')"><strong>A.</strong> ${escapeHtml(q.A)}</div>
-      <div id="optB" class="exam-option ${a==="B"?"selected":""}" onclick="studentSelect('B')"><strong>B.</strong> ${escapeHtml(q.B)}</div>
-      <div id="optC" class="exam-option ${a==="C"?"selected":""}" onclick="studentSelect('C')"><strong>C.</strong> ${escapeHtml(q.C)}</div>
+      <div class="exam-option ${a==="A"?"selected":""}" onclick="studentSelect('A')"><strong>A.</strong> ${escapeHtml(q.A)}</div>
+      <div class="exam-option ${a==="B"?"selected":""}" onclick="studentSelect('B')"><strong>B.</strong> ${escapeHtml(q.B)}</div>
+      <div class="exam-option ${a==="C"?"selected":""}" onclick="studentSelect('C')"><strong>C.</strong> ${escapeHtml(q.C)}</div>
     </div>
   `;
   document.getElementById("btnPrevQ").disabled = (i === 0);
   const last = (i === examState.questions.length - 1);
   document.getElementById("btnNextQ").classList.toggle("hidden", last);
   document.getElementById("btnSubmitExam").classList.toggle("hidden", !last);
-  document.getElementById("examProgress").textContent = `Q ${i+1} / ${examState.questions.length}`;
   renderExamKeys();
 }
 
 function studentSelect(letter){
-  if (!examState) return;
   examState.answers[examState.index] = letter;
   renderExamQuestion();
 }
 
-document.getElementById("btnPrevQ").onclick = () => {
-  if (!examState) return;
-  if (examState.index > 0) { examState.index--; renderExamQuestion(); }
-};
-document.getElementById("btnNextQ").onclick = () => {
-  if (!examState) return;
-  if (examState.index < examState.questions.length - 1) { examState.index++; renderExamQuestion(); }
-};
-
 function renderExamKeys(){
   const keysDiv = document.getElementById("questionKeys");
-  if (!examState) { keysDiv.innerHTML = ""; return; }
   let html = "";
   for (let i = 0; i < examState.questions.length; i++){
     const active = i === examState.index;
@@ -1137,214 +772,133 @@ function renderExamKeys(){
   }
   keysDiv.innerHTML = html;
 }
-function examJump(i){ if (!examState) return; examState.index = i; renderExamQuestion(); }
 
-/* Timer */
+function examJump(i){ examState.index = i; renderExamQuestion(); }
+
 function startExamTimer(){
-  stopExamTimer();
-  updateTimerLabel();
+  if (examInterval) clearInterval(examInterval);
   examInterval = setInterval(() => {
     examState.durationSec--;
     updateTimerLabel();
-    if (examState.durationSec <= 0) {
-      stopExamTimer();
-      document.getElementById("examMsg").textContent = "Time is up — auto-submitting...";
-      setTimeout(() => finalizeExam(true), 700);
-    }
+    if (examState.durationSec <= 0) finalizeExam(true);
   }, 1000);
 }
-function stopExamTimer(){ if (examInterval) clearInterval(examInterval); examInterval = null; }
+
+function stopExamTimer(){ clearInterval(examInterval); }
+
 function updateTimerLabel(){
-  const el = document.getElementById("examTimer");
-  if (!examState) { el.textContent = "--:--"; return; }
   const s = Math.max(0, examState.durationSec);
   const mm = Math.floor(s/60).toString().padStart(2,"0");
-  const ss = Math.floor(s%60).toString().padStart(2,"0");
-  el.textContent = `${mm}:${ss}`;
+  const ss = (s%60).toString().padStart(2,"0");
+  document.getElementById("examTimer").textContent = `${mm}:${ss}`;
 }
 
-/* Submit (with confirmation and review unanswered) */
 document.getElementById("btnSubmitExam").onclick = () => {
-  if (!examState) return;
-  if (!confirm("Are you sure you want to submit?")) return;
-  finalizeExam(false);
+  if (confirm("Submit your exam?")) finalizeExam();
 };
 
 async function finalizeExam(isAuto=false){
-  if (!examState) return;
   const subj = db.subjects.find(s => s.id == examState.subjectId);
-  const marksPerQ = subj ? (Number(subj.marksPerQuestion) || 1) : 1;
-  let score = 0, totalMarks = 0;
+  const marksPerQ = Number(subj.marksPerQuestion) || 1;
+  let score = 0;
   examState.questions.forEach((q, idx) => {
-    totalMarks += marksPerQ;
-    if (examState.answers[idx] && examState.answers[idx] === q.correct) score += marksPerQ;
+    if (examState.answers[idx] === q.correct) score += marksPerQ;
   });
 
   db.scores.push({
-    studentId: currentUser.id,
-    subjectId: examState.subjectId,
-    subject: examState.subjectName,
-    score,
-    totalMarks,
-    answers: examState.answers // <-- Now saves the answers
+    studentId: currentUser.id, subjectId: examState.subjectId,
+    subject: examState.subjectName, score, totalMarks: examState.totalMarks,
+    answers: examState.answers
   });
-  await saveDB();
-
+  
+  await commit();
   stopExamTimer();
   examState = null;
   document.getElementById("examCard").classList.add("hidden");
   prepareStudentSubjectDropdown();
-  renderAllAdmin(); // Re-render admin view to show the new score
-
-  document.getElementById("studentMsg").textContent = "Your exam has been submitted successfully. The administrator will view your score.";
-  alert("Your exam has been submitted successfully.");
+  alert("Exam Submitted Successfully.");
 }
 
-/* Show single answer sheet details as HTML */
-function renderSingleAnswerSheet(scoreData) {
-  const student = db.students.find(s => s.id === scoreData.studentId);
-  const questions = db.questions.filter(q => q.subjectId === scoreData.subjectId);
-  
-  if (!student || !questions.length) return '';
+/* ---------------------------
+   Results & Export
+   --------------------------- */
+function renderResults(){
+  const thead = document.getElementById("resultsThead");
+  const tbody = document.getElementById("resultsTbody");
+  const filter = document.getElementById("adminStudentClassFilter").value;
+  if (!filter) return;
 
-  let html = `
-    <div class="card" style="margin-bottom: 20px;">
-      <h3 style="margin-top:0;">Student: ${escapeHtml(student.name)} (${escapeHtml(student.class)})</h3>
-      <p><strong>Subject:</strong> ${escapeHtml(scoreData.subject)}</p>
-      <p><strong>Score:</strong> ${scoreData.score} / ${scoreData.totalMarks}</p>
-      <hr style="margin:20px 0"/>
-  `;
-
-  questions.forEach((q, index) => {
-    const studentAnswer = scoreData.answers[index];
-    const isCorrect = studentAnswer === q.correct;
-    const resultText = isCorrect ? '<span style="color:green;font-weight:bold;">Correct</span>' : `<span style="color:red;font-weight:bold;">Incorrect</span>`;
-    const studentSelection = studentAnswer ? `Your Answer: <strong>${studentAnswer}</strong>` : 'Unanswered';
-
-    html += `
-      <div style="margin-bottom: 20px;">
-        <p><strong>Q${index + 1}:</strong> ${escapeHtml(q.question)}</p>
-        <p>${studentSelection} (${resultText})</p>
-        <p>Correct Answer: <strong>${q.correct}</strong></p>
-        <p style="font-size:14px;color:#666;">A: ${escapeHtml(q.A)} | B: ${escapeHtml(q.B)} | C: ${escapeHtml(q.C)}</p>
-      </div>
-    `;
+  const filtered = db.scores.filter(sc => {
+    const st = db.students.find(s => s.id == sc.studentId);
+    return filter === "all" || (st && st.class === filter);
   });
-  
-  html += `</div>`;
-  return html;
+
+  thead.innerHTML = "<tr><th>Student</th><th>Subject</th><th>Score</th><th>Actions</th></tr>";
+  tbody.innerHTML = "";
+  filtered.forEach(sc => {
+    const st = db.students.find(s => s.id == sc.studentId);
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${st ? escapeHtml(st.name) : 'Unknown'}</td>
+        <td>${escapeHtml(sc.subject)}</td>
+        <td>${sc.score} / ${sc.totalMarks}</td>
+        <td><button class="small muted" onclick="showStudentAnswers('${sc.studentId}', '${sc.subjectId}')">View</button></td>
+      </tr>`);
+  });
 }
 
-/* Show a single student's answers (from table button) */
-function showStudentAnswers(studentId, subjectId) {
-  const scoreData = db.scores.find(s => s.studentId === studentId && s.subjectId === subjectId);
-  if (!scoreData) return alert("Score data not found.");
-
-  document.getElementById("answerSheetContent").innerHTML = renderSingleAnswerSheet(scoreData);
-  document.getElementById("answerSheetHeader").textContent = `Answer Sheet for ${escapeHtml(db.students.find(s => s.id === studentId).name)}`;
+function showStudentAnswers(sid, subid) {
+  const sc = db.scores.find(x => x.studentId == sid && x.subjectId == subid);
+  const st = db.students.find(x => x.id == sid);
+  const qs = db.questions.filter(x => x.subjectId == subid);
+  
+  let html = `<h3>${st.name} - ${sc.subject}</h3>`;
+  qs.forEach((q, i) => {
+    const ans = sc.answers[i];
+    html += `<p>Q${i+1}: ${q.question}<br>Ans: ${ans || 'N/A'} (Correct: ${q.correct})</p>`;
+  });
+  document.getElementById("answerSheetContent").innerHTML = html;
   document.getElementById("adminCard").classList.add("hidden");
   document.getElementById("answerSheetCard").classList.remove("hidden");
 }
-
-/* Show all students' answers for a subject (from subject dropdown button) */
-document.getElementById("btnViewAllAnswers").onclick = () => {
-    const subjectId = document.getElementById("resetSubjectDropdown").value;
-    if (!subjectId) return alert("Please select a subject first.");
-
-    const subjectName = db.subjects.find(s => s.id === subjectId).name;
-    const subjectScores = db.scores.filter(sc => sc.subjectId === subjectId);
-
-    if (subjectScores.length === 0) return alert("No results found for this subject.");
-
-    let allAnswersHtml = "";
-    subjectScores.forEach(score => {
-        allAnswersHtml += renderSingleAnswerSheet(score);
-    });
-
-    document.getElementById("answerSheetContent").innerHTML = allAnswersHtml;
-    document.getElementById("answerSheetHeader").textContent = `All Answers for ${escapeHtml(subjectName)}`;
-    document.getElementById("adminCard").classList.add("hidden");
-    document.getElementById("answerSheetCard").classList.remove("hidden");
-};
-
 
 document.getElementById("btnCloseAnswerSheet").onclick = () => {
   document.getElementById("answerSheetCard").classList.add("hidden");
   document.getElementById("adminCard").classList.remove("hidden");
 };
 
-document.getElementById("btnPrintAnswers").onclick = () => {
-    window.print();
-};
+/* Global Initialization */
+function refreshClassFilters(){
+  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+  ["subjectClassFilter", "questionClassFilter", "adminStudentClassFilter", "studentClassFilter"].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="" disabled selected>-- Class --</option><option value="all">All</option>`;
+    classes.forEach(c => sel.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+  });
+}
 
-/* ---------------------------
-   Toggle Password Visibility (Fixed)
-   --------------------------- */
-document.getElementById("showLoginPass").addEventListener("change", (e) => {
-    const passInput = document.getElementById("loginPass");
-    passInput.type = e.target.checked ? "text" : "password";
-});
-
-document.getElementById("showStuPass").addEventListener("change", (e) => {
-    const passInput = document.getElementById("stuPassword");
-    passInput.type = e.target.checked ? "text" : "password";
-});
-/* Start the app */
-renderAllForStartup();
-
-/* ---------------------------
-   Render / Init helpers
-   --------------------------- */
 function renderAllAdmin(){
   refreshClassFilters();
-  refreshQuestionFilterSubjects();
   refreshQuestionAddSubjects();
-  refreshResetSubjectDropdown();
   renderSubjects();
-  renderQuestions();
   renderStudents();
   renderResults();
 }
 
-async function renderAllForStartup(){
+(async function init(){
   await loadDB();
-  // Populate the login dropdown immediately after loading DB
-  populateClassDropdown(document.getElementById("loginClass"));
-  
+  refreshRegClassList();
   renderAllAdmin();
-  prepareStudentSubjectDropdown();
-}
-
-/* initial demo data if empty (optional) */
-(async function seedIfEmpty(){
-  await loadDB(); 
-  if (db.subjects.length || db.questions.length || db.students.length) return;
-  
-  const s1 = uid(); const s2 = uid();
-  db.subjects.push({ id: s1, name: "Mathematics", class: "JSS1", duration: 5, marksPerQuestion: 1 });
-  db.subjects.push({ id: s2, name: "English Language", class: "JSS1", duration: 5, marksPerQuestion: 1 });
-  db.questions.push({ id: uid(), subjectId: s1, question: "What is 2 + 2?", A:"3", B:"4", C:"5", correct:"B" });
-  db.questions.push({ id: uid(), subjectId: s1, question: "What is 3 + 1?", A:"4", B:"2", C:"5", correct:"A" });
-  db.students.push({ id: uid(), username: "stud1", name: "John Doe", class: "JSS1", password: "1234" });
-  db.students.push({ id: uid(), username: "stud2", name: "Jane Doe", class: "JSS1", password: "1234" });
-  db.subjects.push({ id: uid(), name: "Physics", class: "SSS1", duration: 5, marksPerQuestion: 2 });
-  db.subjects.push({ id: uid(), name: "Chemistry", class: "SSS1", duration: 5, marksPerQuestion: 2 });
-  db.questions.push({ id: uid(), subjectId: uid(), question: "What is H2O?", A:"Water", B:"Oxygen", C:"Hydrogen", correct:"A" });
-  await saveDB();
 })();
 
-/* Expose global functions for inline HTML handlers */
 window.editSubject = editSubject;
 window.deleteSubject = deleteSubject;
 window.editQuestion = editQuestion;
 window.deleteQuestion = deleteQuestion;
-window.editStudent = editStudent;
 window.deleteStudent = deleteStudent;
-window.examJump = examJump;
 window.studentSelect = studentSelect;
-window.resetScore = resetScore;
+window.examJump = examJump;
 window.showStudentAnswers = showStudentAnswers;
-
 </script>
 </body>
 </html>
