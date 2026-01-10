@@ -216,6 +216,10 @@
                   <option value="all">All Classes</option>
                 </select>
             </div>
+           <label class="muted">Filter by subject:</label>
+<select id="resultSubjectFilter" onchange="renderResults()">
+  <option value="all">All Subjects</option>
+</select> 
             <table>
               <thead><tr><th>Subject</th><th>Class</th><th>Duration (mins)</th><th>Marks / Q</th><th>Actions</th></tr></thead>
               <tbody id="subjectsTbody"></tbody>
@@ -239,6 +243,20 @@
 TXT (Word): A / B / C + ANSWER<br>
 CSV: question,A,B,C,answer
 </p>
+<div id="previewBox" class="card hidden">
+  <h4>Preview Questions</h4>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Question</th><th>Correct</th></tr>
+    </thead>
+    <tbody id="previewTbody"></tbody>
+  </table>
+  <div class="row">
+    <button class="primary" onclick="confirmImport()">Confirm Import</button>
+    <button class="muted" onclick="cancelPreview()">Cancel</button>
+  </div>
+</div>
+            
             <h3>Questions (A / B / C only)</h3>
             <div class="row">
               <label class="muted">Subject:</label>
@@ -326,6 +344,22 @@ CSV: question,A,B,C,answer
                 <button id="btnExportResults" class="muted">Export Results CSV</button>
               </div>
             </div>
+          <h4>Advanced Result Reset</h4>
+<div class="row">
+  <select id="resetClass">
+    <option value="all">All Classes</option>
+  </select>
+
+  <select id="resetSubject">
+    <option value="all">All Subjects</option>
+  </select>
+
+  <select id="resetStudent">
+    <option value="all">All Students</option>
+  </select>
+
+  <button class="danger" onclick="resetResultsAdvanced()">Reset</button>
+</div>
             <table>
               <thead id="resultsThead"></thead>
               <tbody id="resultsTbody"></tbody>
@@ -787,15 +821,15 @@ async function finalizeExam(){
    --------------------------- */
 function renderResults(){
   const tbody = document.getElementById("resultsTbody");
-  const filter = document.getElementById("adminStudentClassFilter").value;
-  document.getElementById("resultsThead").innerHTML = "<tr><th>Student</th><th>Subject</th><th>Score</th><th>Action</th></tr>";
-  tbody.innerHTML = "";
-  db.scores.filter(sc => { const st = db.students.find(s => s.id == sc.studentId); return filter === "all" || (st && st.class === filter); }).forEach(sc => {
-    const st = db.students.find(s => s.id == sc.studentId);
-    tbody.insertAdjacentHTML("beforeend", `<tr><td>${st ? st.name : 'Unknown'}</td><td>${sc.subject}</td><td>${sc.score}/${sc.totalMarks}</td><td><button class="small" onclick="showStudentAnswers('${sc.studentId}', '${sc.subjectId}')">View</button></td></tr>`);
-  });
-}
+const classFilter = document.getElementById("adminStudentClassFilter").value;
+const subjectFilter = document.getElementById("resultSubjectFilter").value;
 
+db.scores.filter(sc=>{
+  const st = db.students.find(s=>s.id===sc.studentId);
+  return (classFilter==="all" || st.class===classFilter)
+      && (subjectFilter==="all" || sc.subjectId===subjectFilter);
+});
+  
 function showStudentAnswers(sid, subid) {
   const sc = db.scores.find(x => x.studentId == sid && x.subjectId == subid);
   const st = db.students.find(x => x.id == sid);
@@ -822,6 +856,15 @@ document.getElementById("btnCloseAnswerSheet").onclick = () => { document.getEle
 
 (async function init(){ await loadDB(); refreshRegClassList(); renderAllAdmin(); })();
 
+  function refreshResultSubjects() {
+  const sel = document.getElementById("resultSubjectFilter");
+  sel.innerHTML = `<option value="all">All Subjects</option>`;
+  db.subjects.forEach(s=>{
+    sel.insertAdjacentHTML("beforeend",
+      `<option value="${s.id}">${s.name}</option>`
+    );
+  });
+}
 window.editSubject = editSubject; window.deleteSubject = deleteSubject; window.editStudent = editStudent; window.deleteStudent = deleteStudent;
 window.studentSelect = studentSelect; window.examJump = examJump; window.showStudentAnswers = showStudentAnswers;
 
@@ -893,6 +936,55 @@ function parseCSV(text, subjectId) {
   commit();
   alert("CSV questions imported successfully");
 }
+
+  let previewQuestions = [];
+
+function showPreview(list) {
+  previewQuestions = list;
+  const tb = document.getElementById("previewTbody");
+  tb.innerHTML = "";
+  list.forEach((q,i)=>{
+    tb.insertAdjacentHTML("beforeend",
+      `<tr><td>${i+1}</td><td>${escapeHtml(q.question)}</td><td>${q.correct}</td></tr>`
+    );
+  });
+  document.getElementById("previewBox").classList.remove("hidden");
+}
+
+function confirmImport() {
+  db.questions.push(...previewQuestions);
+  previewQuestions = [];
+  document.getElementById("previewBox").classList.add("hidden");
+  commit();
+  alert("Questions imported successfully");
+}
+
+function cancelPreview() {
+  previewQuestions = [];
+  document.getElementById("previewBox").classList.add("hidden");
+}
+function resetResultsAdvanced() {
+  if (!confirm("Reset selected results?")) return;
+
+  const cls = document.getElementById("resetClass").value;
+  const sub = document.getElementById("resetSubject").value;
+  const stu = document.getElementById("resetStudent").value;
+
+  db.scores = db.scores.filter(sc => {
+    const st = db.students.find(s => s.id === sc.studentId);
+    if (!st) return true;
+
+    if (cls !== "all" && st.class !== cls) return true;
+    if (sub !== "all" && sc.subjectId !== sub) return true;
+    if (stu !== "all" && sc.studentId !== stu) return true;
+
+    return false; // remove matching records
+  });
+
+  commit();
+  alert("Selected results have been reset.");
+}
+  
 </script>
 </body>
 </html>
