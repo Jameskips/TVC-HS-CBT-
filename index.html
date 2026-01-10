@@ -543,43 +543,121 @@ async function deleteSubject(id){
   }
 }
 
-/* Questions Management */
+/* ---------------------------
+   Admin: Questions (A/B/C only). Keep subject selected after add.
+   --------------------------- */
 function refreshQuestionAddSubjects(){
   const sel = document.getElementById("questionSubjectSelect");
+  const prev = sel.value;
   sel.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option>`;
-  db.subjects.forEach(s => sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.name} (${s.class})</option>`));
+  db.subjects.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.text = `${s.name} (${s.class}) — ${s.duration}m, ${s.marksPerQuestion} mark(s)`;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
 }
 
 document.getElementById("btnAddQuestion").onclick = () => {
-  const sid = document.getElementById("questionSubjectSelect").value;
-  const txt = document.getElementById("questionText").value.trim();
-  const A = document.getElementById("optionA").value.trim(), B = document.getElementById("optionB").value.trim(), C = document.getElementById("optionC").value.trim();
-  const cor = document.getElementById("correctOption").value;
-  if (!sid || !txt || !A || !B || !C) return alert("Fill all fields.");
-  db.questions.push({ id: uid(), subjectId: sid, question: txt, A, B, C, correct: cor });
+  const subjectId = document.getElementById("questionSubjectSelect").value;
+  const text = document.getElementById("questionText").value.trim();
+  const A = document.getElementById("optionA").value.trim();
+  const B = document.getElementById("optionB").value.trim();
+  const C = document.getElementById("optionC").value.trim();
+  const correct = document.getElementById("correctOption").value;
+  if (!subjectId || !text || !A || !B || !C) return alert("Fill question and options A, B, C.");
+  if (!["A","B","C"].includes(correct)) return alert("Correct must be A, B, or C.");
+  db.questions.push({ id: uid(), subjectId, question: text, A, B, C, correct });
+  document.getElementById("questionText").value = "";
+  document.getElementById("optionA").value = "";
+  document.getElementById("optionB").value = "";
+  document.getElementById("optionC").value = "";
   commit();
 };
+
+document.getElementById("questionClassFilter").onchange = () => {
+    refreshQuestionFilterSubjects();
+    renderQuestions();
+};
+document.getElementById("questionFilterSubjectSelect").onchange = () => renderQuestions();
 
 function refreshQuestionFilterSubjects() {
     const classFilter = document.getElementById("questionClassFilter").value;
     const subjectFilter = document.getElementById("questionFilterSubjectSelect");
-    subjectFilter.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option><option value="all">All</option>`;
-    db.subjects.filter(s => classFilter === "all" || s.class === classFilter).forEach(s => {
-        subjectFilter.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.name}</option>`);
-    });
+    const prev = subjectFilter.value;
+    subjectFilter.innerHTML = `<option value="" disabled selected>-- Select a Subject --</option>`;
+    if (classFilter) {
+      const filteredSubjects = db.subjects.filter(s => classFilter === "all" || s.class === classFilter);
+      filteredSubjects.forEach(s => {
+          const opt = document.createElement("option");
+          opt.value = s.id;
+          opt.text = `${s.name} (${s.class})`;
+          subjectFilter.appendChild(opt);
+      });
+      if (prev) subjectFilter.value = prev;
+    }
 }
 
 function renderQuestions(){
   const tbody = document.getElementById("questionsTbody");
   tbody.innerHTML = "";
-  const subId = document.getElementById("questionFilterSubjectSelect").value;
-  db.questions.filter(q => subId === "all" || q.subjectId === subId).forEach((q, i) => {
-    tbody.insertAdjacentHTML("beforeend", `<tr><td>${i+1}</td><td>${escapeHtml(q.question)}</td><td>${q.correct}</td><td>
-      <button class="small" onclick="editQuestion('${q.id}')">Edit</button>
-      <button class="small danger" onclick="deleteQuestion('${q.id}')">Del</button>
-    </td></tr>`);
+  const subjectIdFilter = document.getElementById("questionFilterSubjectSelect").value;
+  const classIdFilter = document.getElementById("questionClassFilter").value;
+  
+  if (!classIdFilter) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a class.</td></tr>";
+    return;
+  }
+  if (!subjectIdFilter) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>Please select a subject.</td></tr>";
+    return;
+  }
+
+  const filteredQuestions = db.questions.filter(q => subjectIdFilter === "all" || q.subjectId === subjectIdFilter);
+  if (!filteredQuestions.length) {
+    tbody.innerHTML = "<tr><td colspan='5' class='muted'>No questions found for this subject.</td></tr>";
+    return;
+  }
+  let i = 1;
+  filteredQuestions.forEach(q => {
+    const subj = db.subjects.find(s => s.id == q.subjectId);
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${i++}</td>
+        <td>${escapeHtml(q.question)}</td>
+        <td>${subj ? escapeHtml(subj.name + " (" + subj.class + ")") : "-"}</td>
+        <td>${q.correct}</td>
+        <td>
+          <button class="small" onclick="editQuestion('${q.id}')">Edit</button>
+          <button class="small danger" onclick="deleteQuestion('${q.id}')">Delete</button>
+        </td>
+      </tr>`);
   });
 }
+
+async function editQuestion(id){
+  const q = db.questions.find(x => x.id == id);
+  if (!q) return alert("Question not found");
+  const text = prompt("Question text:", q.question);
+  const A = prompt("Option A:", q.A);
+  const B = prompt("Option B:", q.B);
+  const C = prompt("Option C:", q.C);
+  const correct = prompt("Correct (A/B/C):", q.correct);
+  if (text !== null && text.trim()) q.question = text.trim();
+  if (A !== null) q.A = A;
+  if (B !== null) q.B = B;
+  if (C !== null) q.C = C;
+  if (correct !== null && ["A","B","C"].includes(correct.toUpperCase())) q.correct = correct.toUpperCase();
+  await commit();
+}
+
+async function deleteQuestion(id){
+  if (!confirm("Delete question?")) return;
+  db.questions = db.questions.filter(q => q.id != id);
+  await commit();
+}
+
 
 /* Student Management */
 document.getElementById("btnAddStudent").onclick = () => {
