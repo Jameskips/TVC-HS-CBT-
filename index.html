@@ -226,6 +226,19 @@
         <details>
           <summary>Questions</summary>
           <div class="accordion-content">
+            <hr style="margin:15px 0">
+
+<h3>Bulk Upload Questions (Word / CSV)</h3>
+
+<div class="row">
+  <input type="file" id="bulkFile" accept=".txt,.csv" />
+  <button class="primary" onclick="importBulkQuestions()">Import</button>
+</div>
+
+<p class="muted">
+TXT (Word): A / B / C + ANSWER<br>
+CSV: question,A,B,C,answer
+</p>
             <h3>Questions (A / B / C only)</h3>
             <div class="row">
               <label class="muted">Subject:</label>
@@ -811,6 +824,75 @@ document.getElementById("btnCloseAnswerSheet").onclick = () => { document.getEle
 
 window.editSubject = editSubject; window.deleteSubject = deleteSubject; window.editStudent = editStudent; window.deleteStudent = deleteStudent;
 window.studentSelect = studentSelect; window.examJump = examJump; window.showStudentAnswers = showStudentAnswers;
+
+  function importBulkQuestions() {
+  const file = document.getElementById("bulkFile").files[0];
+  const subjectId = document.getElementById("questionSubjectSelect").value;
+
+  if (!file) return alert("Select a file");
+  if (!subjectId) return alert("Select a subject first");
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const text = reader.result;
+
+    if (file.name.endsWith(".txt")) parseTXT(text, subjectId);
+    else if (file.name.endsWith(".csv")) parseCSV(text, subjectId);
+    else alert("Unsupported file");
+  };
+  reader.readAsText(file);
+}
+
+function parseTXT(text, subjectId) {
+  const blocks = text.trim().split(/\n\s*\n/);
+
+  blocks.forEach(block => {
+    const lines = block.split("\n").map(l => l.trim());
+    if (lines.length < 5) return;
+
+    const q = lines[0];
+    const A = lines[1].replace(/^A\.\s*/, "");
+    const B = lines[2].replace(/^B\.\s*/, "");
+    const C = lines[3].replace(/^C\.\s*/, "");
+    const ans = lines[4].replace("ANSWER:", "").trim();
+
+    if (!["A","B","C"].includes(ans)) return;
+
+    db.questions.push({
+      id: uid(),
+      subjectId,
+      question: q,
+      A, B, C,
+      correct: ans
+    });
+  });
+
+  commit();
+  alert("TXT questions imported successfully");
+}
+
+function parseCSV(text, subjectId) {
+  const rows = text.trim().split("\n").slice(1);
+
+  rows.forEach(r => {
+    const [q, A, B, C, ans] = r.split(",");
+
+    if (!q || !A || !B || !C) return;
+
+    db.questions.push({
+      id: uid(),
+      subjectId,
+      question: q.trim(),
+      A: A.trim(),
+      B: B.trim(),
+      C: C.trim(),
+      correct: ans.trim().toUpperCase()
+    });
+  });
+
+  commit();
+  alert("CSV questions imported successfully");
+}
 </script>
 </body>
 </html>
