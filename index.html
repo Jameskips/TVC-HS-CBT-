@@ -344,7 +344,15 @@ CSV: question,A,B,C,answer
                 <button id="btnExportResults" class="muted">Export Results CSV</button>
               </div>
             </div>
-          <h4>Advanced Result Reset</h4>
+            <table>
+              <thead id="resultsThead"></thead>
+              <tbody id="resultsTbody"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+<h4>Advanced Result Reset</h4>
 <div class="row">
   <select id="resetClass">
     <option value="all">All Classes</option>
@@ -360,15 +368,7 @@ CSV: question,A,B,C,answer
 
   <button class="danger" onclick="resetResultsAdvanced()">Reset</button>
 </div>
-            <table>
-              <thead id="resultsThead"></thead>
-              <tbody id="resultsTbody"></tbody>
-            </table>
-          </div>
-        </details>
-      </div>
-    </div>
-
+    
     <div id="answerSheetCard" class="card hidden">
       <div class="row" style="justify-content:space-between">
         <h2 id="answerSheetHeader"></h2>
@@ -564,6 +564,18 @@ document.getElementById("btnAddSubject").onclick = () => {
   commit();
 };
 
+  function renderSubjects(){
+  const tbody = document.getElementById("subjectsTbody");
+  tbody.innerHTML = "";
+  const filterClass = document.getElementById("subjectClassFilter").value;
+  db.subjects.filter(s => filterClass === "all" || s.class === filterClass).forEach(s => {
+    tbody.insertAdjacentHTML("beforeend", `<tr><td>${escapeHtml(s.name)}</td><td>${s.class}</td><td>${s.duration}</td><td>${s.marksPerQuestion}</td><td>
+      <button class="small" onclick="editSubject('${s.id}')">Edit</button>
+      <button class="small danger" onclick="deleteSubject('${s.id}')">Del</button>
+    </td></tr>`);
+  });
+}
+  
 const classFilter = document.getElementById("adminStudentClassFilter").value;
 const subjectFilter = document.getElementById("resultSubjectFilter").value;
 
