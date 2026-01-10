@@ -564,17 +564,14 @@ document.getElementById("btnAddSubject").onclick = () => {
   commit();
 };
 
-function renderSubjects(){
-  const tbody = document.getElementById("subjectsTbody");
-  tbody.innerHTML = "";
-  const filterClass = document.getElementById("subjectClassFilter").value;
-  db.subjects.filter(s => filterClass === "all" || s.class === filterClass).forEach(s => {
-    tbody.insertAdjacentHTML("beforeend", `<tr><td>${escapeHtml(s.name)}</td><td>${s.class}</td><td>${s.duration}</td><td>${s.marksPerQuestion}</td><td>
-      <button class="small" onclick="editSubject('${s.id}')">Edit</button>
-      <button class="small danger" onclick="deleteSubject('${s.id}')">Del</button>
-    </td></tr>`);
-  });
-}
+const classFilter = document.getElementById("adminStudentClassFilter").value;
+const subjectFilter = document.getElementById("resultSubjectFilter").value;
+
+db.scores.filter(sc=>{
+  const st = db.students.find(s=>s.id===sc.studentId);
+  return (classFilter==="all" || st.class===classFilter)
+      && (subjectFilter==="all" || sc.subjectId===subjectFilter);
+});
 
 async function editSubject(id){
   const s = db.subjects.find(x => x.id == id);
@@ -886,6 +883,28 @@ window.studentSelect = studentSelect; window.examJump = examJump; window.showStu
   reader.readAsText(file);
 }
 
+  function resetResultsAdvanced() {
+  if (!confirm("Reset selected results?")) return;
+
+  const cls = document.getElementById("resetClass").value;
+  const sub = document.getElementById("resetSubject").value;
+  const stu = document.getElementById("resetStudent").value;
+
+  db.scores = db.scores.filter(sc => {
+    const st = db.students.find(s => s.id === sc.studentId);
+    if (!st) return true;
+
+    if (cls !== "all" && st.class !== cls) return true;
+    if (sub !== "all" && sc.subjectId !== sub) return true;
+    if (stu !== "all" && sc.studentId !== stu) return true;
+
+    return false; // remove matching records
+  });
+
+  commit();
+  alert("Selected results have been reset.");
+}
+  
 function parseTXT(text, subjectId) {
   const blocks = text.trim().split(/\n\s*\n/);
 
@@ -963,28 +982,6 @@ function cancelPreview() {
   previewQuestions = [];
   document.getElementById("previewBox").classList.add("hidden");
 }
-function resetResultsAdvanced() {
-  if (!confirm("Reset selected results?")) return;
-
-  const cls = document.getElementById("resetClass").value;
-  const sub = document.getElementById("resetSubject").value;
-  const stu = document.getElementById("resetStudent").value;
-
-  db.scores = db.scores.filter(sc => {
-    const st = db.students.find(s => s.id === sc.studentId);
-    if (!st) return true;
-
-    if (cls !== "all" && st.class !== cls) return true;
-    if (sub !== "all" && sc.subjectId !== sub) return true;
-    if (stu !== "all" && sc.studentId !== stu) return true;
-
-    return false; // remove matching records
-  });
-
-  commit();
-  alert("Selected results have been reset.");
-}
-  
 </script>
 </body>
 </html>
