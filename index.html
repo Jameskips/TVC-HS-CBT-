@@ -828,16 +828,32 @@ async function finalizeExam(){
 /* ---------------------------
    Results & Export
    --------------------------- */
-function renderResults(){
+function renderResults() {
   const tbody = document.getElementById("resultsTbody");
-const classFilter = document.getElementById("adminStudentClassFilter").value;
-const subjectFilter = document.getElementById("resultSubjectFilter").value;
+  const classFilter = document.getElementById("adminStudentClassFilter").value;
+  const subjectFilter = document.getElementById("resultSubjectFilter").value;
 
-db.scores.filter(sc=>{
-  const st = db.students.find(s=>s.id===sc.studentId);
-  return (classFilter==="all" || st.class===classFilter)
-      && (subjectFilter==="all" || sc.subjectId===subjectFilter);
-});
+  tbody.innerHTML = ""; // Clear existing rows
+
+  const filtered = db.scores.filter(sc => {
+    const st = db.students.find(s => s.id === sc.studentId);
+    if (!st) return false;
+    return (classFilter === "all" || st.class === classFilter) &&
+           (subjectFilter === "all" || sc.subjectId === subjectFilter);
+  });
+
+  filtered.forEach(sc => {
+    const st = db.students.find(s => s.id === sc.studentId);
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${st ? st.name : 'Unknown'}</td>
+        <td>${st ? st.class : '-'}</td>
+        <td>${sc.subject}</td>
+        <td>${sc.score} / ${sc.totalMarks}</td>
+        <td><button class="small" onclick="showStudentAnswers('${sc.studentId}', '${sc.subjectId}')">View</button></td>
+      </tr>`);
+  });
+}
   
 function showStudentAnswers(sid, subid) {
   const sc = db.scores.find(x => x.studentId == sid && x.subjectId == subid);
