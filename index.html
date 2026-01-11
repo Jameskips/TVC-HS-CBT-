@@ -969,27 +969,6 @@ function refreshClassFilters(){
   });
 }
 
-function checkStudentNameExists() {
-  const fullName = document.getElementById("regFullName").value.trim().toLowerCase();
-  const status = document.getElementById("regNameStatus");
-  const selectedClass = document.getElementById("regClassSelect").value;
-  
-  if (fullName.length < 3) {
-    status.textContent = "";
-    return;
-  }
-
-  // Check if a student with this exact name already exists in the system
-  const nameExists = db.students.some(s => s.name.toLowerCase() === fullName);
-
-  if (nameExists) {
-    status.textContent = "⚠️ This student name is already registered.";
-    status.style.color = "#e53935"; // Red for warning
-  } else {
-    status.textContent = "✅ Name is unique.";
-    status.style.color = "#2e7d32"; // Green for available
-  }
-}
 
 function checkStudentNameExists() {
   const nameInput = document.getElementById("regFullName").value.trim().toLowerCase();
