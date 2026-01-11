@@ -317,8 +317,22 @@ CSV: question,A,B,C,answer
                   <option value="all">All Classes</option>
                 </select>
               </div>
-              <div class="row">
-                <label class="muted">Reset by subject:</label>
+              <h4>Advanced Result Reset</h4>
+<div class="row">
+  <select id="resetClass">
+    <option value="all">All Classes</option>
+  </select>
+
+  <select id="resetSubject">
+    <option value="all">All Subjects</option>
+  </select>
+
+  <select id="resetStudent">
+    <option value="all">All Students</option>
+  </select>
+
+  <button class="danger" onclick="resetResultsAdvanced()">Reset Selected Results</button>
+</div>
                 <select id="resetSubjectDropdown"><option value="" disabled selected>-- Select Subject --</option></select>
                 <button id="btnResetSubject" class="danger">Reset All</button>
                 <button id="btnViewAllAnswers" class="muted">View All Answers</button>
@@ -841,7 +855,30 @@ function renderResults() {
   });
 }
 
-  
+  function populateResetDropdowns() {
+  const classSelect = document.getElementById("resetClass");
+  const subjectSelect = document.getElementById("resetSubject");
+  const studentSelect = document.getElementById("resetStudent");
+
+  // 1. Get unique classes from your subjects list
+  const classes = [...new Set(db.subjects.map(s => s.class))].sort();
+  classSelect.innerHTML = `<option value="all">All Classes</option>`;
+  classes.forEach(c => {
+    classSelect.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`);
+  });
+
+  // 2. Populate Subjects
+  subjectSelect.innerHTML = `<option value="all">All Subjects</option>`;
+  db.subjects.forEach(s => {
+    subjectSelect.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.name} (${s.class})</option>`);
+  });
+
+  // 3. Populate Students
+  studentSelect.innerHTML = `<option value="all">All Students</option>`;
+  db.students.forEach(st => {
+    studentSelect.insertAdjacentHTML('beforeend', `<option value="${st.id}">${st.name} (${st.class})</option>`);
+  });
+}
   
 function showStudentAnswers(sid, subid) {
   const sc = db.scores.find(x => x.studentId == sid && x.subjectId == subid);
@@ -862,7 +899,16 @@ function refreshClassFilters(){
   });
 }
 
-function renderAllAdmin(){ refreshClassFilters(); refreshQuestionAddSubjects(); renderSubjects(); renderStudents(); renderResults(); }
+function renderAllAdmin() { 
+  refreshClassFilters();        // Refreshes the main filters
+  refreshQuestionAddSubjects(); // Refreshes subjects in the 'Add Question' area
+  refreshResultSubjects();      // Refreshes subjects in the 'Results' filter
+  populateResetDropdowns();     // <--- ADD THIS LINE: Refreshes the 'Advanced Reset' area
+  
+  renderSubjects(); 
+  renderStudents(); 
+  renderResults(); 
+}
 document.getElementById("btnLogoutAdmin").onclick = () => location.reload();
 document.getElementById("btnLogoutStudent").onclick = () => location.reload();
 document.getElementById("btnCloseAnswerSheet").onclick = () => { document.getElementById("answerSheetCard").classList.add("hidden"); document.getElementById("adminCard").classList.remove("hidden"); };
