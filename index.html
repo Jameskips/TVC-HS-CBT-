@@ -312,7 +312,14 @@ CSV: question,A,B,C,answer
             <div class="row" style="justify-content:space-between">
               <div class="row">
                 <label class="muted">Filter by class:</label>
-                <select id="adminStudentClassFilter" onchange="renderResults()">
+<select id="adminStudentClassFilter" onchange="renderResults()">
+  <option value="all">All Classes</option>
+</select>
+
+<label class="muted">Filter by subject:</label>
+<select id="resultSubjectFilter" onchange="renderResults()">
+  <option value="all">All Subjects</option>
+</select>
                   <option value="" disabled selected>-- Select a Class --</option>
                   <option value="all">All Classes</option>
                 </select>
@@ -341,7 +348,15 @@ CSV: question,A,B,C,answer
               </div>
             </div>
             <table>
-              <thead id="resultsThead"></thead>
+              <thead id="resultsThead">
+  <tr>
+    <th>Student Name</th>
+    <th>Class</th>
+    <th>Subject</th>
+    <th>Score</th>
+    <th>Action</th>
+  </tr>
+</thead>
               <tbody id="resultsTbody"></tbody>
             </table>
           </div>
@@ -854,7 +869,20 @@ function renderResults() {
       </tr>`);
   });
 }
+  
+function refreshResultSubjects() {
+  const sel = document.getElementById("resultSubjectFilter");
+  if (!sel) return;
 
+  sel.innerHTML = `<option value="all">All Subjects</option>`;
+  db.subjects.forEach(s => {
+    sel.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${s.id}">${s.name} (${s.class})</option>`
+    );
+  });
+}
+  
   function populateResetDropdowns() {
   const classSelect = document.getElementById("resetClass");
   const subjectSelect = document.getElementById("resetSubject");
