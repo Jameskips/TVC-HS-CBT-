@@ -169,10 +169,20 @@
       <div id="registerForm" class="hidden">
         <h2>Student Registration</h2>
         <div class="row">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-  <input id="regFullName" placeholder="Full Name" oninput="checkStudentNameExists()" />
-  <span id="regNameStatus" style="font-size:12px; margin-left:8px; font-weight:bold;"></span>
+          <div style="margin-bottom: 10px;">
+  <input id="regFullName" placeholder="Full Name" oninput="checkStudentNameExists()" style="width:100%;" />
+  <span id="regNameStatus" style="font-size:12px; font-weight:bold; display:block; margin-top:4px;"></span>
 </div>
+
+<select id="regClassSelect" onchange="checkStudentNameExists()">
+  <option value="">Select Class</option>
+  <option value="JSS 1">JSS 1</option>
+  <option value="JSS 2">JSS 2</option>
+  <option value="JSS 3">JSS 3</option>
+  <option value="SSS 1">SSS 1</option>
+  <option value="SSS 2">SSS 2</option>
+  <option value="SSS 3">SSS 3</option>
+</select>
           <input id="regUser" placeholder="Choose Username" />
           <select id="regClassSelect">
              <option value="" disabled selected>Select Your Class</option>
@@ -513,28 +523,28 @@ document.getElementById("btnRegister").onclick = async () => {
   const cls = document.getElementById("regClassSelect").value;
   const pass = document.getElementById("regPass").value.trim();
 
-  // 1. Check if any fields are empty
+  // 1. Basic Validation
   if (!name || !user || !cls || !pass) {
     return alert("Please fill all registration fields.");
   }
 
-  // 2. STUDENT DICTATION: Check if this name already exists in the school
-  // We check case-insensitive (e.g., "John Doe" matches "john doe")
-  const studentExists = db.students.some(s => s.name.toLowerCase() === name.toLowerCase());
+  // 2. Student Dictation/Detection
+  const duplicateStudent = db.students.find(s => 
+    s.name.toLowerCase() === name.toLowerCase() && s.class === cls
+  );
   
-  if (studentExists) {
-    alert("This student is already registered in the system. You cannot create a second account.");
-    return; // This STOPS the registration here
+  if (duplicateStudent) {
+    alert(`Registration Failed: ${name} is already registered in ${cls}.`);
+    return; 
   }
 
-  // 3. Check if the username is taken
-  const usernameExists = db.students.some(s => s.username.toLowerCase() === user.toLowerCase());
-  if (usernameExists) {
-    alert("This username is already taken. Please choose another.");
-    return; // This STOPS the registration here
+  // 3. Username Check
+  if (db.students.some(s => s.username.toLowerCase() === user.toLowerCase())) {
+    alert("This username is already taken.");
+    return;
   }
 
-  // 4. If everything is unique, save the student
+  // 4. Save to Database
   db.students.push({ 
     id: uid(), 
     username: user, 
@@ -544,13 +554,12 @@ document.getElementById("btnRegister").onclick = async () => {
   });
   
   await commit();
-  alert("Registration successful! You can now login.");
+  alert("Registration successful! You may now login.");
   
-  // Clear the warning text and go to login page
-  if(document.getElementById("regNameStatus")) document.getElementById("regNameStatus").textContent = "";
+  // Cleanup and Redirect
+  document.getElementById("regNameStatus").textContent = "";
   toggleAuth(null, 'login');
 };
-  
 
 document.getElementById("btnLogin").onclick = async () => {
   const username = document.getElementById("loginUser").value.trim();
@@ -979,6 +988,30 @@ function checkStudentNameExists() {
   } else {
     status.textContent = "✅ Name is unique.";
     status.style.color = "#2e7d32"; // Green for available
+  }
+}
+
+function checkStudentNameExists() {
+  const nameInput = document.getElementById("regFullName").value.trim().toLowerCase();
+  const classInput = document.getElementById("regClassSelect").value;
+  const status = document.getElementById("regNameStatus");
+  
+  if (nameInput.length < 3 || !classInput) {
+    status.textContent = "";
+    return;
+  }
+
+  // Check if someone with the SAME name is already in the SAME class
+  const alreadyRegistered = db.students.some(s => 
+    s.name.toLowerCase() === nameInput && s.class === classInput
+  );
+
+  if (alreadyRegistered) {
+    status.textContent = `❌ A student named "${nameInput}" is already in ${classInput}.`;
+    status.style.color = "#d32f2f";
+  } else {
+    status.textContent = "✅ Name available for this class.";
+    status.style.color = "#2e7d32";
   }
 }
   
