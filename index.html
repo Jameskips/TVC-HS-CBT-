@@ -169,7 +169,10 @@
       <div id="registerForm" class="hidden">
         <h2>Student Registration</h2>
         <div class="row">
-          <input id="regFullName" placeholder="Full Name" />
+          <div style="display:flex; flex-direction:column; gap:4px;">
+  <input id="regFullName" placeholder="Full Name" oninput="checkStudentNameExists()" />
+  <span id="regNameStatus" style="font-size:12px; margin-left:8px; font-weight:bold;"></span>
+</div>
           <input id="regUser" placeholder="Choose Username" />
           <select id="regClassSelect">
              <option value="" disabled selected>Select Your Class</option>
@@ -510,14 +513,44 @@ document.getElementById("btnRegister").onclick = async () => {
   const cls = document.getElementById("regClassSelect").value;
   const pass = document.getElementById("regPass").value.trim();
 
-  if(!name || !user || !cls || !pass) return alert("Please fill all registration fields.");
-  if(db.students.some(s => s.username.toLowerCase() === user.toLowerCase())) return alert("Username taken.");
+  // 1. Check if any fields are empty
+  if (!name || !user || !cls || !pass) {
+    return alert("Please fill all registration fields.");
+  }
 
-  db.students.push({ id: uid(), username: user, name: name, class: cls, password: pass });
+  // 2. STUDENT DICTATION: Check if this name already exists in the school
+  // We check case-insensitive (e.g., "John Doe" matches "john doe")
+  const studentExists = db.students.some(s => s.name.toLowerCase() === name.toLowerCase());
+  
+  if (studentExists) {
+    alert("This student is already registered in the system. You cannot create a second account.");
+    return; // This STOPS the registration here
+  }
+
+  // 3. Check if the username is taken
+  const usernameExists = db.students.some(s => s.username.toLowerCase() === user.toLowerCase());
+  if (usernameExists) {
+    alert("This username is already taken. Please choose another.");
+    return; // This STOPS the registration here
+  }
+
+  // 4. If everything is unique, save the student
+  db.students.push({ 
+    id: uid(), 
+    username: user, 
+    name: name, 
+    class: cls, 
+    password: pass 
+  });
+  
   await commit();
   alert("Registration successful! You can now login.");
+  
+  // Clear the warning text and go to login page
+  if(document.getElementById("regNameStatus")) document.getElementById("regNameStatus").textContent = "";
   toggleAuth(null, 'login');
 };
+  
 
 document.getElementById("btnLogin").onclick = async () => {
   const username = document.getElementById("loginUser").value.trim();
@@ -927,6 +960,28 @@ function refreshClassFilters(){
   });
 }
 
+function checkStudentNameExists() {
+  const fullName = document.getElementById("regFullName").value.trim().toLowerCase();
+  const status = document.getElementById("regNameStatus");
+  const selectedClass = document.getElementById("regClassSelect").value;
+  
+  if (fullName.length < 3) {
+    status.textContent = "";
+    return;
+  }
+
+  // Check if a student with this exact name already exists in the system
+  const nameExists = db.students.some(s => s.name.toLowerCase() === fullName);
+
+  if (nameExists) {
+    status.textContent = "⚠️ This student name is already registered.";
+    status.style.color = "#e53935"; // Red for warning
+  } else {
+    status.textContent = "✅ Name is unique.";
+    status.style.color = "#2e7d32"; // Green for available
+  }
+}
+  
 function renderAllAdmin() { 
   refreshClassFilters();        // Refreshes the main filters
   refreshQuestionAddSubjects(); // Refreshes subjects in the 'Add Question' area
